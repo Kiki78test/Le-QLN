@@ -15,23 +15,28 @@ css.textContent = `
 .p-grille{display:grid; gap:14px; grid-template-columns:minmax(0,1fr)}
 .p-grille > *{min-width:0}
 @media (min-width:980px){ .p-grille{grid-template-columns:minmax(0,1fr) 340px; align-items:start} .p-cote{position:sticky; top:12px} }
-.tapis-cadre{border-radius:18px; padding:8px; background:linear-gradient(160deg,#173a83,#0a1a44); box-shadow:inset 0 0 0 2px rgba(255,255,255,.06), 0 18px 40px rgba(0,0,0,.5)}
+.tapis-cadre{position:relative; border-radius:22px; padding:10px; background:linear-gradient(145deg,#f6dc8a 0%,#c8922a 28%,#8a5a12 52%,#e9c25c 78%,#9a6a1a 100%); box-shadow:inset 0 2px 0 rgba(255,255,255,.55), inset 0 -3px 0 rgba(0,0,0,.3), 0 3px 0 #5a3706, 0 26px 50px rgba(0,0,0,.6)}
+.tapis-cadre::before{content:""; position:absolute; inset:10px; border-radius:14px; box-shadow:inset 0 0 0 3px rgba(0,0,0,.45), inset 0 8px 24px rgba(0,0,0,.55); pointer-events:none; z-index:2}
+.tapis-scroll{background:radial-gradient(90% 90% at 40% 20%, #1f4fa6, #0d2a66 60%, #08183f)}
 .tapis-scroll{overflow-x:auto; overflow-y:hidden; border-radius:12px; -webkit-overflow-scrolling:touch; scrollbar-width:thin}
 #tapis{display:block; width:100%; min-width:660px; height:auto}
-#tapis .case-g{transition:filter .2s}
+#tapis .case-g{transition:filter .2s} #tapis .case-g:not(.cible):hover{filter:brightness(1.08)}
+#tapis .lueur{animation:lueur 2.6s ease-in-out infinite} @keyframes lueur{50%{opacity:.55}}
 #tapis .cible{cursor:pointer}
 #tapis .cible .halo{display:block}
 #tapis .halo{display:none; fill:none; stroke:#ffe68f; stroke-width:8; stroke-dasharray:18 10; animation:fourmi .8s linear infinite; filter:drop-shadow(0 0 8px #ffcf3a)}
 #tapis .cible:hover .halo{stroke:#fff}
 @keyframes fourmi{to{stroke-dashoffset:-28}}
-#tapis .pion{transition:transform .17s ease-out}
+#tapis .pion{transition:transform .17s ease-out} #tapis .pion.actif .corps-pion{animation:rebond 1s ease-in-out infinite; transform-box:fill-box; transform-origin:50% 100%} @keyframes rebond{50%{transform:translateY(-6px) scaleY(1.04)}}
 #tapis .pion .aura{display:none; fill:none; stroke:#fff; stroke-width:3; stroke-dasharray:6 5; animation:tourne 3s linear infinite; transform-box:fill-box; transform-origin:center}
 #tapis .pion.actif .aura{display:block}
 @keyframes tourne{to{transform:rotate(360deg)}}
 .p-cote{display:grid; gap:14px; align-content:start}
 .joueurs{display:grid; grid-template-columns:repeat(auto-fill, minmax(150px,1fr)); gap:8px}
 .joueur{display:grid; grid-template-columns:auto 1fr; gap:2px 10px; align-items:center; background:rgba(3,10,30,.5); border-radius:12px; padding:8px 10px; box-shadow:inset 0 0 0 1px rgba(255,255,255,.06); transition:box-shadow .2s, transform .2s; min-width:0}
-.joueur.actif{box-shadow:inset 0 0 0 2px var(--or), 0 0 18px rgba(255,207,58,.25); transform:translateY(-2px)}
+.joueur{position:relative; overflow:hidden; background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(3,10,30,.6)); padding-left:14px}
+.joueur::before{content:""; position:absolute; left:0; top:0; bottom:0; width:5px; background:var(--cj,#888); box-shadow:2px 0 8px var(--cj,#888)}
+.joueur.actif{box-shadow:inset 0 0 0 2px var(--or), 0 0 22px rgba(255,207,58,.35), 0 8px 16px rgba(0,0,0,.35); transform:translateY(-3px) scale(1.02)}
 .joueur .pion-svg{grid-row:span 2; width:22px; height:32px}
 .joueur .nom{font-family:var(--f-ui); font-weight:800; font-size:17px; letter-spacing:.03em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
 .joueur .nom small{font-weight:600; color:var(--brume); font-size:13px; margin-left:4px}
@@ -39,7 +44,7 @@ css.textContent = `
 .joueur .argent.cache{color:var(--brume-2); letter-spacing:.2em}
 .joueur .etat{font-family:var(--f-ui); font-weight:800; font-size:12px; letter-spacing:.06em; text-transform:uppercase; padding:1px 6px; border-radius:10px; background:#000; color:var(--orange-b)}
 .joueur .etat.ok{color:var(--vert-b)}
-.dock{background:var(--ivoire); color:var(--sombre); border-radius:18px; padding:14px; display:grid; gap:12px; box-shadow:0 2px 0 var(--ivoire-3), 0 14px 30px rgba(0,0,0,.45)}
+.dock{background:radial-gradient(120% 80% at 50% 0%, #fffdf6, var(--ivoire) 65%); color:var(--sombre); border-radius:18px; padding:14px; display:grid; gap:12px; box-shadow:0 2px 0 var(--ivoire-3), 0 6px 0 -1px #dccfae, 0 22px 40px rgba(0,0,0,.5), inset 0 0 0 3px rgba(255,255,255,.55)}
 .dock-haut{display:flex; align-items:center; gap:14px}
 .dock .de{width:64px; height:64px; padding:9px; border-radius:13px; margin:0; flex:none}
 .dock .de i{width:11px; height:11px}
@@ -48,7 +53,7 @@ css.textContent = `
 .dock-actions{display:grid; gap:8px}
 .choix-case{display:flex; align-items:center; justify-content:space-between; gap:10px; min-height:50px; padding:8px 14px; font-family:var(--f-titre); font-size:23px; letter-spacing:.04em; line-height:1; text-align:left}
 .choix-case small{font-family:var(--f-ui); font-weight:700; font-size:15px; letter-spacing:.02em; opacity:.95}
-.journal{background:rgba(3,10,30,.45); border-radius:12px; padding:8px 12px; box-shadow:inset 0 0 0 1px rgba(255,255,255,.06)}
+.journal{background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(3,10,30,.55)); border-radius:12px; padding:8px 12px; box-shadow:inset 0 0 0 1px rgba(255,255,255,.06)}
 .journal summary{cursor:pointer; font-family:var(--f-ui); font-weight:800; letter-spacing:.08em; text-transform:uppercase; font-size:14px; color:var(--brume); padding:4px 0}
 .journal ol{list-style:none; margin:6px 0 2px; padding:0; display:grid; gap:4px; max-height:220px; overflow:auto; font-size:14.5px}
 .journal li{display:grid; grid-template-columns:10px 1fr; gap:8px; align-items:baseline; color:#dfe6fb}
@@ -764,6 +769,11 @@ function svgTapis(){
     + `<linearGradient id="g-reflet" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".28"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>`
     + `<marker id="fl" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#000"/></marker>`
     + `<marker id="fl-c" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="4" markerHeight="4" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#cfe0ff"/></marker>`
+    + `<pattern id="feutre" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="none"/><rect width="6" height="1" fill="#fff" opacity=".05"/><rect y="3" width="6" height="1" fill="#000" opacity=".1"/></pattern>`
+    + `<radialGradient id="lampe" cx=".42" cy=".25" r=".85"><stop offset="0" stop-color="#3f78d6" stop-opacity=".55"/><stop offset=".55" stop-color="#1c4aa0" stop-opacity=".12"/><stop offset="1" stop-color="#000" stop-opacity=".45"/></radialGradient>`
+    + `<linearGradient id="g-biseau" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".55"/><stop offset=".08" stop-color="#fff" stop-opacity="0"/><stop offset=".85" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".38"/></linearGradient>`
+    + `<linearGradient id="g-or" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff3b0"/><stop offset=".5" stop-color="#ffcf3a"/><stop offset="1" stop-color="#b87d00"/></linearGradient>`
+    + `<radialGradient id="g-halo-or" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ffe68f" stop-opacity=".5"/><stop offset="1" stop-color="#ffe68f" stop-opacity="0"/></radialGradient>`
     + `<filter id="ombre" x="-10%" y="-10%" width="120%" height="130%"><feDropShadow dx="0" dy="6" stdDeviation="6" flood-color="#000" flood-opacity=".5"/></filter>`
     + PIONS.map(p=>`<radialGradient id="gp-${p.c.slice(1)}" cx=".35" cy=".28" r=".85"><stop offset="0" stop-color="#fff" stop-opacity=".95"/><stop offset=".3" stop-color="${p.c}"/><stop offset="1" stop-color="${p.c}" stop-opacity=".7"/></radialGradient>`).join("");
   let cases = "";
@@ -786,7 +796,8 @@ function svgTapis(){
     }
     cases += `<g class="case-g" data-id="${n.id}">
       <rect x="${x}" y="${y}" width="${CW}" height="${CH}" fill="url(#g-${fill})" stroke="#000" stroke-width="3.5"/>
-      <rect x="${x+4}" y="${y+4}" width="${CW-8}" height="${CH*.42}" fill="url(#g-reflet)"/>
+      <rect x="${x+2}" y="${y+2}" width="${CW-4}" height="${CH-4}" fill="url(#g-biseau)"/>
+      <path d="M${x+4} ${y+4}H${x+CW-4}L${x+CW-4} ${y+CH*.38}Q${x+CW/2} ${y+CH*.5} ${x+4} ${y+CH*.34}Z" fill="url(#g-reflet)"/>
       ${label}${fleches}
       <rect class="halo" x="${x+5}" y="${y+5}" width="${CW-10}" height="${CH-10}" rx="6"/>
     </g>`;
@@ -796,23 +807,23 @@ function svgTapis(){
   const yTop = Y0 + CH/2, yMil = Y0 + 4*CH + CH/2, yBas = Y0 + 7*CH + CH/2;
   const accolade = `<path d="M${X0+14*CW+4} ${yTop}H${xb}V${yBas}H${X0+14*CW+4}M${X0+14*CW+4} ${yMil}H${xb}" fill="none" stroke="#cfe0ff" stroke-width="4" opacity=".85"/>
     <line x1="${xb}" y1="${yMil}" x2="${XA-8}" y2="${yMil}" stroke="#cfe0ff" stroke-width="4" marker-end="url(#fl-c)" opacity=".85"/>`;
-  const arrivee = `<text x="${XA+38}" y="${Y0+CH*1.05-16}" text-anchor="middle" font-family="Bebas Neue, Oswald, Arial Narrow, sans-serif" font-size="32" fill="#fff" letter-spacing="1.5">ARRIVÉE</text>`
+  const arrivee = `<ellipse class="lueur" cx="${XA+40}" cy="${Y0+CH*4.05}" rx="120" ry="${CH*3.6}" fill="url(#g-halo-or)"/><text x="${XA+38}" y="${Y0+CH*1.05-16}" text-anchor="middle" font-family="Bebas Neue, Oswald, Arial Narrow, sans-serif" font-size="32" fill="url(#g-or)" stroke="#5a3706" stroke-width=".8" paint-order="stroke" letter-spacing="1.5">ARRIVÉE</text>`
     + BONUS_ARRIVEE.map((b,i)=>{ const [cx,cy] = caseArrivee(i); const col = i<2 ? ["#b8c21a","#e8ee55"] : i<4 ? ["#8f9399","#d9dce0"] : ["#8a4a2c","#c98463"];
-      return `<g class="case-g" data-id="A${i}"><rect x="${cx-36}" y="${cy-CH/2+2}" width="72" height="${CH-4}" fill="${col[1]}" stroke="#000" stroke-width="3.5"/><rect x="${cx-32}" y="${cy-CH/2+6}" width="64" height="${CH*.4}" fill="url(#g-reflet)"/>
+      return `<g class="case-g" data-id="A${i}"><rect x="${cx-36}" y="${cy-CH/2+2}" width="72" height="${CH-4}" fill="${col[1]}" stroke="#000" stroke-width="3.5"/><rect x="${cx-34}" y="${cy-CH/2+4}" width="68" height="${CH-8}" fill="url(#g-biseau)"/><rect x="${cx-32}" y="${cy-CH/2+6}" width="64" height="${CH*.4}" fill="url(#g-reflet)"/>
         <text x="${cx}" y="${cy+16}" text-anchor="middle" font-family="Barlow Condensed, Arial Narrow, sans-serif" font-weight="800" font-size="46" fill="#111">${i+1}</text>
         <text x="${cx+48}" y="${cy+10}" font-family="Bebas Neue, Oswald, Arial Narrow, sans-serif" font-size="30" fill="${b>0?"#9be15d":"#ff6b6b"}">${b>0?"+":""}${b}€</text></g>`; }).join("")
     + `<g class="case-g" data-id="A"><rect class="halo" x="${XA-2}" y="${Y0+CH*1.05-4}" width="80" height="${CH*6+8}" rx="8"/></g>`;
-  const depart = [0,1,2,3,4,5].map(i=>{ const [cx,cy] = caseDepart(i); return `<rect x="${cx-35}" y="${cy-35}" width="70" height="70" fill="url(#g-jaune)" stroke="#000" stroke-width="3.5"/><text x="${cx}" y="${cy+16}" text-anchor="middle" font-family="Barlow Condensed, Arial Narrow, sans-serif" font-weight="800" font-size="44" fill="#111">${i+1}</text>`; }).join("")
+  const depart = [0,1,2,3,4,5].map(i=>{ const [cx,cy] = caseDepart(i); return `<rect x="${cx-35}" y="${cy-35}" width="70" height="70" fill="url(#g-jaune)" stroke="#000" stroke-width="3.5"/><rect x="${cx-33}" y="${cy-33}" width="66" height="66" fill="url(#g-biseau)"/><text x="${cx}" y="${cy+16}" text-anchor="middle" font-family="Barlow Condensed, Arial Narrow, sans-serif" font-weight="800" font-size="44" fill="#111">${i+1}</text>`; }).join("")
     + `<text x="${X0+4.5*CW}" y="${Y0+9*CH+110}" text-anchor="middle" font-family="Bebas Neue, Oswald, Arial Narrow, sans-serif" font-size="30" fill="#fff" letter-spacing="1.5">DÉPART</text>`;
-  const logo = `<g transform="translate(${X0+12.5*CW} ${Y0+2.5*CH}) rotate(-9)"><ellipse rx="138" ry="50" fill="#000" opacity=".92"/><text y="22" text-anchor="middle" font-family="Bebas Neue, Oswald, Impact, sans-serif" font-size="66" fill="#fff" letter-spacing="2" textLength="200" lengthAdjust="spacingAndGlyphs">LE - QLN</text></g>`;
+  const logo = `<g transform="translate(${X0+12.5*CW} ${Y0+2.5*CH}) rotate(-9)"><ellipse rx="138" ry="50" fill="#000" opacity=".95" stroke="#6b7ca3" stroke-width="2"/><ellipse cx="-10" cy="-26" rx="104" ry="17" fill="#fff" opacity=".14"/><text y="22" text-anchor="middle" font-family="Bebas Neue, Oswald, Impact, sans-serif" font-size="66" fill="#fff" letter-spacing="2" textLength="200" lengthAdjust="spacingAndGlyphs">LE - QLN</text></g>`;
   const bx = X0 + 8, by = Y0 + 5.35*CH, bw = 92;
   const bareme = `<g filter="url(#ombre)"><rect x="${bx-4}" y="${by-4}" width="${bw*4+8}" height="${CH*2.3+8}" fill="#000"/>`
     + Object.values(NIVEAUX).map((N,i)=>{ const x = bx + i*bw, f = N.cle;
-      return `<text x="${x+bw/2}" y="${by+26}" text-anchor="middle" font-family="Bebas Neue, Oswald, Arial Narrow, sans-serif" font-size="24" fill="#fff" ${N.nom.length>8?`textLength="84" lengthAdjust="spacingAndGlyphs"`:""}>${N.nom.toUpperCase()}</text>
+      return `<text x="${x+bw/2}" y="${by+26}" text-anchor="middle" font-family="Bebas Neue, Oswald, Arial Narrow, sans-serif" font-size="22" fill="#ffe68f" textLength="${Math.min(84, N.nom.length*10.5)}" lengthAdjust="spacingAndGlyphs">${N.nom.toUpperCase()}</text>
         <rect x="${x+3}" y="${by+38}" width="${bw-6}" height="${CH*.75}" fill="url(#g-${f})"/><text x="${x+bw/2}" y="${by+38+CH*.5}" text-anchor="middle" font-family="Bebas Neue, Oswald, Arial Narrow, sans-serif" font-size="34" fill="#fff">${N.gain}€</text>
-        <rect x="${x+3}" y="${by+44+CH*.75}" width="${bw-6}" height="${CH*.75}" fill="url(#g-${f})"/><text x="${x+bw/2}" y="${by+44+CH*1.25}" text-anchor="middle" font-family="Bebas Neue, Oswald, Arial Narrow, sans-serif" font-size="30" fill="#fff">${N.temps<60?N.temps+" SEC":N.temps/60+" MIN"}</text>`; }).join("") + `</g>`;
+        <rect x="${x+3}" y="${by+44+CH*.75}" width="${bw-6}" height="${CH*.75}" fill="url(#g-${f})"/><text x="${x+bw/2}" y="${by+44+CH*1.25}" text-anchor="middle" font-family="Bebas Neue, Oswald, Arial Narrow, sans-serif" font-size="26" fill="#fff" textLength="${N.temps<60?60:56}" lengthAdjust="spacingAndGlyphs">${N.temps<60?N.temps+" SEC":N.temps/60+" MIN"}</text>`; }).join("") + `</g>`;
   return `<svg id="tapis" viewBox="0 0 ${LARG} ${HAUT}" role="img" aria-label="Plateau Le-QLN"><defs>${defs}</defs>
-    <g filter="url(#ombre)">${cases}</g>${accolade}${arrivee}<g filter="url(#ombre)">${depart}</g>${bareme}${logo}<g id="pions"></g></svg>`;
+    <rect width="${LARG}" height="${HAUT}" fill="url(#lampe)"/><rect width="${LARG}" height="${HAUT}" fill="url(#feutre)"/><g filter="url(#ombre)">${cases}</g>${accolade}${arrivee}<g filter="url(#ombre)">${depart}</g>${bareme}${logo}<g id="pions"></g></svg>`;
 }
 
 function ecranPlateau(){
@@ -846,8 +857,9 @@ function pionG(j, x, y, s){
   return `<g class="pion ${G.courant===j.id?"actif":""}" data-id="${j.id}" style="transform:translate(${x}px, ${y}px) scale(${s})">
     <circle class="aura" cx="0" cy="2" r="27"/>
     <ellipse cx="0" cy="21" rx="16" ry="5" fill="#000" opacity=".45"/>
-    <path d="M-12 20C-12 9-6 5-5-1H5C6 5 12 9 12 20Z" fill="url(#gp-${id})" stroke="#000" stroke-width="2.6"/>
+    <g class="corps-pion"><path d="M-12 20C-12 9-6 5-5-1H5C6 5 12 9 12 20Z" fill="url(#gp-${id})" stroke="#000" stroke-width="2.6"/>
     <circle cx="0" cy="-11" r="11" fill="url(#gp-${id})" stroke="#000" stroke-width="2.6"/>
+    <ellipse cx="-4" cy="-15" rx="3.6" ry="2.4" fill="#fff" opacity=".85"/><path d="M-8 18C-8 12-5 9-3 6" stroke="#fff" stroke-width="2" fill="none" opacity=".45" stroke-linecap="round"/></g>
   </g>`;
 }
 function positionPion(j){
@@ -896,7 +908,7 @@ function majJoueurs(){
     else if(j.arrive) etat = `<span class="etat ok">Arrivé ${j.arrive}${j.arrive===1?"er":"e"}</span>`;
     else if(j.prison) etat = `<span class="etat">Prison ${j.prison}</span>`;
     else if(j.dette) etat = `<span class="etat">Doit ${J(j.dette.vers).nom}</span>`;
-    return `<div class="joueur ${G.courant===j.id?"actif":""}" data-id="${j.id}">${pionSVG(j.couleur)}
+    return `<div class="joueur ${G.courant===j.id?"actif":""}" data-id="${j.id}" style="--cj:${j.couleur}">${pionSVG(j.couleur)}
       <span class="nom">${esc(j.nom)}${j.ia?`<small>IA</small>`:""}</span>
       <span class="argent ${cache?"cache":""}">${cache ? "•••" : euros(j.argent)} ${etat}</span></div>`;
   }).join("");
