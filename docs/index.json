@@ -16,5 +16,11 @@
     "fichier": "propositions-regles.pdf",
     "date": "2026-11-08",
     "description": "Constat chiffré (3 000 parties simulées) et 11 propositions de règles à valider pour la version appli."
+  },
+  {
+    "titre": "Mode solo : stratégie, surprise, scénarios et classement en ligne",
+    "fichier": "solo-strategie-classement.pdf",
+    "date": "2026-11-08",
+    "description": "10 propositions de règles pour le solo (série ou banque, cartes événement, mini-campagne Le Festival…) et le projet de classement en ligne avec podiums internationaux. À valider avant tout développement."
   }
 ]
