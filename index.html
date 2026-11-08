@@ -6,7 +6,7 @@
 <title>Le-QLN</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <meta name="description" content="Le-QLN, le jeu d'anagrammes : trouvez l'anagramme avant la fin du sablier.">
-<meta name="theme-color" content="#0b1a3a">
+<meta name="theme-color" content="#0c1f4d">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -14,229 +14,306 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@400;500;600;700&display=swap">
 <style>
-/* Mise en page : une colonne centrée façon tapis de jeu, cases du plateau comme tuiles de lettres.
-   Thème unique et assumé : le bleu nuit du tapis Le-QLN. */
+/* Mise en page : une table de jeu. Le fond est le tapis bleu nuit du Le-QLN ; tout ce qu'on touche
+   (lettres, boutons, cases) est une pièce en relief aux couleurs des cases ; les cartes sont en carton ivoire.
+   Thème unique et assumé (le tapis est sombre). */
 :root{
   color-scheme: dark;
-  --nuit:#0b1a3a; --nuit-2:#132b5e; --nuit-3:#1c3a78;
-  --encre:#f3f6ff; --brume:#a9b8dc; --trait:#000;
-  --vert-a:#1f6b2a; --vert-b:#8cc63f;
-  --bleu-a:#1d4aa6; --bleu-b:#5d9ee6;
-  --rouge-a:#7d0d15; --rouge-b:#e32b33;
-  --noir-a:#0c0c0c; --noir-b:#3d3d3d;
-  --orange-a:#e8741c; --orange-b:#f7a530;
-  --violet-a:#3e1f73; --violet-b:#6a3db0;
-  --jaune:#f2ec2f; --jaune-b:#fff86a;
-  --ok:#8cc63f; --ko:#ff5a5f;
+  --tapis:#0b1d49; --tapis-2:#132f6c; --tapis-3:#1d4594; --tapis-bord:#06122f;
+  --ivoire:#f8f2e4; --ivoire-2:#ece2cb; --ivoire-3:#d9cba9; --sombre:#15171d; --gris:#5b6070;
+  --encre:#f4f7ff; --brume:#a9b8de; --brume-2:#7486b5;
+  --or:#ffcf3a; --or-2:#ffe68f; --or-o:#a87400;
+  --vert-a:#1e6a29; --vert-b:#8fca42; --vert-o:#0e3f16;
+  --bleu-a:#1b47a3; --bleu-b:#62a4ec; --bleu-o:#0f2b67;
+  --rouge-a:#7e0c14; --rouge-b:#ea3039; --rouge-o:#46050a;
+  --noir-a:#0b0b0d; --noir-b:#43454b; --noir-o:#000;
+  --orange-a:#e46d16; --orange-b:#fbad38; --orange-o:#8c3f06;
+  --violet-a:#3b1c70; --violet-b:#7444bd; --violet-o:#200d42;
+  --jaune-a:#e3d51b; --jaune-b:#fff47a; --jaune-o:#8f8607;
+  --ok:#8fca42; --ko:#ff5c63;
   --f-titre:"Bebas Neue", "Oswald", "Arial Narrow", Impact, sans-serif;
   --f-ui:"Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
   --f-texte:"Barlow", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --rayon:12px;
 }
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 html,body{height:100%}
 body{
-  margin:0; color:var(--encre); font-family:var(--f-texte); font-size:16px;
+  margin:0; color:var(--encre); font-family:var(--f-texte); font-size:16px; line-height:1.4;
   background:
-    radial-gradient(120% 80% at 30% 20%, #1f4790 0%, transparent 60%),
-    radial-gradient(90% 70% at 80% 90%, #17356f 0%, transparent 65%),
-    var(--nuit);
+    radial-gradient(110% 70% at 25% 0%, #2453a8 0%, transparent 55%),
+    radial-gradient(80% 60% at 100% 100%, #1a3c86 0%, transparent 60%),
+    radial-gradient(140% 100% at 50% 50%, var(--tapis) 40%, var(--tapis-bord) 100%);
+  background-color:var(--tapis);
   background-attachment:fixed;
-  -webkit-tap-highlight-color:transparent;
-  overscroll-behavior:none;
+  -webkit-tap-highlight-color:transparent; overscroll-behavior:none;
 }
 body::after{ /* grain du tapis */
-  content:""; position:fixed; inset:0; pointer-events:none; opacity:.22; mix-blend-mode:overlay;
-  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .9 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  content:""; position:fixed; inset:0; pointer-events:none; z-index:0; opacity:.2; mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 1 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
 }
-button{font:inherit; color:inherit; cursor:pointer; border:0; background:none}
-button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--jaune); outline-offset:3px}
+button{font:inherit; color:inherit; cursor:pointer; border:0; background:none; padding:0}
+button:focus-visible,[tabindex]:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--or); outline-offset:3px}
 .app{
-  position:relative; z-index:1; max-width:560px; margin:0 auto; min-height:100%;
-  padding-block:16px 28px;
+  position:relative; z-index:1; max-width:600px; margin:0 auto; min-height:100%;
+  padding-block:14px 28px;
   padding-left:max(16px, env(safe-area-inset-left, 0px));
   padding-right:max(16px, env(safe-area-inset-right, 0px));
   display:flex; flex-direction:column;
 }
+.app.large{max-width:1440px}
 .ecran{display:flex; flex-direction:column; gap:18px; flex:1}
+.cache-visuel{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0)}
+
+/* ---------- Couleurs de case ---------- */
+.c-vert{--a:var(--vert-a); --b:var(--vert-b); --o:var(--vert-o)}
+.c-bleu{--a:var(--bleu-a); --b:var(--bleu-b); --o:var(--bleu-o)}
+.c-rouge{--a:var(--rouge-a); --b:var(--rouge-b); --o:var(--rouge-o)}
+.c-noir{--a:var(--noir-a); --b:var(--noir-b); --o:var(--noir-o)}
+.c-orange{--a:var(--orange-a); --b:var(--orange-b); --o:var(--orange-o)}
+.c-violet{--a:var(--violet-a); --b:var(--violet-b); --o:var(--violet-o)}
+.c-jaune{--a:var(--jaune-a); --b:var(--jaune-b); --o:var(--jaune-o); color:#1b1a05!important}
+.c-ivoire{--a:var(--ivoire-2); --b:#fffaf0; --o:var(--ivoire-3); color:var(--sombre)!important}
+
+/* ---------- Pièces en relief (tuiles, boutons) ---------- */
+.piece{
+  --lip:5px;
+  position:relative; color:#fff; border-radius:10px;
+  background:linear-gradient(165deg, var(--b) 0%, var(--a) 92%);
+  box-shadow:
+    inset 0 2px 0 rgba(255,255,255,.35), inset 0 -3px 0 rgba(0,0,0,.18),
+    0 var(--lip) 0 var(--o), 0 calc(var(--lip) + 5px) 14px rgba(0,0,0,.45);
+  transition:transform .09s ease, box-shadow .09s ease, filter .15s ease;
+}
+.piece::before{ /* reflet */
+  content:""; position:absolute; inset:3px 4px auto; height:38%; border-radius:8px 8px 40% 40%;
+  background:linear-gradient(rgba(255,255,255,.28), rgba(255,255,255,0)); pointer-events:none;
+}
+button.piece:hover{filter:brightness(1.07)}
+button.piece:active, .piece.enfonce{transform:translateY(calc(var(--lip) - 1px)); box-shadow:inset 0 2px 0 rgba(255,255,255,.3), inset 0 -3px 0 rgba(0,0,0,.18), 0 1px 0 var(--o), 0 3px 6px rgba(0,0,0,.4)}
+button.piece[disabled]{filter:grayscale(.85) brightness(.6); cursor:default; transform:none}
+
+.bouton{display:flex; align-items:center; justify-content:center; gap:10px; min-height:56px; padding:10px 18px; font-family:var(--f-titre); font-size:28px; letter-spacing:.05em; line-height:1}
+.bouton.petit{min-height:46px; font-size:22px; padding:8px 14px}
+.bouton-plat{font-family:var(--f-ui); font-weight:700; font-size:17px; letter-spacing:.04em; color:var(--brume); padding:8px 10px; border-radius:8px; text-decoration:underline; text-underline-offset:4px}
+.bouton-plat:hover{color:#fff}
+.icone-btn{width:44px; height:44px; display:grid; place-items:center; border-radius:50%; background:rgba(0,0,0,.35); box-shadow:inset 0 0 0 1px rgba(255,255,255,.08); color:var(--brume)}
+.icone-btn:hover{color:#fff; background:rgba(0,0,0,.55)}
+.icone-btn svg{width:22px; height:22px}
 
 /* ---------- Logo ---------- */
-.logo{display:flex; justify-content:center; padding-top:10px}
+.logo{display:flex; justify-content:center}
 .logo span{
-  display:inline-block; background:#000; color:#fff; font-family:var(--f-titre);
-  font-size:clamp(54px, 15vw, 84px); line-height:1; letter-spacing:.02em;
-  padding:.16em .55em .08em; border-radius:50%;
-  transform:rotate(-9deg); text-shadow:4px 4px 0 #5a6a8a;
-  box-shadow:0 10px 30px rgba(0,0,0,.45);
+  display:inline-block; background:radial-gradient(120% 120% at 30% 20%, #2a2a2e, #000 60%); color:#fff; font-family:var(--f-titre);
+  font-size:var(--taille, clamp(50px, 15vw, 78px)); line-height:1; letter-spacing:.02em; white-space:nowrap;
+  padding:.17em .55em .07em; border-radius:50%;
+  transform:rotate(-9deg); text-shadow:.05em .05em 0 #6b7ca3;
+  box-shadow:0 14px 34px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.15);
 }
-.accroche{text-align:center; color:var(--brume); font-family:var(--f-ui); font-size:19px; letter-spacing:.04em; margin:6px 0 0; text-wrap:balance}
+.logo.flotte span{animation:flotte 6s ease-in-out infinite}
+@keyframes flotte{50%{transform:rotate(-7deg) translateY(-5px)}}
 
-/* ---------- Case (style plateau) ---------- */
-.case{
-  border:2px solid var(--trait); color:#fff; font-family:var(--f-titre);
-  background:linear-gradient(100deg, var(--a), var(--b));
-  box-shadow:inset 0 0 0 1px rgba(255,255,255,.12), inset 0 -6px 12px rgba(0,0,0,.25);
+/* ---------- Accueil ---------- */
+.barre-haut{display:flex; justify-content:space-between; align-items:center; min-height:44px}
+.heros{display:grid; gap:14px; justify-items:center; padding-top:2px}
+.vitrine{position:relative; height:76px; width:100%}
+.vitrine .tuile-v{
+  position:absolute; top:8px; left:0; width:var(--tw); height:calc(var(--tw)*1.08);
+  display:grid; place-items:center; font-family:var(--f-titre); font-size:calc(var(--tw)*.74); line-height:1; padding-top:.06em;
+  transform:translateX(var(--x)); transition:transform .9s cubic-bezier(.6,-.25,.3,1.3);
 }
-.c-vert{--a:var(--vert-a); --b:var(--vert-b)}
-.c-bleu{--a:var(--bleu-a); --b:var(--bleu-b)}
-.c-rouge{--a:var(--rouge-a); --b:var(--rouge-b)}
-.c-noir{--a:var(--noir-a); --b:var(--noir-b)}
-.c-orange{--a:var(--orange-a); --b:var(--orange-b)}
-.c-violet{--a:var(--violet-a); --b:var(--violet-b)}
-.c-jaune{--a:#d8d21c; --b:var(--jaune-b); color:#111}
+.vitrine .tuile-v.saute{animation:saute .9s ease}
+@keyframes saute{40%{top:-14px} 100%{top:8px}}
+.vitrine .tuile-v.entre{animation:entre .45s backwards cubic-bezier(.2,.9,.3,1.3)}
+@keyframes entre{from{opacity:0; transform:translateX(var(--x)) translateY(-30px) rotate(-12deg)}}
+.vitrine-legende{font-family:var(--f-ui); font-weight:600; color:var(--brume); letter-spacing:.06em; font-size:17px; text-align:center; min-height:24px; margin-top:-4px}
+.vitrine-legende b{color:var(--or); font-weight:700}
 
-/* ---------- Menu ---------- */
-.menu{display:grid; gap:10px}
-.btn-case{
-  display:flex; align-items:center; justify-content:space-between; gap:12px;
-  padding:14px 18px; font-size:30px; letter-spacing:.03em; text-align:left; min-height:72px;
-  transition:transform .12s ease, filter .12s ease;
+.modes{display:grid; grid-template-columns:1fr 1fr; gap:14px}
+.mode{
+  display:flex; flex-direction:column; align-items:flex-start; justify-content:space-between; gap:12px; text-align:left;
+  padding:14px 14px 16px; min-height:150px;
 }
-.btn-case small{display:block; font-family:var(--f-ui); font-size:16px; letter-spacing:.02em; opacity:.92; font-weight:600}
-.btn-case .fleche{font-size:30px}
-.btn-case:hover{filter:brightness(1.1)}
-.btn-case:active{transform:scale(.98)}
-.btn-case[disabled]{filter:grayscale(.7) brightness(.7); cursor:default}
-.badge{font-family:var(--f-ui); font-size:14px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; background:#000; color:var(--jaune); padding:3px 8px}
+.mode .ico{width:44px; height:44px; border-radius:50%; background:rgba(0,0,0,.25); display:grid; place-items:center; box-shadow:inset 0 2px 4px rgba(0,0,0,.3)}
+.mode .ico svg{width:26px; height:26px}
+.mode .nom{display:block; font-family:var(--f-titre); font-size:31px; line-height:.95; letter-spacing:.03em}
+.mode .desc{display:block; font-family:var(--f-ui); font-weight:600; font-size:15.5px; line-height:1.15; opacity:.93; margin-top:4px}
+.mode.large{grid-column:span 2; min-height:0; flex-direction:row; align-items:center}
+.mode .etiquette{position:absolute; top:12px; right:12px; font-family:var(--f-ui); font-weight:800; font-size:13px; letter-spacing:.08em; text-transform:uppercase; background:rgba(0,0,0,.55); color:var(--or); padding:3px 8px; border-radius:20px}
+.bientot{display:flex; align-items:center; justify-content:center; gap:10px; font-family:var(--f-ui); font-weight:600; color:var(--brume-2); font-size:16px; letter-spacing:.03em; border:2px dashed rgba(169,184,222,.25); border-radius:var(--rayon); padding:10px}
 
-.tableau{ /* bandeau gains / temps, repris du tapis */
-  display:grid; grid-template-columns:repeat(4,1fr); border:3px solid #000; background:#000;
-  font-family:var(--f-titre); text-align:center;
+.stats{display:grid; grid-template-columns:repeat(3,1fr); gap:10px}
+.stat{background:rgba(3,10,30,.45); border-radius:var(--rayon); padding:10px 12px; box-shadow:inset 0 0 0 1px rgba(255,255,255,.06)}
+.stat span{display:block; font-family:var(--f-ui); color:var(--brume); font-size:14px; letter-spacing:.05em; text-transform:uppercase; font-weight:600}
+.stat b{font-family:var(--f-titre); font-weight:400; font-size:28px; color:var(--or); letter-spacing:.03em; font-variant-numeric:tabular-nums; line-height:1.1}
+.bareme{display:grid; grid-template-columns:repeat(4,1fr); gap:6px}
+.bareme div{border-radius:9px; padding:7px 4px 6px; text-align:center; --lip:3px}
+.bareme b{display:block; font-family:var(--f-titre); font-weight:400; font-size:24px; line-height:1}
+.bareme small{font-family:var(--f-ui); font-weight:700; font-size:14px; letter-spacing:.04em; opacity:.95}
+.pied{display:flex; justify-content:center; flex-wrap:wrap; gap:4px 14px}
+.credit{text-align:center; color:var(--brume-2); font-size:12.5px; margin:0}
+
+/* ---------- HUD de jeu ---------- */
+.hud{display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:12px}
+.hud-centre{display:grid; gap:6px; justify-items:center; min-width:0}
+.hud-titre{font-family:var(--f-ui); font-weight:700; color:var(--brume); letter-spacing:.06em; font-size:15px; text-transform:uppercase}
+.piste{display:flex; gap:4px; flex-wrap:wrap; justify-content:center}
+.piste i{width:15px; height:12px; border-radius:3px; background:linear-gradient(160deg, var(--b), var(--a)); opacity:.32; box-shadow:0 2px 0 var(--o)}
+.piste i.fait{opacity:1} .piste i.rate{opacity:1; filter:grayscale(1) brightness(.5)}
+.piste i.encours{opacity:1; outline:2px solid #fff; outline-offset:1px}
+.banque{display:flex; align-items:center; gap:7px; background:rgba(3,10,30,.55); padding:4px 12px 4px 5px; border-radius:30px; box-shadow:inset 0 0 0 1px rgba(255,207,58,.25)}
+.piece-or{width:28px; height:28px; border-radius:50%; background:radial-gradient(circle at 35% 30%, #fff3b0, var(--or) 45%, #c58c00 100%); box-shadow:inset 0 -2px 0 rgba(0,0,0,.25), 0 2px 4px rgba(0,0,0,.4); display:grid; place-items:center; color:#7a5300; font-family:var(--f-titre); font-size:18px; line-height:1; padding-top:2px}
+.banque b{font-family:var(--f-titre); font-weight:400; font-size:28px; color:var(--or); letter-spacing:.03em; font-variant-numeric:tabular-nums; line-height:1; padding-top:2px}
+.vies{display:flex; gap:6px; align-items:flex-end}
+.pion-svg{width:18px; height:26px; display:block}
+.vies .perdue{opacity:.25; filter:grayscale(1)}
+
+/* ---------- Carte à jouer ---------- */
+.table-carte{perspective:1200px}
+.carte{
+  position:relative; background:
+    radial-gradient(120% 80% at 50% 0%, #fffdf6, var(--ivoire) 60%),
+    var(--ivoire);
+  color:var(--sombre); border-radius:18px; padding:0 0 18px; overflow:hidden;
+  box-shadow:0 2px 0 var(--ivoire-3), 0 18px 40px rgba(0,0,0,.5), inset 0 0 0 1px rgba(0,0,0,.08);
+  animation:pioche .5s cubic-bezier(.2,.9,.25,1.1);
 }
-.tableau div{padding:6px 2px; font-size:clamp(15px, 4.4vw, 21px); letter-spacing:.03em}
-.tableau .entete{color:#fff; background:#000; font-size:clamp(13px,3.6vw,17px)}
-.records{display:grid; grid-template-columns:1fr 1fr; gap:10px}
-.record{background:rgba(0,0,0,.35); border:2px solid #000; padding:10px 12px}
-.record b{display:block; font-family:var(--f-titre); font-size:30px; letter-spacing:.03em; color:var(--jaune); font-weight:400; font-variant-numeric:tabular-nums}
-.record span{font-family:var(--f-ui); color:var(--brume); font-size:15px; letter-spacing:.03em}
-.liens{display:flex; justify-content:center; gap:18px; flex-wrap:wrap}
-.lien{font-family:var(--f-ui); font-size:18px; color:var(--brume); text-decoration:underline; text-underline-offset:4px; padding:6px}
-.lien:hover{color:#fff}
+@keyframes pioche{from{transform:translateY(-40px) rotate(-4deg) scale(.92); opacity:0}}
+.carte-bande{display:flex; align-items:center; justify-content:space-between; padding:10px 14px 9px; color:#fff; background:linear-gradient(100deg, var(--a), var(--b)); border-bottom:3px solid rgba(0,0,0,.25)}
+.carte-bande .niv{font-family:var(--f-titre); font-size:27px; letter-spacing:.05em; line-height:1}
+.carte-bande .val{font-family:var(--f-titre); font-size:27px; letter-spacing:.03em; line-height:1; background:rgba(0,0,0,.28); padding:4px 10px 2px; border-radius:20px}
+.carte-corps{display:grid; gap:10px; justify-items:center; padding:14px 12px 0}
+.carte .consigne{font-family:var(--f-ui); font-weight:700; letter-spacing:.14em; text-transform:uppercase; font-size:13px; color:var(--gris)}
+.mot{display:flex; justify-content:center; flex-wrap:wrap; gap:6px}
+.mot .t{width:var(--tw); height:calc(var(--tw)*1.08); display:grid; place-items:center; font-family:var(--f-titre); font-size:calc(var(--tw)*.74); line-height:1; padding-top:.06em; --lip:4px}
+.carte .indic{font-family:var(--f-ui); font-weight:600; font-size:16px; color:var(--gris)}
+.carte .indic b{color:var(--sombre)}
+.chrono{position:relative; width:46px; height:46px; flex:none; margin-left:auto; margin-right:10px}
+.chrono svg{width:100%; height:100%; transform:rotate(-90deg)}
+.chrono .fond{fill:rgba(0,0,0,.28); stroke:rgba(255,255,255,.25); stroke-width:5}
+.chrono .arc{fill:none; stroke:#fff; stroke-width:5; stroke-linecap:round; transition:stroke .3s}
+.chrono b{position:absolute; inset:0; display:grid; place-items:center; font-family:var(--f-titre); font-weight:400; font-size:16px; color:#fff; font-variant-numeric:tabular-nums; padding-top:2px}
+.chrono.urgent .arc{stroke:var(--or)} .chrono.urgent b{color:var(--or); animation:pouls .5s ease infinite alternate}
+@keyframes pouls{to{transform:scale(1.15)}}
 
-/* ---------- Jeu ---------- */
-.barre{display:flex; align-items:center; justify-content:space-between; gap:10px; font-family:var(--f-ui); font-weight:700; font-size:18px; letter-spacing:.03em}
-.barre .quitter{font-size:26px; line-height:1; padding:4px 8px; color:var(--brume)}
-.manche{color:var(--brume)}
-.banque{font-family:var(--f-titre); font-size:32px; font-weight:400; color:var(--jaune); font-variant-numeric:tabular-nums; letter-spacing:.03em}
-.vies{display:flex; gap:5px}
-.vie{width:16px; height:22px; border-radius:50% 50% 30% 30% / 40% 40% 20% 20%; background:var(--jaune); border:2px solid #000; position:relative}
-.vie::before{content:""; position:absolute; left:50%; top:-9px; width:12px; height:12px; border-radius:50%; background:inherit; border:2px solid #000; transform:translateX(-50%)}
-.vie.perdue{background:#3a4566}
-.niveau{display:flex; align-items:stretch; border:3px solid #000}
-.niveau .nom{flex:1; padding:8px 14px; font-size:26px; letter-spacing:.04em; display:flex; align-items:center; gap:10px}
-.niveau .gain{padding:8px 14px; font-size:26px; background:rgba(0,0,0,.35); display:flex; align-items:center; font-variant-numeric:tabular-nums}
-
-.sablier{position:relative; height:16px; background:rgba(0,0,0,.5); border:2px solid #000}
-.sablier i{position:absolute; inset:0 auto 0 0; width:100%; background:linear-gradient(90deg, var(--a), var(--b)); transform-origin:left; }
-.sablier.urgent i{animation:clignote .5s steps(2) infinite}
-@keyframes clignote{50%{filter:brightness(1.8)}}
-.temps{display:flex; justify-content:space-between; font-family:var(--f-ui); font-weight:600; color:var(--brume); font-size:16px; margin-top:-10px}
-.temps b{color:#fff; font-variant-numeric:tabular-nums}
-
-.carte{ /* la carte piochée, face A */
-  background:#f5f1e6; color:#111; border:3px solid #000; padding:14px 12px 16px; text-align:center;
-  box-shadow:0 12px 30px rgba(0,0,0,.45); position:relative;
-}
-.carte .etiquette{font-family:var(--f-ui); font-weight:700; letter-spacing:.12em; text-transform:uppercase; font-size:13px; color:#555}
-.mot{display:flex; justify-content:center; flex-wrap:wrap; gap:5px; margin-top:8px}
-.mot .t{width:var(--tw); height:calc(var(--tw)*1.1); display:grid; place-items:center; font-size:calc(var(--tw)*.78); line-height:1}
-.carte .compteur{font-family:var(--f-ui); font-size:15px; color:#444; margin-top:10px}
-
-.reponse{display:flex; justify-content:center; gap:5px; min-height:calc(var(--tw)*1.1 + 4px); flex-wrap:wrap}
-.slot{width:var(--tw); height:calc(var(--tw)*1.1); border:2px dashed rgba(255,255,255,.35); display:grid; place-items:center; font-family:var(--f-titre); font-size:calc(var(--tw)*.78); line-height:1}
-.slot.plein{border:2px solid #000; background:#f5f1e6; color:#111}
+/* ---------- Composition de la réponse ---------- */
+.reponse{display:flex; justify-content:center; gap:6px; flex-wrap:wrap; min-height:calc(var(--tw)*1.08 + 6px)}
+.slot{width:var(--tw); height:calc(var(--tw)*1.08); border-radius:10px; background:rgba(3,10,30,.45); box-shadow:inset 0 3px 8px rgba(0,0,0,.45), inset 0 0 0 2px rgba(255,255,255,.07); display:grid; place-items:center; font-family:var(--f-titre); font-size:calc(var(--tw)*.74); line-height:1; padding-top:.06em}
+.slot.plein{background:linear-gradient(165deg,#fffaf0,var(--ivoire-2)); color:var(--sombre); box-shadow:0 4px 0 var(--ivoire-3), 0 8px 12px rgba(0,0,0,.35); animation:pose .16s ease}
+@keyframes pose{from{transform:translateY(-10px) scale(1.08)}}
 .reponse.erreur{animation:secoue .4s}
-.reponse.juste .slot.plein{background:var(--ok)}
-@keyframes secoue{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
-.message{text-align:center; min-height:26px; font-family:var(--f-ui); font-weight:600; font-size:19px; letter-spacing:.02em}
-.message.ok{color:var(--ok)} .message.ko{color:var(--ko)}
-
-.reserve{display:flex; justify-content:center; gap:6px; flex-wrap:wrap}
-.lettre{width:var(--tw); height:calc(var(--tw)*1.1); font-size:calc(var(--tw)*.78); line-height:1; display:grid; place-items:center; transition:transform .1s, opacity .15s}
-.lettre:active{transform:scale(.92)}
-.lettre.utilisee{opacity:.18; pointer-events:none}
-.actions{display:grid; grid-template-columns:repeat(4,1fr); gap:8px}
-.act{font-family:var(--f-ui); font-weight:700; font-size:17px; letter-spacing:.03em; padding:12px 4px; background:rgba(0,0,0,.4); border:2px solid #000; display:flex; flex-direction:column; align-items:center; gap:2px}
-.act .ico{font-size:22px; line-height:1}
-.act:hover{background:rgba(0,0,0,.6)}
-.act[disabled]{opacity:.4; cursor:default}
-.valider{grid-column:span 4; font-family:var(--f-titre); font-size:30px; letter-spacing:.05em; padding:10px; min-height:58px}
+.reponse.juste .slot.plein{background:linear-gradient(165deg,#c5f08a,var(--ok)); box-shadow:0 4px 0 #4f7d1b, 0 8px 12px rgba(0,0,0,.35)}
+@keyframes secoue{20%,60%{transform:translateX(-9px)}40%,80%{transform:translateX(9px)}}
+.message{text-align:center; min-height:26px; font-family:var(--f-ui); font-weight:700; font-size:19px; letter-spacing:.02em}
+.message.ok{color:var(--ok)} .message.ko{color:var(--ko)} .message.info{color:var(--or-2)}
+.reserve{display:flex; justify-content:center; gap:7px; flex-wrap:wrap; padding-bottom:6px}
+.lettre{width:var(--tw); height:calc(var(--tw)*1.08); font-family:var(--f-titre); font-size:calc(var(--tw)*.74); line-height:1; padding-top:.06em; display:grid; place-items:center; --lip:5px}
+.lettre.utilisee{opacity:.15; pointer-events:none; transform:translateY(4px); box-shadow:none}
+.commandes{display:grid; grid-template-columns:auto auto 1fr auto auto; gap:10px; align-items:center}
+.rond{width:54px; height:54px; border-radius:50%; display:grid; place-items:center; --lip:4px; color:#fff}
+.rond svg{width:24px; height:24px; position:relative}
+.rond small{position:absolute; top:-4px; right:-4px; background:var(--or); color:#1b1400; font-family:var(--f-ui); font-weight:800; font-size:13px; width:20px; height:20px; border-radius:50%; display:grid; place-items:center; box-shadow:0 1px 3px rgba(0,0,0,.5)}
+.legende-cmd{display:grid; grid-template-columns:auto auto 1fr auto auto; gap:10px; margin-top:-6px; font-family:var(--f-ui); font-weight:600; font-size:13px; color:var(--brume); text-align:center}
+.legende-cmd span{width:54px}
 .trouves{display:flex; flex-wrap:wrap; gap:6px; justify-content:center}
-.chip{font-family:var(--f-ui); font-weight:700; font-size:17px; letter-spacing:.05em; padding:4px 10px; background:var(--ok); color:#0b2a0f; border:2px solid #000; text-transform:uppercase}
+.chip{font-family:var(--f-ui); font-weight:800; font-size:16px; letter-spacing:.06em; padding:4px 11px; border-radius:20px; background:var(--ok); color:#0d2b0f; text-transform:uppercase; box-shadow:0 2px 0 #4f7d1b}
 
-/* ---------- Face B / bilan de manche ---------- */
-.voile{position:fixed; inset:0; z-index:20; background:rgba(4,10,26,.78); display:grid; place-items:center;
+/* ---------- Voiles et panneaux ---------- */
+.voile{position:fixed; inset:0; z-index:40; background:rgba(3,8,24,.78); backdrop-filter:blur(3px); display:grid; place-items:center;
   padding:max(16px, env(safe-area-inset-top,0px)) max(16px, env(safe-area-inset-right,0px)) max(16px, env(safe-area-inset-bottom,0px)) max(16px, env(safe-area-inset-left,0px));
-  animation:apparait .2s ease}
+  animation:apparait .2s ease; overflow:auto}
 @keyframes apparait{from{opacity:0}}
-.panneau{width:min(100%, 480px); max-height:100%; overflow:auto; background:#f5f1e6; color:#111; border:3px solid #000; box-shadow:0 20px 50px rgba(0,0,0,.6); animation:retourne .45s cubic-bezier(.2,.8,.2,1)}
-@keyframes retourne{from{transform:perspective(900px) rotateY(80deg); opacity:.3}}
-.panneau header{padding:12px 16px; font-family:var(--f-titre); font-size:30px; letter-spacing:.04em; color:#fff; display:flex; justify-content:space-between; align-items:center; border-bottom:3px solid #000}
-.panneau .corps{padding:16px; display:grid; gap:12px}
-.panneau h3{margin:0; font-family:var(--f-ui); font-weight:700; text-transform:uppercase; letter-spacing:.1em; font-size:13px; color:#555}
-.solutions{display:flex; flex-wrap:wrap; gap:6px}
-.sol{font-family:var(--f-ui); font-weight:700; letter-spacing:.05em; text-transform:uppercase; font-size:18px; padding:4px 10px; border:2px solid #111; background:#fff}
-.sol.trouve{background:var(--ok)}
-.sol.origine{background:#ddd; color:#666; text-decoration:line-through}
-.lignes{display:grid; gap:4px; font-family:var(--f-ui); font-size:18px}
-.lignes div{display:flex; justify-content:space-between; gap:12px; border-bottom:1px dashed #bbb; padding-bottom:3px}
+.panneau{width:min(100%, 480px); max-height:100%; overflow:auto; background:var(--ivoire); color:var(--sombre); border-radius:18px; box-shadow:0 2px 0 var(--ivoire-3), 0 24px 60px rgba(0,0,0,.6); animation:retourne .55s cubic-bezier(.2,.8,.2,1)}
+.panneau.large{width:min(100%, 560px)}
+@keyframes retourne{from{transform:perspective(1000px) rotateY(90deg); opacity:.4}}
+.panneau header{display:flex; justify-content:space-between; align-items:center; gap:12px; padding:12px 16px 10px; color:#fff; background:linear-gradient(100deg, var(--a), var(--b)); font-family:var(--f-titre); font-size:28px; letter-spacing:.05em; line-height:1}
+.panneau header .val{background:rgba(0,0,0,.28); padding:5px 11px 3px; border-radius:20px; white-space:nowrap}
+.panneau .corps{padding:16px; display:grid; gap:14px}
+.panneau h3{margin:0; font-family:var(--f-ui); font-weight:800; text-transform:uppercase; letter-spacing:.12em; font-size:13px; color:var(--gris)}
+.panneau p{margin:0}
+.texte-centre{text-align:center; font-family:var(--f-ui); font-weight:600; font-size:19px; line-height:1.25}
+.solutions{display:flex; flex-wrap:wrap; gap:7px}
+.sol{font-family:var(--f-ui); font-weight:800; letter-spacing:.06em; text-transform:uppercase; font-size:18px; padding:5px 12px 4px; border-radius:8px; background:#fff; box-shadow:0 2px 0 var(--ivoire-3), inset 0 0 0 1px rgba(0,0,0,.08)}
+.sol.trouve{background:var(--ok); color:#0d2b0f; box-shadow:0 2px 0 #4f7d1b}
+.sol.origine{background:transparent; color:#9a937f; text-decoration:line-through; box-shadow:inset 0 0 0 1px rgba(0,0,0,.12)}
+.lignes{display:grid; gap:5px; font-family:var(--f-ui); font-size:18px; font-weight:600}
+.lignes div{display:flex; justify-content:space-between; gap:12px; border-bottom:1px dashed var(--ivoire-3); padding-bottom:4px}
 .lignes b{font-variant-numeric:tabular-nums}
-.lignes .total{border:0; font-family:var(--f-titre); font-size:28px; font-weight:400}
-.panneau .suivant{width:100%; font-size:28px; padding:12px; letter-spacing:.05em; min-height:56px}
+.lignes .neg{color:#c0262d}
+.lignes .total{border:0; font-family:var(--f-titre); font-size:30px; font-weight:400; padding-top:2px}
+.duo{display:grid; grid-template-columns:1fr 1fr; gap:12px}
 
-/* ---------- Événement (case spéciale) ---------- */
-.de{width:86px; height:86px; margin:4px auto; background:#fff; border:3px solid #000; border-radius:14px; display:grid; grid-template-columns:repeat(3,1fr); grid-template-rows:repeat(3,1fr); padding:10px; box-shadow:0 6px 0 #000}
-.de i{width:14px; height:14px; border-radius:50%; background:#111; place-self:center; visibility:hidden}
-.de.roule{animation:roule .6s ease-out}
-@keyframes roule{0%{transform:rotate(0) scale(.6)}70%{transform:rotate(380deg) scale(1.08)}100%{transform:rotate(360deg) scale(1)}}
-.evt-case{margin:6px auto 0; padding:14px 22px; font-size:38px; text-align:center; letter-spacing:.04em; line-height:1}
-.evt-case small{display:block; font-size:24px}
-.evt-texte{text-align:center; font-family:var(--f-ui); font-size:19px; margin:0}
+/* dé */
+.de{width:78px; height:78px; margin:0 auto; background:linear-gradient(160deg,#fff,#e9e4d6); border-radius:16px; display:grid; grid-template-columns:repeat(3,1fr); grid-template-rows:repeat(3,1fr); padding:11px; box-shadow:0 5px 0 #b9b19a, 0 12px 20px rgba(0,0,0,.45), inset 0 2px 0 #fff}
+.de i{width:13px; height:13px; border-radius:50%; background:radial-gradient(circle at 35% 35%, #555, #111); place-self:center; visibility:hidden}
+.de.roule{animation:roule .7s ease-out}
+@keyframes roule{0%{transform:rotate(0) scale(.5) translateY(-30px)}60%{transform:rotate(400deg) scale(1.1)}100%{transform:rotate(360deg) scale(1)}}
+.case-speciale{margin:0 auto; padding:16px 26px 12px; text-align:center; font-family:var(--f-titre); font-size:40px; letter-spacing:.05em; line-height:.95; min-width:180px}
+.case-speciale small{display:block; font-size:26px}
 
 /* ---------- Fin de partie ---------- */
-.titre-ecran{font-family:var(--f-titre); font-size:46px; letter-spacing:.03em; margin:8px 0 0; text-align:center; line-height:1}
-.score-final{text-align:center; font-family:var(--f-titre); font-size:clamp(72px, 22vw, 110px); color:var(--jaune); line-height:1; text-shadow:5px 5px 0 #000; font-variant-numeric:tabular-nums}
-.etoiles{display:flex; justify-content:center; gap:10px; font-size:44px; line-height:1}
-.etoiles span{color:#2b3a63; -webkit-text-stroke:2px #000}
-.etoiles span.on{color:var(--jaune); animation:pop .4s backwards}
-.etoiles span.on:nth-child(2){animation-delay:.15s} .etoiles span.on:nth-child(3){animation-delay:.3s}
-@keyframes pop{from{transform:scale(0)}}
-.recap{display:grid; gap:6px}
-.recap-l{display:grid; grid-template-columns:34px 1fr auto; gap:10px; align-items:center; background:rgba(0,0,0,.35); border:2px solid #000; padding:6px 10px 6px 6px; font-family:var(--f-ui); font-size:17px}
-.recap-l .pastille{width:28px; height:28px; display:grid; place-items:center; font-size:17px}
-.recap-l b{font-variant-numeric:tabular-nums; font-weight:700}
+.titre-ecran{font-family:var(--f-titre); font-weight:400; font-size:clamp(40px, 11vw, 56px); letter-spacing:.03em; margin:4px 0 0; text-align:center; line-height:1; text-wrap:balance}
+.sous-titre{text-align:center; color:var(--brume); font-family:var(--f-ui); font-weight:600; font-size:19px; letter-spacing:.03em; margin:0; text-wrap:balance}
+.score-final{display:flex; justify-content:center; align-items:center; gap:14px; font-family:var(--f-titre); font-size:clamp(70px, 21vw, 112px); color:var(--or); line-height:1; text-shadow:0 5px 0 var(--or-o), 0 12px 24px rgba(0,0,0,.5); font-variant-numeric:tabular-nums}
+.etoiles{display:flex; justify-content:center; gap:12px}
+.etoiles svg{width:50px; height:50px}
+.etoiles .on{animation:pop .45s backwards cubic-bezier(.2,.9,.3,1.5)}
+.etoiles .on:nth-child(2){animation-delay:.18s} .etoiles .on:nth-child(3){animation-delay:.36s}
+@keyframes pop{from{transform:scale(0) rotate(-40deg)}}
+.tampon{align-self:center; justify-self:center; font-family:var(--f-titre); font-size:24px; letter-spacing:.08em; color:#1b1400; background:var(--or); padding:6px 16px 3px; border-radius:6px; transform:rotate(-3deg); box-shadow:0 3px 0 var(--or-o); animation:tampon .5s .5s backwards cubic-bezier(.2,.9,.3,1.6)}
+@keyframes tampon{from{transform:rotate(-3deg) scale(2.5); opacity:0}}
+.recap{display:grid; gap:7px}
+.recap-l{display:grid; grid-template-columns:30px 1fr auto; gap:10px; align-items:center; background:rgba(3,10,30,.45); border-radius:10px; padding:6px 12px 6px 6px; font-family:var(--f-ui); font-weight:600; font-size:17px; min-width:0}
+.recap-l > span:nth-child(2){min-width:0; overflow-wrap:anywhere}
+.recap-l .pastille{width:30px; height:30px; display:grid; place-items:center; font-size:15px; border-radius:7px; --lip:2px; font-weight:800}
+.recap-l b{font-variant-numeric:tabular-nums; font-weight:800}
 .recap-l .neg{color:var(--ko)}
-.nouveau-record{text-align:center; font-family:var(--f-ui); font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:#111; background:var(--jaune); border:2px solid #000; padding:6px; transform:rotate(-2deg)}
-.duo{display:grid; grid-template-columns:1fr 1fr; gap:10px}
-.duo .btn-case{font-size:24px; justify-content:center; text-align:center; min-height:60px}
+.recap-l i{color:var(--brume-2)}
 
-/* ---------- Choix entraînement / règles ---------- */
-.choix-niv{display:grid; grid-template-columns:1fr 1fr; gap:10px}
-.choix-niv .btn-case{flex-direction:column; align-items:flex-start; gap:2px; min-height:96px}
-.texte{background:rgba(0,0,0,.35); border:2px solid #000; padding:4px 18px 14px; line-height:1.55; font-size:16px}
-.texte h2{font-family:var(--f-titre); font-weight:400; font-size:28px; letter-spacing:.04em; margin:16px 0 4px; color:var(--jaune)}
-.texte p,.texte li{max-width:62ch}
-.texte ul{padding-left:20px; margin:6px 0}
-.option{display:flex; align-items:center; gap:10px; font-family:var(--f-ui); font-size:18px; justify-content:center}
-.option input{width:22px; height:22px; accent-color:var(--vert-b)}
+/* ---------- Écrans secondaires ---------- */
+.entete-ecran{display:grid; grid-template-columns:44px 1fr 44px; align-items:center; gap:8px}
+.entete-ecran h1{margin:0; text-align:center; font-family:var(--f-titre); font-weight:400; font-size:34px; letter-spacing:.04em; line-height:1}
+.choix-niv{display:grid; grid-template-columns:1fr 1fr; gap:14px}
+.choix-niv .piece{display:flex; flex-direction:column; align-items:flex-start; gap:4px; padding:14px; min-height:118px; text-align:left}
+.choix-niv .nom{font-family:var(--f-titre); font-size:32px; letter-spacing:.03em; line-height:1}
+.choix-niv small{font-family:var(--f-ui); font-weight:700; font-size:15px; opacity:.93}
+.choix-niv .grand{font-family:var(--f-titre); font-size:24px; margin-top:auto; background:rgba(0,0,0,.25); padding:3px 9px 1px; border-radius:14px}
+.interrupteur{display:flex; align-items:center; justify-content:space-between; gap:14px; background:rgba(3,10,30,.45); border-radius:var(--rayon); padding:12px 16px; font-family:var(--f-ui); font-weight:700; font-size:18px; cursor:pointer}
+.interrupteur small{display:block; font-weight:500; color:var(--brume); font-size:15px}
+.interrupteur input{appearance:none; width:52px; height:30px; border-radius:20px; background:#2c3a62; position:relative; cursor:pointer; flex:none; transition:background .2s}
+.interrupteur input::after{content:""; position:absolute; top:3px; left:3px; width:24px; height:24px; border-radius:50%; background:#fff; transition:transform .2s; box-shadow:0 2px 4px rgba(0,0,0,.4)}
+.interrupteur input:checked{background:var(--vert-b)}
+.interrupteur input:checked::after{transform:translateX(22px)}
+.regles{display:grid; gap:12px}
+.regle{background:var(--ivoire); color:var(--sombre); border-radius:14px; padding:4px 18px 14px; box-shadow:0 2px 0 var(--ivoire-3), 0 10px 24px rgba(0,0,0,.35)}
+.regle h2{font-family:var(--f-titre); font-weight:400; font-size:28px; letter-spacing:.04em; margin:14px 0 4px; display:flex; align-items:center; gap:10px}
+.regle h2 i{width:14px; height:14px; border-radius:3px; background:linear-gradient(160deg,var(--b),var(--a)); display:inline-block}
+.regle p, .regle li{max-width:64ch; line-height:1.5}
+.regle ul{padding-left:20px; margin:6px 0}
+.regle p{margin:6px 0}
 
-.toast{position:fixed; left:50%; bottom:calc(24px + env(safe-area-inset-bottom,0px)); transform:translateX(-50%); z-index:30; background:#000; color:#fff; font-family:var(--f-ui); font-weight:600; font-size:17px; padding:10px 16px; border:2px solid var(--jaune); max-width:calc(100% - 32px); text-align:center}
-.gain-vol{position:fixed; z-index:25; pointer-events:none; font-family:var(--f-titre); font-size:44px; color:var(--jaune); text-shadow:3px 3px 0 #000; animation:vol 1.1s ease-out forwards}
-@keyframes vol{from{transform:translate(-50%,0) scale(.6); opacity:0} 20%{opacity:1; transform:translate(-50%,-10px) scale(1.1)} to{transform:translate(-50%,-90px) scale(1); opacity:0}}
-.son{position:absolute; top:calc(12px + env(safe-area-inset-top,0px)); right:max(12px, env(safe-area-inset-right,0px)); font-size:22px; padding:6px; opacity:.8; z-index:2}
-.chargement{margin:auto; font-family:var(--f-ui); color:var(--brume); font-size:20px}
-@media (max-width:380px){ .btn-case{font-size:26px} .actions .act{font-size:15px} }
+.toast{position:fixed; left:50%; bottom:calc(24px + env(safe-area-inset-bottom,0px)); transform:translateX(-50%); z-index:60; background:#05112e; color:#fff; font-family:var(--f-ui); font-weight:700; font-size:17px; padding:11px 18px; border-radius:30px; box-shadow:0 0 0 2px var(--or), 0 10px 24px rgba(0,0,0,.5); max-width:calc(100% - 32px); text-align:center; white-space:pre-line; animation:monte .3s ease}
+@keyframes monte{from{transform:translate(-50%, 20px); opacity:0}}
+.gain-vol{position:fixed; z-index:45; pointer-events:none; font-family:var(--f-titre); font-size:46px; color:var(--or); text-shadow:0 3px 0 var(--or-o), 0 6px 14px rgba(0,0,0,.6); animation:vol 1.2s ease-out forwards}
+@keyframes vol{from{transform:translate(-50%,0) scale(.5); opacity:0} 20%{opacity:1; transform:translate(-50%,-14px) scale(1.15)} to{transform:translate(-50%,-100px) scale(1); opacity:0}}
+#confettis{position:fixed; inset:0; pointer-events:none; z-index:70}
+.chargement{margin:auto; display:grid; gap:18px; justify-items:center; font-family:var(--f-ui); font-weight:600; color:var(--brume); font-size:19px}
+@media (max-width:400px){ .mode .nom{font-size:27px} .mode{min-height:138px} .rond{width:50px; height:50px} .legende-cmd span{width:50px} }
 @media (prefers-reduced-motion:reduce){ *,*::before,*::after{animation-duration:.01ms!important; animation-iteration-count:1!important; transition:none!important} }
 </style>
 </head>
 <body>
-<div class="app" id="app"><p class="chargement">Chargement du dictionnaire…</p></div>
+<div class="app" id="app"><div class="chargement"><div class="logo" style="--taille:64px"><span>LE - QLN</span></div>Chargement du dictionnaire…</div></div>
+<canvas id="confettis" aria-hidden="true"></canvas>
 
 <script>
 "use strict";
 /* =========================================================================
-   Le-QLN — mode solo (Défi, Défi du jour, Entraînement)
+   Le-QLN — socle commun + mode solo (Défi, Défi du jour, Entraînement)
+   Le mode contre l'IA est dans plateau.js
    ========================================================================= */
 const NIVEAUX = {
   v:{cle:"v", nom:"Facile",        classe:"c-vert",  gain:20,  temps:30,  lettres:"4–5 lettres"},
@@ -246,9 +323,8 @@ const NIVEAUX = {
 };
 const PARCOURS_DEFI = ["v","v","v","b","b","b","r","r","n","n"];
 const VIES = 3, INDICES = 2;
-const BONUS_RAPIDITE = 0.25;   // trouvé dans la 1re moitié du temps
-const BONUS_EXTRA = 0.5;       // chaque anagramme supplémentaire
-const CASES_SPECIALES = [      // inspirées du tapis
+const BONUS_RAPIDITE = 0.25, BONUS_EXTRA = 0.5;
+const CASES_SPECIALES = [
   {type:"bonus", titre:"Bonus", montant:40,  classe:"c-violet", texte:"La banque vous verse 40 €."},
   {type:"bonus", titre:"Bonus", montant:75,  classe:"c-violet", texte:"La banque vous verse 75 €."},
   {type:"bonus", titre:"Bonus", montant:100, classe:"c-violet", texte:"La banque vous verse 100 €."},
@@ -260,23 +336,43 @@ const CASES_SPECIALES = [      // inspirées du tapis
 
 /* ---------- Outils ---------- */
 const $ = (s, el=document) => el.querySelector(s);
+const $$ = (s, el=document) => [...el.querySelectorAll(s)];
 const app = $("#app");
 const norm = w => w.normalize("NFD").replace(/[̀-ͯ]/g,"").toUpperCase().replace(/Œ/g,"OE").replace(/Æ/g,"AE");
 const cleTri = w => norm(w).split("").sort().join("");
-const euros = n => (n<0?"−":"") + Math.abs(n).toLocaleString("fr-FR") + " €";
+const euros = n => (n<0?"−":"") + Math.abs(Math.round(n)).toLocaleString("fr-FR") + " €";
 const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-function aleaGraine(seed){ // mulberry32
-  let a = seed >>> 0;
-  return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ t>>>15, t|1); t ^= t + Math.imul(t ^ t>>>7, t|61); return ((t ^ t>>>14) >>> 0) / 4294967296; };
-}
+const pluriel = (n, mot, pl) => n + " " + (n>1 ? (pl || mot+"s") : mot);
+function aleaGraine(seed){ let a = seed >>> 0; return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ t>>>15, t|1); t ^= t + Math.imul(t ^ t>>>7, t|61); return ((t ^ t>>>14) >>> 0) / 4294967296; }; }
 const melanger = (arr, rnd=Math.random) => { const a=[...arr]; for(let i=a.length-1;i>0;i--){const j=Math.floor(rnd()*(i+1)); [a[i],a[j]]=[a[j],a[i]];} return a; };
 const store = {
   get(k, d){ try{ const v = localStorage.getItem("qln:"+k); return v==null ? d : JSON.parse(v); }catch(e){ return d; } },
   set(k, v){ try{ localStorage.setItem("qln:"+k, JSON.stringify(v)); }catch(e){} },
 };
 const aujourdhui = () => { const d=new Date(); return d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate(); };
+const fmtTemps = ms => { const s=Math.ceil(ms/1000); return Math.floor(s/60)+":"+String(s%60).padStart(2,"0"); };
 
-/* ---------- Sons (WebAudio, après interaction) ---------- */
+/* ---------- Icônes (SVG maison) ---------- */
+const ICO = {
+  son:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg>',
+  muet:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor"/><path d="M17 9l5 6M22 9l-5 6"/></svg>',
+  retour:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>',
+  croix:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+  effacer:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5h11v14H9l-6-7z"/><path d="M12.5 9.5l5 5M17.5 9.5l-5 5"/></svg>',
+  melanger:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h3.5c4 0 5 10 9 10H21M3 17h3.5c1.6 0 2.7-1.6 3.6-3.6M14 10.6C14.9 8.6 16 7 17.5 7H21"/><path d="M18 4l3 3-3 3M18 14l3 3-3 3"/></svg>',
+  indice:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2V16h5v-.1c0-.8.4-1.5 1-2A6 6 0 0 0 12 3z"/></svg>',
+  passer:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 5l9 7-9 7zM13 5l9 7-9 7z"/></svg>',
+  escalier:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"><path d="M3 20h5v-5h5v-5h5V5h3"/><path d="M3 20h18"/></svg>',
+  calendrier:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/><path d="M8.5 14.5l2 2 4.5-4.5"/></svg>',
+  robot:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="8" width="16" height="11" rx="3"/><path d="M12 4v4M9 13h.01M15 13h.01M9.5 16.5h5M2 12v3M22 12v3"/><circle cx="12" cy="3.5" r="1" fill="currentColor"/></svg>',
+  cible:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg>',
+  groupe:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.6"/><path d="M16.5 14.1c2.6.2 4.5 2.6 4.5 5.4"/></svg>',
+  livre:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M4 5.5C6.5 4 9.5 4 12 5.5 14.5 4 17.5 4 20 5.5V19c-2.5-1.5-5.5-1.5-8 0-2.5-1.5-5.5-1.5-8 0z"/><path d="M12 5.5V19"/></svg>',
+};
+const etoileSVG = on => `<svg viewBox="0 0 24 24" class="${on?"on":""}"><path d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.3l-5.9 3.3 1.3-6.6-4.9-4.6 6.6-.8z" fill="${on?"#ffcf3a":"#1a2a55"}" stroke="${on?"#a87400":"#000"}" stroke-width="1.4" stroke-linejoin="round"/></svg>`;
+const pionSVG = (couleur, cls="") => `<svg class="pion-svg ${cls}" viewBox="0 0 18 26" aria-hidden="true"><defs><radialGradient id="pg${couleur.slice(1)}" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#fff" stop-opacity=".85"/><stop offset=".35" stop-color="${couleur}"/><stop offset="1" stop-color="${couleur}" stop-opacity=".75"/></radialGradient></defs><ellipse cx="9" cy="23.5" rx="7.5" ry="2.3" fill="#000" opacity=".35"/><path d="M4 23c0-4 2-6 3.2-8.3h3.6C12 17 14 19 14 23z" fill="url(#pg${couleur.slice(1)})" stroke="#000" stroke-width="1.2"/><circle cx="9" cy="9" r="5.2" fill="url(#pg${couleur.slice(1)})" stroke="#000" stroke-width="1.2"/></svg>`;
+
+/* ---------- Sons ---------- */
 const Son = {
   ctx:null, actif: store.get("son", true),
   bip(freqs, dur=.12, type="triangle", vol=.18){
@@ -291,12 +387,44 @@ const Son = {
       }
     }catch(e){}
   },
-  tap(){ this.bip([660],.05,"sine",.08); },
-  ok(){ this.bip([523,659,784,1047],.11); },
-  ko(){ this.bip([220,165],.18,"sawtooth",.12); },
-  tic(){ this.bip([1200],.04,"square",.05); },
-  fin(){ this.bip([392,330,262],.2,"triangle",.15); },
+  tap(){ this.bip([700],.05,"sine",.07); },
+  ok(){ this.bip([523,659,784,1047],.1); },
+  ko(){ this.bip([220,165],.18,"sawtooth",.1); },
+  tic(){ this.bip([1250],.04,"square",.04); },
+  de(){ this.bip([300,420,360,480],.035,"square",.04); },
+  piece(){ this.bip([1320,1760],.07,"sine",.12); },
+  fin(){ this.bip([392,523,659,784],.16,"triangle",.14); },
+  echec(){ this.bip([392,330,262],.2,"triangle",.14); },
 };
+function boutonSon(){ return `<button class="icone-btn" id="b-son" aria-label="${Son.actif?"Couper le son":"Activer le son"}">${Son.actif?ICO.son:ICO.muet}</button>`; }
+function brancherSon(){ const b=$("#b-son"); if(b) b.onclick=()=>{ Son.actif=!Son.actif; store.set("son",Son.actif); b.innerHTML=Son.actif?ICO.son:ICO.muet; b.setAttribute("aria-label", Son.actif?"Couper le son":"Activer le son"); }; }
+
+/* ---------- Effets ---------- */
+function confettis(n=140){
+  if(matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const cv = $("#confettis"), ctx = cv.getContext("2d");
+  cv.width = innerWidth*devicePixelRatio; cv.height = innerHeight*devicePixelRatio; ctx.scale(devicePixelRatio, devicePixelRatio);
+  const coul = ["#8fca42","#62a4ec","#ea3039","#ffcf3a","#7444bd","#fbad38","#ffffff"];
+  const parts = Array.from({length:n}, () => ({x:innerWidth/2 + (Math.random()-.5)*120, y:innerHeight*.35, vx:(Math.random()-.5)*12, vy:-Math.random()*13-4, r:Math.random()*Math.PI, vr:(Math.random()-.5)*.3, w:6+Math.random()*7, h:9+Math.random()*9, c:coul[Math.floor(Math.random()*coul.length)]}));
+  let t = 0;
+  (function anim(){
+    ctx.clearRect(0,0,innerWidth,innerHeight);
+    for(const p of parts){ p.vy += .32; p.vx *= .99; p.x += p.vx; p.y += p.vy; p.r += p.vr;
+      ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.r); ctx.fillStyle=p.c; ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h*Math.abs(Math.cos(p.r*2))); ctx.restore(); }
+    if(++t < 200) requestAnimationFrame(anim); else ctx.clearRect(0,0,innerWidth,innerHeight);
+  })();
+}
+function envolerGain(g, el){
+  const b = (el || $("#reponse") || document.body).getBoundingClientRect();
+  const d = document.createElement("div"); d.className="gain-vol"; d.textContent=(g>0?"+":"")+euros(g);
+  d.style.left = (b.left+b.width/2)+"px"; d.style.top=(b.top)+"px";
+  document.body.appendChild(d); setTimeout(()=>d.remove(), 1300);
+}
+function compterVers(el, de, vers, ms=600){
+  if(!el) return; const t0 = performance.now();
+  (function f(t){ const k=Math.min(1,(t-t0)/ms); const v = de + (vers-de)*(1-Math.pow(1-k,3)); el.textContent = euros(v); if(k<1) requestAnimationFrame(f); })(t0);
+}
+function toast(t, ms=3500){ $$(".toast").forEach(x=>x.remove()); const el=document.createElement("div"); el.className="toast"; el.textContent=t; document.body.appendChild(el); setTimeout(()=>el.remove(), ms); }
 
 /* ---------- Dictionnaire ---------- */
 let DICO = null;
@@ -305,42 +433,249 @@ async function chargerDico(){
   const brut = await r.json();
   DICO = {};
   for(const k of Object.keys(NIVEAUX)){
-    DICO[k] = brut[k].map(g => {
-      // dédoublonnage par forme sans accents (pâte/pâté -> une seule entrée)
-      const vus = new Set(), mots = [];
-      for(const w of g){ const n = norm(w); if(!vus.has(n)){ vus.add(n); mots.push(w); } }
-      return mots;
-    }).filter(g => g.length >= 2);
+    DICO[k] = brut[k].map(g => { const vus = new Set(), mots = []; for(const w of g){ const n = norm(w); if(!vus.has(n)){ vus.add(n); mots.push(w); } } return mots; }).filter(g => g.length >= 2);
   }
 }
 function tirerCarte(niv, rnd, deja){
   const liste = DICO[niv];
-  for(let essai=0; essai<50; essai++){
+  for(let essai=0; essai<60; essai++){
     const g = liste[Math.floor(rnd()*liste.length)];
     const k = cleTri(g[0]);
     if(deja.has(k)) continue;
     deja.add(k);
-    const origine = g[rnd() < .6 ? 0 : 1]; // mot affiché : l'un des deux plus courants
+    const origine = g[rnd() < .6 ? 0 : 1];
     return { niv, origine, mots:g, cle:k };
   }
-  return null;
+  deja.clear(); return tirerCarte(niv, rnd, deja);
+}
+const solutionsDe = c => c.mots.filter(w => norm(w) !== norm(c.origine));
+const chercherMot = (c, prop) => c.mots.find(w => norm(w) === prop && norm(w) !== norm(c.origine));
+
+/* ---------- Composants partagés ---------- */
+function largeurTuile(n, max=56, dispo){
+  dispo = dispo || Math.min(window.innerWidth, 600) - 64;
+  return Math.max(26, Math.min(max, Math.floor((dispo - (n-1)*7) / n)));
+}
+function carteHTML(c, {consigne="Trouvez une anagramme de", indic="", chrono=false}={}){
+  const N = NIVEAUX[c.niv];
+  return `<div class="carte ${N.classe}">
+    <div class="carte-bande"><span class="niv">${N.nom}</span>${chrono ? `<div class="chrono" id="chrono" role="timer"><svg viewBox="0 0 60 60"><circle class="fond" cx="30" cy="30" r="26"/><circle class="arc" cx="30" cy="30" r="26" stroke-dasharray="163.4" stroke-dashoffset="0"/></svg><b id="temps"></b></div>` : ""}<span class="val">${N.gain}€</span></div>
+    <div class="carte-corps">
+      <div class="consigne">${consigne}</div>
+      <div class="mot">${norm(c.origine).split("").map(l=>`<span class="t piece ${N.classe}">${l}</span>`).join("")}</div>
+      <div class="indic" id="indic">${indic}</div>
+    </div>
+  </div>`;
+}
+function majChrono(reste, duree){
+  const arc = $("#chrono .arc"), t = $("#temps");
+  if(arc) arc.style.strokeDashoffset = 163.4 * (1 - reste/duree);
+  if(t) t.textContent = fmtTemps(reste);
+  if(reste <= 5000) $("#chrono")?.classList.add("urgent");
 }
 
-/* ---------- État ---------- */
-let P = null;          // partie en cours
-let minuteur = null;
+/* Composeur : tuiles à toucher + clavier, utilisé par le solo et le plateau */
+let composeurActif = null;
+function Composeur(racine, carte, opts={}){
+  const N = NIVEAUX[carte.niv];
+  const lettresMot = norm(carte.origine).split("");
+  let lettres = melanger(lettresMot.map((l,i)=>({l,i})));
+  if(lettres.map(o=>o.l).join("") === lettresMot.join("") && lettres.length>1) lettres.reverse();
+  let saisie = [], bloque = false;
+  const rep = $(".reponse", racine), res = $(".reserve", racine);
+  const self = {
+    get complet(){ return saisie.length === lettres.length; },
+    get mot(){ return saisie.map(k=>lettres[k].l).join(""); },
+    get taille(){ return lettres.length; },
+    rendre(etat){
+      res.innerHTML = lettres.map((o,k)=>`<button class="lettre piece ${N.classe} ${saisie.includes(k)?"utilisee":""}" data-k="${k}" aria-label="Lettre ${o.l}" ${bloque?"disabled":""}>${o.l}</button>`).join("");
+      $$(".lettre", res).forEach(b => b.onclick = () => self.ajouter(+b.dataset.k));
+      rep.className = "reponse" + (etat ? " "+etat : "");
+      rep.innerHTML = lettres.map((_,i)=>{ const k=saisie[i]; return `<span class="slot ${k!=null?"plein":""}">${k!=null?lettres[k].l:""}</span>`; }).join("");
+    },
+    ajouter(k){
+      if(bloque || saisie.includes(k) || self.complet) return;
+      saisie.push(k); Son.tap(); self.rendre(); opts.onChange && opts.onChange();
+      if(self.complet && opts.onComplet) setTimeout(()=>opts.onComplet(self.mot), 140);
+    },
+    lettre(l){
+      const k = lettres.findIndex((o,i)=>o.l===l && !saisie.includes(i));
+      if(k>=0) self.ajouter(k); else { self.rendre("erreur"); setTimeout(()=>self.rendre(), 400); }
+    },
+    effacer(){ if(bloque) return; saisie.pop(); self.rendre(); },
+    vider(){ saisie = []; self.rendre(); },
+    melanger(){ if(bloque) return; const avant = saisie.map(k=>lettres[k]); lettres = melanger(lettres); saisie = avant.map(o=>lettres.indexOf(o)); self.rendre(); },
+    imposer(l){ saisie = []; const k = lettres.findIndex(o=>o.l===l); if(k>=0) saisie.push(k); self.rendre(); },
+    marquer(etat){ self.rendre(etat); },
+    bloquer(v){ bloque = v; self.rendre(); },
+    activer(){ composeurActif = self; },
+    valider(){ opts.onValider && opts.onValider(); },
+  };
+  self.rendre(); self.activer();
+  return self;
+}
+document.addEventListener("keydown", e => {
+  const c = composeurActif;
+  if(!c || e.ctrlKey || e.metaKey || e.altKey) return;
+  if(!document.body.contains($(".reserve"))) return;
+  if(e.target.matches("input, select, textarea")) return;
+  if(e.key==="Enter"){ e.preventDefault(); return c.valider(); }
+  if(e.key==="Backspace"){ e.preventDefault(); return c.effacer(); }
+  if(e.key==="Escape"){ return c.vider(); }
+  if(e.key===" "){ e.preventDefault(); return c.melanger(); }
+  const l = norm(e.key); if(/^[A-Z]$/.test(l)) c.lettre(l);
+});
 
+/* Panneau générique (voile + carte ivoire) */
+function panneau({classe="c-noir", titre, valeur="", corps, large=false}){
+  const v = document.createElement("div"); v.className = "voile";
+  v.innerHTML = `<div class="panneau ${large?"large":""}" role="dialog" aria-modal="true" aria-label="${esc(titre)}">
+    <header class="${classe}"><span>${titre}</span>${valeur?`<span class="val">${valeur}</span>`:""}</header>
+    <div class="corps">${corps}</div></div>`;
+  document.body.appendChild(v);
+  return v;
+}
+const FACES = {1:[4],2:[0,8],3:[0,4,8],4:[0,2,6,8],5:[0,2,4,6,8],6:[0,2,3,5,6,8]};
+function afficherDe(el, v){ $$("i", el).forEach((p,i)=>p.style.visibility = FACES[v].includes(i)?"visible":"hidden"); }
+function lancerDeAnime(el, valeur, ms=640){
+  return new Promise(res => {
+    el.classList.remove("roule"); void el.offsetWidth; el.classList.add("roule");
+    let n = 0; const total = Math.max(4, Math.round(ms/80));
+    const it = setInterval(()=>{ afficherDe(el, n<total-1 ? 1+Math.floor(Math.random()*6) : valeur); Son.de(); if(++n>=total){ clearInterval(it); res(valeur); } }, 80);
+  });
+}
+const deHTML = (id="de") => `<div class="de" id="${id}">${"<i></i>".repeat(9)}</div>`;
+
+/* =========================================================================
+   Accueil
+   ========================================================================= */
+const VITRINE = [["CHIEN","NICHE"],["ECRAN","NACRE"],["SOURIS","ROUSSI"],["ORANGE","ONAGRE"],["POTIERS","RIPOSTE"],["ATTENTION","TENTATION"],["POULE","LOUPE"],["LIMACE","MALICE"]];
+let vitrineTimer = null;
+function arreterVitrine(){ clearTimeout(vitrineTimer); vitrineTimer = null; }
+function demarrerVitrine(){
+  arreterVitrine();
+  const zone = $("#vitrine"), leg = $("#vitrine-legende"); if(!zone) return;
+  let i = Math.floor(Math.random()*VITRINE.length);
+  const niveauDe = n => n<=5?"c-vert":n<=7?"c-bleu":n<=9?"c-rouge":"c-noir";
+  function poser(){
+    const [a,b] = VITRINE[i % VITRINE.length]; i++;
+    const n = a.length, w = zone.clientWidth || 300;
+    const tw = Math.max(28, Math.min(54, Math.floor((w - (n-1)*7)/n))), gap = 7;
+    const x0 = (w - (n*tw + (n-1)*gap))/2;
+    zone.style.setProperty("--tw", tw+"px");
+    zone.innerHTML = a.split("").map((l,k)=>`<span class="tuile-v piece ${niveauDe(n)} entre" style="--x:${x0+k*(tw+gap)}px; animation-delay:${k*45}ms">${l}</span>`).join("");
+    leg.innerHTML = `<b>${a}</b>`;
+    // permutation a -> b (gestion des lettres en double)
+    const pris = new Set(), cible = a.split("").map(l => { for(let j=0;j<b.length;j++){ if(b[j]===l && !pris.has(j)){ pris.add(j); return j; } } return 0; });
+    vitrineTimer = setTimeout(() => {
+      if(!document.body.contains(zone)) return;
+      $$(".tuile-v", zone).forEach((t,k)=>{ t.classList.remove("entre"); if(cible[k]!==k) t.classList.add("saute"); t.style.setProperty("--x", (x0+cible[k]*(tw+gap))+"px"); });
+      leg.innerHTML = `${a} <span aria-hidden="true">⇄</span> <b>${b}</b>`;
+      vitrineTimer = setTimeout(() => { if(document.body.contains(zone)) poser(); }, 2600);
+    }, 1700);
+  }
+  poser();
+}
+
+function ecranAccueil(){
+  if(window.PlateauIA) PlateauIA.stop();
+  arreterMinuteur(); P = null; composeurActif = null;
+  app.classList.remove("large");
+  const rec = store.get("records", {defi:0, jour:{}});
+  const jourFait = rec.jour && rec.jour[aujourdhui()];
+  const vict = store.get("victoiresIA", 0);
+  const d = new Date(), dateCourte = d.toLocaleDateString("fr-FR", {day:"numeric", month:"short"});
+  app.innerHTML = `
+  <section class="ecran">
+    <div class="barre-haut">${boutonSon()}<button class="icone-btn" id="b-regles-h" aria-label="Règles du jeu">${ICO.livre}</button></div>
+    <div class="heros">
+      <div class="logo flotte"><span>LE - QLN</span></div>
+      <div class="vitrine" id="vitrine" aria-hidden="true"></div>
+      <div class="vitrine-legende" id="vitrine-legende" aria-hidden="true"></div>
+    </div>
+    <div class="modes">
+      <button class="mode piece c-vert" id="b-defi"><span class="ico">${ICO.escalier}</span><span><span class="nom">Le Défi</span><span class="desc">10 cartes du vert au noir, 3 vies</span></span></button>
+      <button class="mode piece c-rouge" id="b-ia"><span class="ico">${ICO.robot}</span><span><span class="nom">Contre l'IA</span><span class="desc">Le plateau complet, enchères et prison</span></span></button>
+      <button class="mode piece c-bleu" id="b-jour"><span class="etiquette">${dateCourte}</span><span class="ico">${ICO.calendrier}</span><span><span class="nom">Défi du jour</span><span class="desc">${jourFait!=null ? "Fait : "+euros(jourFait) : "Les mêmes cartes pour tous"}</span></span></button>
+      <button class="mode piece c-noir" id="b-entr"><span class="ico">${ICO.cible}</span><span><span class="nom">Entraînement</span><span class="desc">Votre couleur, sans pression</span></span></button>
+    </div>
+    <div class="bientot">${ICO.groupe.replace('<svg','<svg width="20" height="20"')} Multijoueur de 2 à 6 joueurs : bientôt</div>
+    <div class="stats">
+      <div class="stat"><span>Record Défi</span><b>${euros(rec.defi||0)}</b></div>
+      <div class="stat"><span>Défi du jour</span><b>${jourFait!=null ? euros(jourFait) : "—"}</b></div>
+      <div class="stat"><span>Victoires IA</span><b>${vict}</b></div>
+    </div>
+    <div class="bareme" aria-label="Gains et temps par couleur">
+      ${Object.values(NIVEAUX).map(n=>`<div class="piece ${n.classe}"><b>${n.gain}€</b><small>${n.temps<60?n.temps+" s":(n.temps/60)+" min"}</small></div>`).join("")}
+    </div>
+    <div class="pied"><button class="bouton-plat" id="b-regles">Règles du jeu</button><button class="bouton-plat" id="b-install" hidden>Installer l'appli</button></div>
+    <p class="credit">Dictionnaire construit à partir de Lexique 3.83 (licence CC BY-SA 4.0).</p>
+  </section>`;
+  $("#b-defi").onclick = () => nouvellePartie("defi");
+  $("#b-jour").onclick = () => nouvellePartie("jour");
+  $("#b-entr").onclick = ecranEntrainement;
+  $("#b-ia").onclick = () => PlateauIA.config();
+  $("#b-regles").onclick = $("#b-regles-h").onclick = ecranRegles;
+  brancherSon();
+  if(installEvt){ const b=$("#b-install"); b.hidden=false; b.onclick=()=>{ installEvt.prompt(); installEvt=null; b.hidden=true; }; }
+  demarrerVitrine();
+}
+
+function ecranEntrainement(){
+  arreterVitrine();
+  const chrono = store.get("chronoEntr", false);
+  app.innerHTML = `
+  <section class="ecran">
+    <div class="entete-ecran"><button class="icone-btn" id="b-retour" aria-label="Retour">${ICO.retour}</button><h1>Entraînement</h1><span></span></div>
+    <p class="sous-titre">Choisissez une couleur de carte.</p>
+    <div class="choix-niv">
+      ${Object.values(NIVEAUX).map(n=>`<button class="piece ${n.classe}" data-niv="${n.cle}"><span class="nom">${n.nom}</span><small>${n.lettres} · ${DICO[n.cle].length} cartes</small><span class="grand">${n.gain}€</span></button>`).join("")}
+    </div>
+    <label class="interrupteur" for="opt-chrono"><span>Jouer avec le sablier<small>Temps du tapis : 30 s à 3 min selon la couleur</small></span><input type="checkbox" id="opt-chrono" ${chrono?"checked":""}></label>
+  </section>`;
+  $("#b-retour").onclick = ecranAccueil;
+  $("#opt-chrono").onchange = e => store.set("chronoEntr", e.target.checked);
+  $$("[data-niv]").forEach(b => b.onclick = () => nouvellePartie("entrainement", b.dataset.niv));
+}
+
+function ecranRegles(){
+  arreterVitrine();
+  app.innerHTML = `
+  <section class="ecran">
+    <div class="entete-ecran"><button class="icone-btn" id="b-retour" aria-label="Retour">${ICO.retour}</button><h1>Règles du jeu</h1><span></span></div>
+    <div class="regles">
+      <div class="regle"><h2>Le principe</h2>
+        <p>On vous montre un mot. Trouvez un autre mot français qui utilise exactement les mêmes lettres avant la fin du sablier. Les accents ne comptent pas : PÂTE donne TAPE.</p>
+        <p>Mots acceptés : noms communs, adjectifs, verbes à l'infinitif, participes passés et présents. Les verbes conjugués et les noms propres sont refusés.</p></div>
+      <div class="regle"><h2>Les couleurs</h2><ul>
+        <li><b>Vert</b> : 4–5 lettres, 20 €, 30 secondes</li><li><b>Bleu</b> : 6–7 lettres, 50 €, 1 minute</li>
+        <li><b>Rouge</b> : 8–9 lettres, 100 €, 2 minutes</li><li><b>Noir</b> : 10 lettres et plus, 200 €, 3 minutes</li></ul></div>
+      <div class="regle"><h2>Contre l'IA</h2>
+        <p>Le tapis Le-QLN complet, de 2 à 6 joueurs. Lancez le dé, avancez, et résolvez la carte de la couleur de la case. Réussite : vous encaissez et vous rejouez. Échec : les autres joueurs peuvent enchérir pour racheter la carte.</p>
+        <p>Cases CD : vous choisissez votre chemin. Bonus et Malus : la banque vous verse ou vous prend le montant. Passe : vous attendez le tour suivant. Retour départ : retour sur la ligne de départ. Prison : payez la caution, faites-vous libérer par un joueur (qui touchera vos gains des 2 tours suivants) ou attendez 2 tours.</p>
+        <p>L'arrivée demande un dé au moins égal au nombre de cases restantes et rapporte un bonus selon votre ordre d'arrivée (+100 € à −100 €). Le gagnant est le plus riche, pas le premier arrivé. Les gains des adversaires restent cachés jusqu'à la fin.</p></div>
+      <div class="regle"><h2>Le Défi</h2>
+        <p>Dix cartes de difficulté croissante et trois vies. Chaque carte non résolue coûte une vie. Entre deux cartes, le dé peut vous envoyer sur une case spéciale du tapis.</p>
+        <ul><li>Rapidité : +25 % si vous trouvez dans la première moitié du temps.</li>
+        <li>Chasse aux anagrammes : une fois la carte gagnée, le sablier continue ; chaque anagramme supplémentaire rapporte +50 % du gain.</li>
+        <li>Indice : révèle la première lettre d'une solution, mais divise le gain par deux. Deux par partie.</li></ul></div>
+      <div class="regle"><h2>Au clavier</h2><p>Tapez les lettres, <b>Entrée</b> pour valider, <b>Retour arrière</b> pour effacer, <b>Espace</b> pour mélanger.</p></div>
+    </div>
+  </section>`;
+  $("#b-retour").onclick = ecranAccueil;
+}
+
+/* =========================================================================
+   Solo
+   ========================================================================= */
+let P = null, minuteur = null;
 function nouvellePartie(mode, nivEntrainement){
+  arreterVitrine();
   const quotidien = mode === "jour";
   const rnd = quotidien ? aleaGraine(aujourdhui()*7 + 13) : Math.random;
-  P = {
-    mode, rnd, nivEntrainement,
-    parcours: mode==="entrainement" ? null : PARCOURS_DEFI,
+  P = { mode, rnd, nivEntrainement, parcours: mode==="entrainement" ? null : PARCOURS_DEFI,
     chrono: mode==="entrainement" ? store.get("chronoEntr", false) : true,
-    manche: 0, banque: 0, vies: VIES, indices: INDICES,
-    deja: new Set(), historique: [], carte:null,
-  };
-  // les cases spéciales du parcours sont tirées d'avance (identiques pour tous au Défi du jour)
+    manche:0, banque:0, vies:VIES, indices:INDICES, deja:new Set(), historique:[], carte:null };
   P.evenements = {};
   if(P.parcours){
     for(let i=1;i<P.parcours.length;i++){ if(rnd() < .28) P.evenements[i] = Math.floor(rnd()*CASES_SPECIALES.length); }
@@ -348,257 +683,103 @@ function nouvellePartie(mode, nivEntrainement){
   }
   lancerManche();
 }
-
 function lancerManche(){
   const niv = P.parcours ? P.parcours[P.manche] : P.nivEntrainement;
-  const carte = P.parcours ? P.cartes[P.manche] : tirerCarte(niv, P.rnd, P.deja);
-  if(!carte){ P.deja.clear(); return lancerManche(); }
-  P.carte = carte;
-  const lettres = norm(carte.origine).split("");
-  let ordre = melanger(lettres.map((l,i)=>({l,i})), Math.random);
-  // éviter que l'ordre mélangé reproduise le mot affiché
-  if(ordre.map(o=>o.l).join("") === lettres.join("") && lettres.length>1) ordre.reverse();
-  P.m = {
-    lettres: ordre, saisie: [], trouves: [], indice: false, debut: performance.now(),
-    duree: NIVEAUX[niv].temps*1000, reste: NIVEAUX[niv].temps*1000, gain: 0, premierA: null, fini:false,
-  };
+  P.carte = P.parcours ? P.cartes[P.manche] : tirerCarte(niv, P.rnd, P.deja);
+  P.m = { trouves:[], indice:false, debut:performance.now(), duree:NIVEAUX[niv].temps*1000, reste:NIVEAUX[niv].temps*1000, gain:0, premierA:null, fini:false };
   ecranJeu();
   if(P.chrono) demarrerMinuteur();
 }
-
-/* ---------- Écran d'accueil ---------- */
-function ecranAccueil(){
-  arreterMinuteur(); P = null;
-  const rec = store.get("records", {defi:0, jour:{}});
-  const jourFait = rec.jour && rec.jour[aujourdhui()];
-  app.innerHTML = `
-  <section class="ecran">
-    ${boutonSon()}
-    <div class="logo"><span>LE - QLN</span></div>
-    <p class="accroche">Une carte, un mot, un sablier. Trouvez l'anagramme.</p>
-    <div class="tableau" aria-label="Gains et temps par niveau">
-      <div class="entete">Facile</div><div class="entete">Intermédiaire</div><div class="entete">Difficile</div><div class="entete">Expert</div>
-      <div class="case c-vert">20€</div><div class="case c-bleu">50€</div><div class="case c-rouge">100€</div><div class="case c-noir">200€</div>
-      <div class="case c-vert">30 s</div><div class="case c-bleu">1 min</div><div class="case c-rouge">2 min</div><div class="case c-noir">3 min</div>
-    </div>
-    <div class="menu">
-      <button class="case c-vert btn-case" id="b-defi"><span>Le Défi<small>10 cartes, du vert au noir · 3 vies</small></span><span class="fleche">→</span></button>
-      <button class="case c-bleu btn-case" id="b-jour"><span>Défi du jour<small>${jourFait ? "Fait aujourd'hui : "+euros(jourFait)+" · rejouer pour le plaisir" : "Les mêmes cartes pour tous aujourd'hui"}</small></span><span class="fleche">→</span></button>
-      <button class="case c-rouge btn-case" id="b-entr"><span>Entraînement<small>Choisissez votre couleur, sans pression</small></span><span class="fleche">→</span></button>
-      <button class="case c-noir btn-case" disabled><span>Contre l'IA<small>Le plateau complet, enchères comprises</small></span><span class="badge">Bientôt</span></button>
-      <button class="case c-noir btn-case" disabled><span>Multijoueur<small>De 2 à 6 joueurs</small></span><span class="badge">Bientôt</span></button>
-    </div>
-    <div class="records">
-      <div class="record"><span>Record du Défi</span><b>${euros(rec.defi||0)}</b></div>
-      <div class="record"><span>Défi du jour</span><b>${jourFait ? euros(jourFait) : "—"}</b></div>
-    </div>
-    <div class="liens"><button class="lien" id="b-regles">Règles du jeu</button><button class="lien" id="b-install" hidden>Installer l'appli</button></div>
-  </section>`;
-  $("#b-defi").onclick = () => nouvellePartie("defi");
-  $("#b-jour").onclick = () => nouvellePartie("jour");
-  $("#b-entr").onclick = ecranEntrainement;
-  $("#b-regles").onclick = ecranRegles;
-  brancherSon();
-  if(installEvt){ const b=$("#b-install"); b.hidden=false; b.onclick=async()=>{ installEvt.prompt(); installEvt=null; b.hidden=true; }; }
-}
-function boutonSon(){ return `<button class="son" id="b-son" aria-label="${Son.actif?"Couper le son":"Activer le son"}">${Son.actif?"🔊":"🔇"}</button>`; }
-function brancherSon(){ const b=$("#b-son"); if(b) b.onclick=()=>{ Son.actif=!Son.actif; store.set("son",Son.actif); b.textContent=Son.actif?"🔊":"🔇"; b.setAttribute("aria-label", Son.actif?"Couper le son":"Activer le son"); }; }
-
-function ecranEntrainement(){
-  const chrono = store.get("chronoEntr", false);
-  app.innerHTML = `
-  <section class="ecran">
-    <div class="barre"><button class="quitter" id="b-retour" aria-label="Retour">←</button><span class="manche">Entraînement</span><span></span></div>
-    <h1 class="titre-ecran">Choisissez une couleur</h1>
-    <div class="choix-niv">
-      ${Object.values(NIVEAUX).map(n=>`<button class="case ${n.classe} btn-case" data-niv="${n.cle}">${n.nom}<small>${n.lettres} · ${DICO[n.cle].length} cartes</small></button>`).join("")}
-    </div>
-    <label class="option"><input type="checkbox" id="opt-chrono" ${chrono?"checked":""}> Jouer avec le sablier</label>
-  </section>`;
-  $("#b-retour").onclick = ecranAccueil;
-  $("#opt-chrono").onchange = e => store.set("chronoEntr", e.target.checked);
-  app.querySelectorAll("[data-niv]").forEach(b => b.onclick = () => nouvellePartie("entrainement", b.dataset.niv));
-}
-
-function ecranRegles(){
-  app.innerHTML = `
-  <section class="ecran">
-    <div class="barre"><button class="quitter" id="b-retour" aria-label="Retour">←</button><span class="manche">Règles</span><span></span></div>
-    <div class="texte">
-      <h2>Le principe</h2>
-      <p>On vous montre un mot. Trouvez un autre mot français qui utilise exactement les mêmes lettres avant la fin du sablier. Les accents ne comptent pas : PÂTE donne TAPE.</p>
-      <p>Mots acceptés : noms communs, adjectifs, verbes à l'infinitif, participes passés et présents. Les verbes conjugués et les noms propres sont refusés.</p>
-      <h2>Les couleurs</h2>
-      <ul>
-        <li><b>Vert</b> : 4–5 lettres, 20 €, 30 secondes</li>
-        <li><b>Bleu</b> : 6–7 lettres, 50 €, 1 minute</li>
-        <li><b>Rouge</b> : 8–9 lettres, 100 €, 2 minutes</li>
-        <li><b>Noir</b> : 10 lettres et plus, 200 €, 3 minutes</li>
-      </ul>
-      <h2>Le Défi</h2>
-      <p>Dix cartes de difficulté croissante et trois vies. Chaque carte non résolue coûte une vie. Entre deux cartes, le dé peut vous envoyer sur une case spéciale du tapis : Bonus, Malus, Passe ou Prison.</p>
-      <h2>Les bonus</h2>
-      <ul>
-        <li>Rapidité : +25 % si vous trouvez dans la première moitié du temps.</li>
-        <li>Chasse aux anagrammes : une fois la carte gagnée, le sablier continue. Chaque anagramme supplémentaire rapporte +50 % du gain de la carte.</li>
-        <li>Indice : révèle la première lettre d'une solution, mais divise le gain de la carte par deux. Deux indices par partie.</li>
-      </ul>
-      <h2>Le Défi du jour</h2>
-      <p>Mêmes cartes et mêmes cases spéciales pour tous les joueurs, une fois par jour. Partagez votre score.</p>
-      <h2>Au clavier</h2>
-      <p>Tapez les lettres, <b>Entrée</b> pour valider, <b>Retour arrière</b> pour effacer, <b>Espace</b> pour mélanger.</p>
-    </div>
-  </section>`;
-  $("#b-retour").onclick = ecranAccueil;
-}
-
-/* ---------- Écran de jeu ---------- */
-function largeurTuile(n){
-  const dispo = Math.min(window.innerWidth, 560) - 32;
-  return Math.max(26, Math.min(54, Math.floor((dispo - (n-1)*6) / n)));
-}
 function ecranJeu(){
-  const c = P.carte, N = NIVEAUX[c.niv], n = norm(c.origine).length;
-  const nbSol = c.mots.length - 1;
-  const titreManche = P.parcours ? `Carte ${P.manche+1}/${P.parcours.length}` : `Entraînement · ${P.historique.length+1}`;
+  const c = P.carte, n = norm(c.origine).length, nbSol = solutionsDe(c).length;
+  const piste = P.parcours ? `<div class="piste">${P.parcours.map((nv,i)=>{ const h=P.historique.filter(x=>!x.special)[i]; return `<i class="${NIVEAUX[nv].classe} ${h?(h.reussi?"fait":"rate"):(i===P.manche?"encours":"")}"></i>`; }).join("")}</div>` : "";
   app.innerHTML = `
   <section class="ecran" style="--tw:${largeurTuile(n)}px">
-    <div class="barre">
-      <button class="quitter" id="b-quitter" aria-label="Quitter la partie">✕</button>
-      <span class="manche">${titreManche}</span>
-      ${P.parcours ? `<span class="vies" aria-label="${P.vies} vies">${Array.from({length:VIES},(_,i)=>`<i class="vie ${i>=P.vies?"perdue":""}"></i>`).join("")}</span>` : ""}
-      <span class="banque" id="banque">${euros(P.banque)}</span>
+    <div class="hud">
+      <button class="icone-btn" id="b-quitter" aria-label="Quitter la partie">${ICO.croix}</button>
+      <div class="hud-centre"><span class="hud-titre">${P.parcours ? `Carte ${P.manche+1} sur ${P.parcours.length}` : `Entraînement · carte ${P.historique.length+1}`}</span>${piste}</div>
+      <div class="banque"><span class="piece-or">€</span><b id="banque">${euros(P.banque)}</b></div>
     </div>
-    <div class="niveau case ${N.classe}"><span class="nom">${N.nom}</span><span class="gain">${N.gain}€</span></div>
-    ${P.chrono ? `<div class="sablier ${N.classe}" id="sablier"><i></i></div><div class="temps"><span>Sablier</span><b id="temps">${fmtTemps(P.m.reste)}</b></div>` : ""}
-    <div class="carte">
-      <div class="etiquette">Trouvez une anagramme de</div>
-      <div class="mot">${norm(c.origine).split("").map(l=>`<span class="t case ${N.classe}">${l}</span>`).join("")}</div>
-      <div class="compteur" id="compteur">${nbSol} anagramme${nbSol>1?"s":""} à trouver</div>
+    ${P.parcours ? `<div class="vies" aria-label="${pluriel(P.vies,"vie")}" style="justify-content:center">${Array.from({length:VIES},(_,i)=>pionSVG("#ffcf3a", i>=P.vies?"perdue":"")).join("")}</div>` : ""}
+    <div class="table-carte">${carteHTML(c, {chrono:P.chrono, indic:`<b>${pluriel(nbSol,"anagramme")}</b> à trouver`})}</div>
+    <div id="compo">
+      <div class="reponse" id="reponse" aria-live="polite"></div>
+      <div class="message" id="message" role="status"></div>
+      <div class="reserve" id="reserve"></div>
     </div>
-    <div class="reponse" id="reponse" aria-live="polite"></div>
-    <div class="message" id="message" role="status"></div>
-    <div class="reserve" id="reserve"></div>
-    <div class="actions">
-      <button class="act" id="b-effacer"><span class="ico">⌫</span>Effacer</button>
-      <button class="act" id="b-melanger"><span class="ico">⟳</span>Mélanger</button>
-      <button class="act" id="b-indice"><span class="ico">?</span>Indice${P.parcours?` (${P.indices})`:""}</button>
-      <button class="act" id="b-passer"><span class="ico">⏭</span>${P.m.trouves.length?"Suivante":"Passer"}</button>
-      <button class="valider case c-jaune" id="b-valider">Valider</button>
+    <div class="commandes">
+      <button class="rond piece c-noir" id="b-effacer" aria-label="Effacer">${ICO.effacer}</button>
+      <button class="rond piece c-noir" id="b-melanger" aria-label="Mélanger">${ICO.melanger}</button>
+      <button class="bouton piece c-jaune" id="b-valider">Valider</button>
+      <button class="rond piece c-violet" id="b-indice" aria-label="Indice">${ICO.indice}${P.parcours?`<small>${P.indices}</small>`:""}</button>
+      <button class="rond piece c-noir" id="b-passer" aria-label="Passer la carte">${ICO.passer}</button>
     </div>
+    <div class="legende-cmd" aria-hidden="true"><span>Effacer</span><span>Mélanger</span><span></span><span>Indice</span><span id="leg-passer">Passer</span></div>
     <div class="trouves" id="trouves"></div>
   </section>`;
+  P.compo = Composeur($("#compo"), c, { onComplet: () => valider(), onValider: () => valider(), onChange: () => message("") });
   $("#b-quitter").onclick = confirmerQuitter;
-  $("#b-effacer").onclick = () => { effacer(); };
-  $("#b-melanger").onclick = () => { melangerReserve(); };
+  $("#b-effacer").onclick = () => P.compo.effacer();
+  $("#b-melanger").onclick = () => P.compo.melanger();
   $("#b-indice").onclick = donnerIndice;
   $("#b-passer").onclick = () => finManche(P.m.trouves.length ? "fini" : "passe");
   $("#b-valider").onclick = valider;
-  majReserve(); majReponse(); majTrouves(); majIndice();
-}
-function fmtTemps(ms){ const s=Math.ceil(ms/1000); return Math.floor(s/60)+":"+String(s%60).padStart(2,"0"); }
-
-function majReserve(){
-  const r = $("#reserve"); if(!r) return;
-  const N = NIVEAUX[P.carte.niv];
-  const utilises = new Set(P.m.saisie);
-  r.innerHTML = P.m.lettres.map((o,k)=>`<button class="lettre case ${N.classe} ${utilises.has(k)?"utilisee":""}" data-k="${k}" aria-label="Lettre ${o.l}">${o.l}</button>`).join("");
-  r.querySelectorAll(".lettre").forEach(b => b.onclick = () => ajouter(+b.dataset.k));
-}
-function majReponse(etat){
-  const r = $("#reponse"); if(!r) return;
-  const n = P.m.lettres.length;
-  r.className = "reponse" + (etat ? " "+etat : "");
-  r.innerHTML = Array.from({length:n},(_,i)=>{ const k=P.m.saisie[i]; return `<span class="slot ${k!=null?"plein":""}">${k!=null?P.m.lettres[k].l:""}</span>`; }).join("");
+  if(P.chrono) majChrono(P.m.reste, P.m.duree);
+  majIndice();
 }
 function majTrouves(){
-  const t = $("#trouves"); if(!t) return;
-  t.innerHTML = P.m.trouves.map(w=>`<span class="chip">${esc(w)}</span>`).join("");
-  const c = $("#compteur"); const reste = P.carte.mots.length - 1 - P.m.trouves.length;
-  if(c) c.textContent = P.m.trouves.length ? (reste>0 ? `Trouvé ! Encore ${reste} anagramme${reste>1?"s":""} en bonus` : "Toutes les anagrammes trouvées !") : c.textContent;
-  const bp = $("#b-passer"); if(bp && P.m.trouves.length) bp.innerHTML = `<span class="ico">⏭</span>Suivante`;
+  $("#trouves").innerHTML = P.m.trouves.map(w=>`<span class="chip">${esc(w)}</span>`).join("");
+  const reste = solutionsDe(P.carte).length - P.m.trouves.length;
+  $("#indic").innerHTML = reste>0 ? `Gagnée ! Encore <b>${pluriel(reste,"anagramme")}</b> en bonus` : "<b>Toutes les anagrammes trouvées !</b>";
+  $("#leg-passer").textContent = "Suivante";
 }
 function majIndice(){ const b=$("#b-indice"); if(b) b.disabled = P.m.indice || P.m.trouves.length>0 || (P.parcours && P.indices<=0); }
 function message(txt, cls=""){ const m=$("#message"); if(m){ m.textContent=txt; m.className="message "+cls; } }
-
-function ajouter(k){
-  if(P.m.fini || P.m.saisie.includes(k) || P.m.saisie.length>=P.m.lettres.length) return;
-  P.m.saisie.push(k); Son.tap(); majReserve(); majReponse(); message("");
-  if(P.m.saisie.length === P.m.lettres.length) setTimeout(valider, 120);
-}
-function effacer(tout){ if(P.m.fini) return; if(tout) P.m.saisie=[]; else P.m.saisie.pop(); majReserve(); majReponse(); }
-function melangerReserve(){
-  if(P.m.fini) return;
-  const avant = P.m.saisie.map(k=>P.m.lettres[k]);
-  P.m.lettres = melanger(P.m.lettres);
-  P.m.saisie = avant.map(o => P.m.lettres.indexOf(o));
-  majReserve(); majReponse();
-}
 function donnerIndice(){
-  if(P.m.indice || P.m.trouves.length) return;
-  if(P.parcours){ if(P.indices<=0) return; P.indices--; }
+  if(P.m.indice || P.m.trouves.length || (P.parcours && P.indices<=0)) return;
+  if(P.parcours) P.indices--;
   P.m.indice = true;
-  const cible = P.carte.mots.find(w => norm(w)!==norm(P.carte.origine));
-  const premiere = norm(cible)[0];
-  // place la première lettre dans la réponse
-  P.m.saisie = [];
-  const k = P.m.lettres.findIndex(o=>o.l===premiere);
-  if(k>=0) P.m.saisie.push(k);
-  majReserve(); majReponse(); majIndice();
-  const b=$("#b-indice"); if(b && P.parcours) b.innerHTML = `<span class="ico">?</span>Indice (${P.indices})`;
-  message(`Une solution commence par ${premiere}. Gain divisé par deux.`, "");
+  const premiere = norm(solutionsDe(P.carte)[0])[0];
+  P.compo.imposer(premiere);
+  const s = $("#b-indice small"); if(s) s.textContent = P.indices;
+  majIndice();
+  message(`Une solution commence par ${premiere}. Gain divisé par deux.`, "info");
 }
 function valider(){
   if(P.m.fini) return;
-  const n = P.m.lettres.length;
-  if(P.m.saisie.length < n){ message(`Utilisez les ${n} lettres.`, "ko"); majReponse("erreur"); Son.ko(); return; }
-  const prop = P.m.saisie.map(k=>P.m.lettres[k].l).join("");
-  const c = P.carte;
-  const raz = () => setTimeout(()=>{ if(!P||P.m.fini) return; P.m.saisie=[]; majReserve(); majReponse(); }, 650);
-  if(prop === norm(c.origine)){ message("C'est le mot de départ. Cherchez-en un autre.", "ko"); majReponse("erreur"); Son.ko(); return raz(); }
-  const mot = c.mots.find(w => norm(w) === prop);
-  if(!mot){ message(`${prop} n'est pas dans le dictionnaire du jeu.`, "ko"); majReponse("erreur"); Son.ko(); return raz(); }
-  if(P.m.trouves.some(w=>norm(w)===prop)){ message("Déjà trouvé.", "ko"); majReponse("erreur"); return raz(); }
-  // bonne réponse
-  const N = NIVEAUX[c.niv];
-  const ecoule = performance.now() - P.m.debut;
+  const compo = P.compo, n = compo.taille;
+  if(!compo.complet){ message(`Utilisez les ${n} lettres.`, "ko"); compo.marquer("erreur"); Son.ko(); return; }
+  const prop = compo.mot, c = P.carte;
+  const raz = () => setTimeout(()=>{ if(P && !P.m.fini && P.compo===compo) compo.vider(); }, 650);
+  if(prop === norm(c.origine)){ message("C'est le mot de la carte. Cherchez-en un autre.", "ko"); compo.marquer("erreur"); Son.ko(); return raz(); }
+  const mot = chercherMot(c, prop);
+  if(!mot){ message(`${prop} n'est pas dans le dictionnaire du jeu.`, "ko"); compo.marquer("erreur"); Son.ko(); return raz(); }
+  if(P.m.trouves.some(w=>norm(w)===prop)){ message("Déjà trouvé.", "ko"); compo.marquer("erreur"); return raz(); }
+  const N = NIVEAUX[c.niv], ecoule = performance.now() - P.m.debut;
   let gain;
   if(!P.m.trouves.length){
     gain = N.gain;
     if(P.chrono && ecoule < P.m.duree/2) gain += Math.round(N.gain*BONUS_RAPIDITE);
     if(P.m.indice) gain = Math.round(gain/2);
     P.m.premierA = ecoule;
-  } else {
-    gain = Math.round(N.gain*BONUS_EXTRA);
-  }
+  } else gain = Math.round(N.gain*BONUS_EXTRA);
   P.m.trouves.push(mot.toUpperCase());
-  P.m.gain += gain; P.banque += gain;
-  Son.ok(); majReponse("juste"); envolerGain(gain);
+  const avant = P.banque; P.m.gain += gain; P.banque += gain;
+  Son.ok(); compo.marquer("juste"); envolerGain(gain);
   message(P.m.trouves.length===1 ? `Bravo ! ${mot.toUpperCase()}` : `Bonus ! ${mot.toUpperCase()}`, "ok");
-  $("#banque").textContent = euros(P.banque);
+  compterVers($("#banque"), avant, P.banque);
   majTrouves(); majIndice();
-  if(P.m.trouves.length === c.mots.length-1) return setTimeout(()=>finManche("fini"), 700);
+  if(P.m.trouves.length === solutionsDe(c).length) return setTimeout(()=>finManche("fini"), 750);
   raz();
 }
-function envolerGain(g){
-  const b = $("#reponse").getBoundingClientRect();
-  const el = document.createElement("div"); el.className="gain-vol"; el.textContent="+"+g+" €";
-  el.style.left = (b.left+b.width/2)+"px"; el.style.top=(b.top)+"px";
-  document.body.appendChild(el); setTimeout(()=>el.remove(), 1200);
-}
-
-/* ---------- Minuteur ---------- */
 function demarrerMinuteur(){
-  arreterMinuteur();
-  let dernierTic = 99;
+  arreterMinuteur(); let dernierTic = 99;
   const tick = () => {
     if(!P || P.m.fini) return;
     P.m.reste = Math.max(0, P.m.duree - (performance.now() - P.m.debut));
-    const i = $("#sablier i"), t = $("#temps");
-    if(i) i.style.transform = `scaleX(${P.m.reste/P.m.duree})`;
-    if(t) t.textContent = fmtTemps(P.m.reste);
+    majChrono(P.m.reste, P.m.duree);
     const s = Math.ceil(P.m.reste/1000);
-    if(s<=5 && s!==dernierTic && s>0){ dernierTic=s; Son.tic(); $("#sablier")?.classList.add("urgent"); }
+    if(s<=5 && s!==dernierTic && s>0){ dernierTic=s; Son.tic(); }
     if(P.m.reste<=0) return finManche("temps");
     minuteur = requestAnimationFrame(tick);
   };
@@ -606,111 +787,82 @@ function demarrerMinuteur(){
 }
 function arreterMinuteur(){ if(minuteur) cancelAnimationFrame(minuteur); minuteur=null; }
 
-/* ---------- Fin de manche : face B ---------- */
 function finManche(raison){
   if(P.m.fini) return;
-  P.m.fini = true; arreterMinuteur();
+  P.m.fini = true; arreterMinuteur(); P.compo.bloquer(true); composeurActif = null;
   const c = P.carte, N = NIVEAUX[c.niv], reussi = P.m.trouves.length>0;
-  if(!reussi && P.parcours){ P.vies--; Son.ko(); }
-  if(!reussi && !P.parcours) Son.fin();
+  if(!reussi){ if(P.parcours) P.vies--; Son.echec(); }
   P.historique.push({niv:c.niv, origine:c.origine, trouves:[...P.m.trouves], gain:P.m.gain, reussi});
   const trouvesN = new Set(P.m.trouves.map(norm));
   const titre = reussi ? "Carte gagnée" : (raison==="temps" ? "Sablier écoulé" : "Carte passée");
   const lignes = [];
   if(reussi){
-    lignes.push([`Gain ${N.nom.toLowerCase()}`, N.gain]);
-    if(P.chrono && P.m.premierA < P.m.duree/2) lignes.push(["Rapidité", Math.round(N.gain*BONUS_RAPIDITE)]);
-    if(P.m.indice) lignes.push(["Indice (÷2)", -Math.round((N.gain + (P.chrono && P.m.premierA<P.m.duree/2 ? Math.round(N.gain*BONUS_RAPIDITE):0))/2)]);
-    if(P.m.trouves.length>1) lignes.push([`Anagrammes bonus ×${P.m.trouves.length-1}`, (P.m.trouves.length-1)*Math.round(N.gain*BONUS_EXTRA)]);
+    const rapide = P.chrono && P.m.premierA < P.m.duree/2, br = rapide ? Math.round(N.gain*BONUS_RAPIDITE) : 0;
+    lignes.push([`Carte ${N.nom.toLowerCase()}`, N.gain]);
+    if(rapide) lignes.push(["Rapidité", br]);
+    if(P.m.indice) lignes.push(["Indice (gain ÷ 2)", -Math.round((N.gain+br)/2)]);
+    if(P.m.trouves.length>1) lignes.push([`Anagrammes bonus × ${P.m.trouves.length-1}`, (P.m.trouves.length-1)*Math.round(N.gain*BONUS_EXTRA)]);
   }
   const fin = P.parcours && (P.vies<=0 || P.manche+1 >= P.parcours.length);
-  const voile = document.createElement("div"); voile.className="voile";
-  voile.innerHTML = `
-    <div class="panneau" role="dialog" aria-modal="true" aria-labelledby="t-face-b">
-      <header class="case ${N.classe}"><span id="t-face-b">${titre}</span><span>${reussi?"+"+euros(P.m.gain):"0 €"}</span></header>
-      <div class="corps">
-        <h3>Face B · ${esc(norm(c.origine))}</h3>
-        <div class="solutions">${c.mots.map(w=>{ const n=norm(w); const cls = n===norm(c.origine)?"origine":(trouvesN.has(n)?"trouve":""); return `<span class="sol ${cls}">${esc(w)}</span>`; }).join("")}</div>
-        ${lignes.length ? `<div class="lignes">${lignes.map(([l,v])=>`<div><span>${l}</span><b>${v>0?"+":""}${euros(v)}</b></div>`).join("")}<div class="total"><span>Banque</span><b>${euros(P.banque)}</b></div></div>` : ""}
-        ${!reussi && P.parcours ? `<p class="evt-texte">${P.vies>0 ? `Une vie perdue. Il vous en reste ${P.vies}.` : "Plus de vie : la partie s'arrête."}</p>` : ""}
-        <button class="case c-jaune btn-case suivant" id="b-suivant">${fin ? "Voir le résultat" : (P.parcours ? "Carte suivante" : "Nouvelle carte")}</button>
-        ${!P.parcours ? `<button class="lien" id="b-stop" style="color:#333">Arrêter l'entraînement</button>` : ""}
-      </div>
-    </div>`;
-  document.body.appendChild(voile);
-  const suivant = $("#b-suivant", voile); suivant.focus();
-  suivant.onclick = () => {
-    voile.remove();
-    if(!P.parcours){ return lancerManche(); }
+  const v = panneau({ classe:N.classe, titre, valeur: reussi ? "+"+euros(P.m.gain) : "0 €", corps:`
+    <h3>Face B · toutes les solutions de ${esc(norm(c.origine))}</h3>
+    <div class="solutions">${c.mots.map(w=>{ const n=norm(w); const cls = n===norm(c.origine)?"origine":(trouvesN.has(n)?"trouve":""); return `<span class="sol ${cls}">${esc(w)}</span>`; }).join("")}</div>
+    ${lignes.length ? `<div class="lignes">${lignes.map(([l,val])=>`<div><span>${l}</span><b class="${val<0?"neg":""}">${val>0?"+":""}${euros(val)}</b></div>`).join("")}<div class="total"><span>Banque</span><b>${euros(P.banque)}</b></div></div>` : ""}
+    ${!reussi && P.parcours ? `<p class="texte-centre">${P.vies>0 ? `Une vie perdue. Il vous en reste ${P.vies}.` : "Plus de vie : la partie s'arrête."}</p>` : ""}
+    <button class="bouton piece c-jaune" id="b-suivant">${fin ? "Voir le résultat" : (P.parcours ? "Carte suivante" : "Nouvelle carte")}</button>
+    ${!P.parcours ? `<button class="bouton-plat" id="b-stop" style="color:var(--gris); justify-self:center">Arrêter l'entraînement</button>` : ""}` });
+  $("#b-suivant", v).focus();
+  $("#b-suivant", v).onclick = () => {
+    v.remove();
+    if(!P.parcours) return lancerManche();
     if(fin) return ecranFin();
     P.manche++;
     if(P.evenements[P.manche] != null) return caseSpeciale(CASES_SPECIALES[P.evenements[P.manche]]);
     lancerManche();
   };
-  const stop = $("#b-stop", voile); if(stop) stop.onclick = () => { voile.remove(); ecranFinEntrainement(); };
+  const stop = $("#b-stop", v); if(stop) stop.onclick = () => { v.remove(); ecranFinEntrainement(); };
 }
-
-/* ---------- Case spéciale (dé) ---------- */
-const FACES = {1:[4],2:[0,8],3:[0,4,8],4:[0,2,6,8],5:[0,2,4,6,8],6:[0,2,3,5,6,8]};
-function caseSpeciale(evt){
-  const voile = document.createElement("div"); voile.className="voile";
-  voile.innerHTML = `
-    <div class="panneau" role="dialog" aria-modal="true" aria-labelledby="t-evt">
-      <header class="case c-noir"><span id="t-evt">Lancer de dé</span><span></span></header>
-      <div class="corps">
-        <div class="de roule" id="de">${Array.from({length:9},()=>"<i></i>").join("")}</div>
-        <div id="evt-res" hidden>
-          <div class="evt-case case ${evt.classe}">${evt.titre}${evt.montant?`<small>${evt.montant>0?"+":""}${evt.montant}€</small>`:""}</div>
-          <p class="evt-texte" style="margin-top:10px">${evt.texte}</p>
-        </div>
-        <button class="case c-jaune btn-case suivant" id="b-evt" hidden>Continuer</button>
-      </div>
-    </div>`;
-  document.body.appendChild(voile);
-  const valeur = 1 + Math.floor(Math.random()*6);
-  const de = $("#de", voile);
-  let n = 0;
-  const anim = setInterval(()=>{
-    const v = n<7 ? 1+Math.floor(Math.random()*6) : valeur;
-    de.querySelectorAll("i").forEach((p,i)=>p.style.visibility = FACES[v].includes(i)?"visible":"hidden");
-    Son.tic();
-    if(++n>7){
-      clearInterval(anim);
-      $("#evt-res", voile).hidden=false; const b=$("#b-evt", voile); b.hidden=false; b.focus();
-      if(evt.montant){ P.banque = Math.max(0, P.banque + evt.montant); evt.montant>0?Son.ok():Son.ko(); }
-      P.historique.push({special:evt});
-      b.onclick = () => { voile.remove(); lancerManche(); };
-    }
-  }, 80);
+async function caseSpeciale(evt){
+  const v = panneau({ classe:"c-noir", titre:"Lancer de dé", corps:`
+    ${deHTML()}
+    <div id="evt-res" hidden style="display:grid; gap:12px">
+      <div class="case-speciale piece ${evt.classe}">${evt.titre}${evt.montant?`<small>${evt.montant>0?"+":""}${evt.montant}€</small>`:""}</div>
+      <p class="texte-centre">${evt.texte}</p>
+    </div>
+    <button class="bouton piece c-jaune" id="b-evt" hidden>Continuer</button>` });
+  await lancerDeAnime($("#de", v), 1+Math.floor(Math.random()*6));
+  $("#evt-res", v).hidden = false; const b = $("#b-evt", v); b.hidden = false; b.focus();
+  if(evt.montant){ P.banque = Math.max(0, P.banque + evt.montant); evt.montant>0 ? Son.piece() : Son.ko(); }
+  P.historique.push({special:evt});
+  b.onclick = () => { v.remove(); lancerManche(); };
 }
-
-/* ---------- Fin de partie ---------- */
-function etoiles(total){ return total>=900?3 : total>=500?2 : total>=200?1 : 0; }
+const etoiles = total => total>=900?3 : total>=500?2 : total>=200?1 : 0;
 function ecranFin(){
-  arreterMinuteur();
+  arreterMinuteur(); composeurActif = null;
   const total = P.banque, nb = etoiles(total);
   const rec = store.get("records", {defi:0, jour:{}});
   let record = false;
   if(P.mode==="defi" && total > (rec.defi||0)){ rec.defi = total; record = true; }
-  if(P.mode==="jour"){ rec.jour = rec.jour||{}; if(rec.jour[aujourdhui()]==null){ rec.jour[aujourdhui()] = total; } }
+  if(P.mode==="jour"){ rec.jour = rec.jour||{}; if(rec.jour[aujourdhui()]==null) rec.jour[aujourdhui()] = total; }
   store.set("records", rec);
-  const reussies = P.historique.filter(h=>h.reussi).length, cartes = P.historique.filter(h=>!h.special).length;
-  Son.fin();
+  const cartes = P.historique.filter(h=>!h.special), reussies = cartes.filter(h=>h.reussi).length;
   app.innerHTML = `
   <section class="ecran">
     <h1 class="titre-ecran">${P.vies>0 ? "Arrivée !" : "Partie terminée"}</h1>
-    <div class="score-final">${euros(total)}</div>
-    <div class="etoiles" aria-label="${nb} étoile(s) sur 3">${[1,2,3].map(i=>`<span class="${i<=nb?"on":""}">★</span>`).join("")}</div>
-    ${record ? `<div class="nouveau-record">Nouveau record !</div>` : ""}
-    <p class="accroche">${reussies} carte${reussies>1?"s":""} gagnée${reussies>1?"s":""} sur ${cartes}${P.mode==="jour"?" · Défi du jour":""}</p>
+    <p class="sous-titre">${reussies} carte${reussies>1?"s":""} gagnée${reussies>1?"s":""} sur ${cartes.length}${P.mode==="jour"?" · Défi du jour":""}</p>
+    <div class="score-final"><span id="score">0 €</span></div>
+    <div class="etoiles" aria-label="${nb} étoile(s) sur 3">${[1,2,3].map(i=>etoileSVG(i<=nb)).join("")}</div>
+    ${record ? `<div class="tampon">Nouveau record</div>` : ""}
     <div class="recap">${P.historique.map(h=> h.special
-      ? `<div class="recap-l"><span class="pastille case ${h.special.classe}">◆</span><span>Case ${h.special.titre}</span><b class="${h.special.montant<0?"neg":""}">${h.special.montant?(h.special.montant>0?"+":"")+euros(h.special.montant):"—"}</b></div>`
-      : `<div class="recap-l"><span class="pastille case ${NIVEAUX[h.niv].classe}">${h.reussi?"✓":"✕"}</span><span>${esc(norm(h.origine))} → ${h.trouves.length?esc(h.trouves.join(", ")):"<i>non trouvé</i>"}</span><b>${h.gain?"+"+euros(h.gain):"—"}</b></div>`).join("")}</div>
+      ? `<div class="recap-l"><span class="pastille piece ${h.special.classe}">◆</span><span>Case ${h.special.titre}</span><b class="${h.special.montant<0?"neg":""}">${h.special.montant?(h.special.montant>0?"+":"")+euros(h.special.montant):"—"}</b></div>`
+      : `<div class="recap-l"><span class="pastille piece ${NIVEAUX[h.niv].classe}">${h.reussi?"✓":"✕"}</span><span>${esc(norm(h.origine))} → ${h.trouves.length?esc(h.trouves.join(", ")):"<i>non trouvé</i>"}</span><b>${h.gain?"+"+euros(h.gain):"—"}</b></div>`).join("")}</div>
     <div class="duo">
-      <button class="case c-vert btn-case" id="b-rejouer">${P.mode==="jour"?"Partager":"Rejouer"}</button>
-      <button class="case c-noir btn-case" id="b-menu">Menu</button>
+      <button class="bouton piece c-vert" id="b-rejouer">${P.mode==="jour"?"Partager":"Rejouer"}</button>
+      <button class="bouton piece c-noir" id="b-menu">Menu</button>
     </div>
   </section>`;
+  compterVers($("#score"), 0, total, 900);
+  if(nb>=1 || record){ Son.fin(); setTimeout(()=>confettis(nb>=2||record?180:90), 300); } else Son.echec();
   const mode = P.mode;
   $("#b-menu").onclick = ecranAccueil;
   $("#b-rejouer").onclick = mode==="jour" ? partager : () => nouvellePartie(mode);
@@ -719,66 +871,40 @@ function partager(){
   const d = String(aujourdhui());
   const ligne = P.historique.filter(h=>!h.special).map(h => h.reussi ? {v:"🟩",b:"🟦",r:"🟥",n:"⬛"}[h.niv] : "⬜").join("");
   const txt = `Le-QLN · Défi du jour ${d.slice(6)}/${d.slice(4,6)}\n${ligne}\n${euros(P.banque)} ${"★".repeat(etoiles(P.banque))}`;
-  const ok = () => toast("Résultat copié, collez-le où vous voulez.");
-  try{ navigator.clipboard.writeText(txt).then(ok, ()=>toast(txt)); }catch(e){ toast(txt); }
+  try{ navigator.clipboard.writeText(txt).then(()=>toast("Résultat copié : collez-le où vous voulez."), ()=>toast(txt, 6000)); }catch(e){ toast(txt, 6000); }
 }
 function ecranFinEntrainement(){
   const reussies = P.historique.filter(h=>h.reussi).length;
   app.innerHTML = `
   <section class="ecran">
     <h1 class="titre-ecran">Fin de l'entraînement</h1>
+    <p class="sous-titre">${reussies} carte${reussies>1?"s":""} gagnée${reussies>1?"s":""} sur ${P.historique.length}</p>
     <div class="score-final">${euros(P.banque)}</div>
-    <p class="accroche">${reussies} carte${reussies>1?"s":""} gagnée${reussies>1?"s":""} sur ${P.historique.length}</p>
-    <div class="duo">
-      <button class="case c-rouge btn-case" id="b-rejouer">Continuer</button>
-      <button class="case c-noir btn-case" id="b-menu">Menu</button>
-    </div>
+    <div class="duo"><button class="bouton piece c-noir" id="b-rejouer">Continuer</button><button class="bouton piece c-rouge" id="b-menu">Menu</button></div>
   </section>`;
   $("#b-menu").onclick = ecranAccueil;
   $("#b-rejouer").onclick = ecranEntrainement;
 }
-
-/* ---------- Quitter / toast ---------- */
 function confirmerQuitter(){
   const pause = P.chrono && !P.m.fini;
   if(pause) arreterMinuteur();
-  const voile = document.createElement("div"); voile.className="voile";
-  voile.innerHTML = `<div class="panneau" role="dialog" aria-modal="true" aria-labelledby="t-q">
-    <header class="case c-orange"><span id="t-q">Quitter la partie ?</span></header>
-    <div class="corps"><p class="evt-texte">La partie en cours sera perdue.</p>
-    <div class="duo"><button class="case c-noir btn-case" id="q-non">Continuer</button><button class="case c-rouge btn-case" id="q-oui">Quitter</button></div></div></div>`;
-  document.body.appendChild(voile);
-  const t0 = performance.now();
-  $("#q-non",voile).focus();
-  $("#q-non",voile).onclick = () => { voile.remove(); if(pause){ P.m.debut += performance.now()-t0; demarrerMinuteur(); } };
-  $("#q-oui",voile).onclick = () => { voile.remove(); ecranAccueil(); };
+  const v = panneau({ classe:"c-orange", titre:"Quitter la partie ?", corps:`<p class="texte-centre">La partie en cours sera perdue.</p>
+    <div class="duo"><button class="bouton piece c-noir" id="q-non">Continuer</button><button class="bouton piece c-rouge" id="q-oui">Quitter</button></div>` });
+  const t0 = performance.now(); $("#q-non",v).focus();
+  $("#q-non",v).onclick = () => { v.remove(); if(pause){ P.m.debut += performance.now()-t0; demarrerMinuteur(); } };
+  $("#q-oui",v).onclick = () => { v.remove(); ecranAccueil(); };
 }
-function toast(t){ const el=document.createElement("div"); el.className="toast"; el.textContent=t; document.body.appendChild(el); setTimeout(()=>el.remove(), 3500); }
-
-/* ---------- Clavier ---------- */
-document.addEventListener("keydown", e => {
-  if(!P || !P.m || P.m.fini || document.querySelector(".voile")) return;
-  if(e.ctrlKey||e.metaKey||e.altKey) return;
-  if(e.key==="Enter"){ e.preventDefault(); return valider(); }
-  if(e.key==="Backspace"){ e.preventDefault(); return effacer(); }
-  if(e.key==="Escape"){ return effacer(true); }
-  if(e.key===" "){ e.preventDefault(); return melangerReserve(); }
-  const l = norm(e.key);
-  if(/^[A-Z]$/.test(l)){
-    const k = P.m.lettres.findIndex((o,i)=>o.l===l && !P.m.saisie.includes(i));
-    if(k>=0) ajouter(k); else { majReponse("erreur"); setTimeout(()=>majReponse(),400); }
-  }
-});
-window.addEventListener("resize", () => { const s=document.querySelector(".ecran[style*='--tw']"); if(s && P && P.carte) s.style.setProperty("--tw", largeurTuile(P.m.lettres.length)+"px"); });
+window.addEventListener("resize", () => { const s=$(".ecran[style*='--tw']"); if(s && P && P.carte && P.compo) s.style.setProperty("--tw", largeurTuile(P.compo.taille)+"px"); });
 
 /* ---------- Installation (PWA) ---------- */
 let installEvt = null;
 window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); installEvt = e; const b=$("#b-install"); if(b){ b.hidden=false; b.onclick=()=>{ installEvt.prompt(); installEvt=null; b.hidden=true; }; } });
-if("serviceWorker" in navigator && location.protocol==="https:"){
+if("serviceWorker" in navigator && location.protocol==="https:" && !location.hostname.endsWith("claude.ai") && !location.hostname.includes("claudeusercontent")){
   navigator.serviceWorker.register("sw.js").catch(()=>{});
 }
-
-/* ---------- Démarrage ---------- */
+</script>
+<script src="plateau.js"></script>
+<script>
 chargerDico().then(ecranAccueil).catch(() => {
   app.innerHTML = `<p class="chargement">Impossible de charger le dictionnaire. Vérifiez votre connexion puis rechargez la page.</p>`;
 });
