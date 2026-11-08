@@ -1,0 +1,11 @@
+*{box-sizing:border-box;margin:0}
+html,body{width:640px;height:360px;overflow:hidden;font-family:"Barlow Condensed","Arial Narrow",Arial,sans-serif}
+.scene{position:absolute;inset:0;opacity:0;animation:sc 7s linear forwards}
+.s1{animation-name:s1} .s2{animation-name:s2} .s3{animation-name:s3}
+@keyframes s1{0%{opacity:0}6%{opacity:1}33%{opacity:1}38%{opacity:0}100%{opacity:0}}
+@keyframes s2{0%,34%{opacity:0}40%{opacity:1}66%{opacity:1}71%{opacity:0}100%{opacity:0}}
+@keyframes s3{0%,67%{opacity:0}73%{opacity:1}100%{opacity:1}}
+.mention{position:absolute;left:0;right:0;bottom:8px;text-align:center;font:600 11px/1 Arial,sans-serif;letter-spacing:.08em;text-transform:uppercase;opacity:.75;color:#fff;z-index:9}
+.titre{font-weight:800;letter-spacing:.02em;text-transform:uppercase;line-height:.95}
+.pop{animation:pop .7s cubic-bezier(.2,.9,.3,1.3) backwards}
+@keyframes pop{from{transform:translateY(30px) scale(.8);opacity:0}}

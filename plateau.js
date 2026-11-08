@@ -208,7 +208,7 @@ function config(){
   $("#b-go").onclick = () => {
     cfg.nom = $("#cfg-nom").value.trim(); cfg.caches = $("#cfg-caches").checked; cfg.rapide = $("#cfg-rapide").checked;
     store.set("cfgIA", cfg);
-    demarrer(cfg);
+    Pub.avantPartie().then(() => demarrer(cfg));
   };
   maj();
 }
@@ -841,6 +841,7 @@ function ecranPlateau(){
         <div class="joueurs" id="joueurs"></div>
         <div class="dock" id="dock"><div class="dock-haut"><div class="dock-msg">Préparation…</div></div><div class="dock-actions" id="dock-actions"></div></div>
         <details class="journal" open><summary>Journal de partie</summary><ol id="journal"></ol></details>
+        ${Pub.bandeau()}
       </div>
     </div>
   </section>`;
@@ -851,6 +852,7 @@ function ecranPlateau(){
     $("#q-oui", v).onclick = () => { v.remove(); ecranAccueil(); };
   };
   dessinerPions(); majJoueurs();
+  Pub.animerBandeau();
 }
 function pionG(j, x, y, s){
   const id = j.couleur.slice(1);

@@ -441,6 +441,34 @@ button.piece:active, .piece.enfonce{transform:translateY(calc(var(--lip) - 1px))
 .rond::after{display:none}
 .mode > .ico,.mode > span:not(.filigrane):not(.etiquette){position:relative}
 .toast{box-shadow:0 12px 30px rgba(0,0,0,.5), inset 0 0 0 1px rgba(255,255,255,.1)}
+
+/* ---------- Solo : règles, campagnes, événements ---------- */
+.serie-info{display:flex; justify-content:center; flex-wrap:wrap; gap:8px}
+.serie-info:empty{display:none}
+.pastille-info{font-family:var(--f-ui); font-weight:800; font-size:15px; letter-spacing:.05em; text-transform:uppercase; background:rgba(3,10,30,.6); padding:4px 12px 3px; border-radius:20px; box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)}
+.pastille-info b{color:var(--or); font-weight:800}
+.pastille-info.mult{background:var(--or-grad); color:#1b1400; box-shadow:0 2px 0 var(--or-o)}
+.pastille-info.evt{background:linear-gradient(160deg,var(--b),var(--a)); color:#fff}
+.pastille-info.evt.c-jaune{color:#1b1a05}
+.masque .lettre, .masque .mot .t{color:transparent!important; text-shadow:none!important}
+.trois{display:grid; grid-template-columns:repeat(3,1fr); gap:12px}
+.trois .piece{min-height:112px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px}
+.trois b{font-family:var(--f-titre); font-weight:400; font-size:56px; line-height:1}
+.trois small{font-family:var(--f-ui); font-weight:700; letter-spacing:.08em; text-transform:uppercase; font-size:13px; opacity:.9}
+.titre-section{font-family:var(--f-titre); font-weight:400; font-size:30px; letter-spacing:.05em; margin:6px 0 -4px; color:var(--or-2)}
+.reglages{background:rgba(3,10,30,.45); border-radius:var(--rayon); padding:6px 12px 10px; box-shadow:inset 0 0 0 1px rgba(255,255,255,.06)}
+.reglages summary{cursor:pointer; font-family:var(--f-ui); font-weight:800; letter-spacing:.08em; text-transform:uppercase; font-size:14px; color:var(--brume); padding:8px 0}
+.reglages .interrupteur{margin-top:8px}
+.note-regles{margin:8px 0 0; font-size:13.5px; color:var(--brume-2)}
+.manches{display:grid; gap:12px}
+.manche{display:grid; grid-template-columns:auto 1fr; gap:14px; align-items:center; text-align:left; padding:14px 40px 14px 14px}
+.manche .num{font-family:var(--f-titre); font-size:44px; line-height:1; width:46px; text-align:center; text-shadow:0 2px 0 rgba(0,0,0,.35)}
+.manche .txt b{display:block; font-family:var(--f-titre); font-weight:400; font-size:26px; letter-spacing:.03em; line-height:1}
+.manche .txt small{display:block; font-family:var(--f-ui); font-weight:600; font-size:14.5px; line-height:1.2; opacity:.95; margin-top:3px}
+.manche .txt{min-width:0}
+.manche .med{grid-column:2; justify-self:start; display:flex; align-items:center; gap:6px; font-family:var(--f-ui); font-weight:800; font-size:14px; letter-spacing:.06em; text-transform:uppercase; background:rgba(0,0,0,.3); padding:4px 10px 3px; border-radius:16px}
+.manche .med i{width:14px; height:14px; border-radius:50%; display:inline-block; box-shadow:inset 0 -2px 0 rgba(0,0,0,.25), 0 0 0 1.5px rgba(255,255,255,.5)}
+.mode.large .desc{max-width:34ch}
 </style>
 </head>
 <body>
@@ -703,13 +731,13 @@ function largeurTuile(n, max=56, dispo){
   dispo = dispo || Math.min(window.innerWidth, 600) - 64;
   return Math.max(26, Math.min(max, Math.floor((dispo - (n-1)*7) / n)));
 }
-function carteHTML(c, {consigne="Trouvez une anagramme de", indic="", chrono=false}={}){
+function carteHTML(c, {consigne="Trouvez une anagramme de", indic="", chrono=false, inverse=false}={}){
   const N = NIVEAUX[c.niv];
   return `<div class="carte ${N.classe}">
     <div class="carte-bande"><span class="niv">${N.nom}</span>${chrono ? `<div class="chrono" id="chrono" role="timer"><svg viewBox="0 0 60 60"><circle class="fond" cx="30" cy="30" r="26"/><circle class="arc" cx="30" cy="30" r="26" stroke-dasharray="163.4" stroke-dashoffset="0"/></svg><b id="temps"></b></div>` : ""}<span class="val">${N.gain}€</span></div>
     <div class="carte-corps">
       <div class="consigne">${consigne}</div>
-      <div class="mot">${norm(c.origine).split("").map(l=>`<span class="t piece ${N.classe}">${l}</span>`).join("")}</div>
+      <div class="mot">${(inverse ? norm(c.origine).split("").reverse() : norm(c.origine).split("")).map(l=>`<span class="t piece ${N.classe}">${l}</span>`).join("")}</div>
       <div class="indic" id="indic">${indic}</div>
       <button class="def-btn" data-def="${esc(c.origine)}" aria-label="Définition de ${esc(norm(c.origine))}"><i>i</i>Définition du mot</button>
     </div>
@@ -752,7 +780,7 @@ function Composeur(racine, carte, opts={}){
     },
     effacer(){ if(bloque) return; saisie.pop(); self.rendre(); },
     vider(){ saisie = []; self.rendre(); },
-    melanger(){ if(bloque) return; const avant = saisie.map(k=>lettres[k]); lettres = melanger(lettres); saisie = avant.map(o=>lettres.indexOf(o)); self.rendre(); },
+    melanger(){ if(bloque || (opts.avantMelanger && opts.avantMelanger() === false)) return; const avant = saisie.map(k=>lettres[k]); lettres = melanger(lettres); saisie = avant.map(o=>lettres.indexOf(o)); self.rendre(); },
     imposer(l){ saisie = []; const k = lettres.findIndex(o=>o.l===l); if(k>=0) saisie.push(k); self.rendre(); },
     marquer(etat){ self.rendre(etat); },
     bloquer(v){ bloque = v; self.rendre(); },
@@ -843,7 +871,7 @@ function ecranAccueil(){
       <div class="vitrine-legende" id="vitrine-legende" aria-hidden="true"></div>
     </div>
     <div class="modes">
-      <button class="mode piece c-vert" id="b-defi"><span class="filigrane" aria-hidden="true">A</span><span class="ico">${ICO.escalier}</span><span><span class="nom">Le Défi</span><span class="desc">10 cartes du vert au noir, 3 vies</span></span></button>
+      <button class="mode piece c-vert" id="b-defi"><span class="filigrane" aria-hidden="true">A</span><span class="ico">${ICO.escalier}</span><span><span class="nom">Mode solo</span><span class="desc">Défi, Festival, braquage, duel de l'ombre</span></span></button>
       <button class="mode piece c-rouge" id="b-ia"><span class="filigrane" aria-hidden="true">Z</span><span class="ico">${ICO.robot}</span><span><span class="nom">Contre l'IA</span><span class="desc">Le plateau complet, enchères et prison</span></span></button>
       <button class="mode piece c-bleu" id="b-jour"><span class="filigrane" aria-hidden="true">Q</span><span class="etiquette">${dateCourte}</span><span class="ico">${ICO.calendrier}</span><span><span class="nom">Défi du jour</span><span class="desc">${jourFait!=null ? "Fait : "+euros(jourFait) : "Les mêmes cartes pour tous"}</span></span></button>
       <button class="mode piece c-noir" id="b-entr"><span class="filigrane" aria-hidden="true">N</span><span class="ico">${ICO.cible}</span><span><span class="nom">Entraînement</span><span class="desc">Votre couleur, sans pression</span></span></button>
@@ -860,7 +888,7 @@ function ecranAccueil(){
     <div class="pied"><button class="bouton-plat" id="b-regles">Règles du jeu</button><button class="bouton-plat" id="b-docs">Documentation</button><button class="bouton-plat" id="b-install" hidden>Installer l'appli</button></div>
     <p class="credit">Dictionnaire construit à partir de Lexique 3.83 (licence CC BY-SA 4.0).</p>
   </section>`;
-  $("#b-defi").onclick = () => nouvellePartie("defi");
+  $("#b-defi").onclick = ecranSolo;
   $("#b-jour").onclick = () => nouvellePartie("jour");
   $("#b-entr").onclick = ecranEntrainement;
   $("#b-ia").onclick = () => PlateauIA.config();
@@ -923,10 +951,22 @@ function ecranRegles(){
         <p>Cases CD : vous choisissez votre chemin. Bonus et Malus : la banque vous verse ou vous prend le montant. Passe : vous attendez le tour suivant. Retour départ : retour sur la ligne de départ. Prison : payez la caution, faites-vous libérer par un joueur (qui touchera vos gains des 2 tours suivants) ou attendez 2 tours.</p>
         <p>L'arrivée demande un dé au moins égal au nombre de cases restantes et rapporte un bonus selon votre ordre d'arrivée (+100 € à −100 €). Le gagnant est le plus riche, pas le premier arrivé. Les gains des adversaires restent cachés jusqu'à la fin.</p></div>
       <div class="regle"><h2>Le Défi</h2>
-        <p>Dix cartes de difficulté croissante et trois vies. Chaque carte non résolue coûte une vie. Entre deux cartes, le dé peut vous envoyer sur une case spéciale du tapis.</p>
+        <p>Dix cartes de difficulté croissante et trois vies. Chaque carte non résolue coûte une vie.</p>
         <ul><li>Rapidité : +25 % si vous trouvez dans la première moitié du temps.</li>
         <li>Chasse aux anagrammes : une fois la carte gagnée, le sablier continue ; chaque anagramme supplémentaire rapporte +50 % du gain.</li>
-        <li>Indice : révèle la première lettre d'une solution, mais divise le gain par deux. Deux par partie.</li></ul></div>
+        <li>Indice : révèle la première lettre d'une solution, mais divise le gain par deux.</li></ul></div>
+      <div class="regle"><h2>Règles du solo</h2>
+        <p>Chacune peut être coupée dans « Règles de la partie libre ».</p>
+        <ul><li><b>Série ou banque</b> : les gains vont dans une cagnotte avec un multiplicateur (×1, ×1,5, ×2). Encaissez pour les mettre à l'abri, ou continuez. Un échec fait perdre une vie et la moitié de la cagnotte.</li>
+        <li><b>Choisir sa carte</b> : trois cartes cachées, seule la longueur du mot est visible.</li>
+        <li><b>Jokers</b> : un indice, un mélange, une passe. Un joker de plus toutes les 3 réussites de suite. Boutique entre les cartes : indice 30 €, passe 60 €, +10 s 40 €.</li>
+        <li><b>Cartes événement</b> : une carte sur cinq (Double ou rien, Sablier éclair, Mot masqué, Carte miroir, Prime de temps, Vie gagnante). On peut esquiver pour 30 €.</li>
+        <li><b>Coffres mystère</b> après les cartes 3, 6 et 9. <b>Carte légendaire</b> après la carte 7 : 10 lettres et plus, gain ×3.</li></ul></div>
+      <div class="regle"><h2>Campagnes</h2>
+        <ul><li><b>Le Festival</b> : cinq manches à objectif. Bronze à l'objectif, argent à +25 %, or à +50 % ou argent sans joker. Une manche s'ouvre quand la précédente a une médaille.</li>
+        <li><b>Le Braquage</b> : six mots de 5 à 10 lettres, un chrono commun de 6 minutes, +20 s par mot, pas de passe.</li>
+        <li><b>Duel de l'ombre</b> : les cartes du jour contre un fantôme (votre meilleure partie du jour, ou une ombre simulée).</li>
+        <li><b>Défi de la semaine</b> : un scénario imposé et les mêmes cartes pendant 7 jours. Le premier essai est classé.</li></ul></div>
       <div class="regle"><h2>Au clavier</h2><p>Tapez les lettres, <b>Entrée</b> pour valider, <b>Retour arrière</b> pour effacer, <b>Espace</b> pour mélanger.</p></div>
     </div>
   </section>`;
@@ -936,40 +976,239 @@ function ecranRegles(){
 /* =========================================================================
    Solo
    ========================================================================= */
+/* ---------- Règles du solo : séries, événements, coffres, jokers, scénarios ---------- */
+const REGLES_DEFAUT = {serie:true, choix3:true, jokers:true, evenements:true, coffre:true, legendaire:true};
+const REGLES_NULLES = {serie:false, choix3:false, jokers:false, evenements:false, coffre:false, legendaire:false};
+const REGLES_JOUR = {...REGLES_DEFAUT, choix3:false};
+const REGLES_INFO = [
+  ["serie","Série ou banque","Les gains montent en cagnotte avec un multiplicateur (×1, ×1,5, ×2). Encaissez ou tentez la suite."],
+  ["choix3","Choisir sa carte","Avant chaque carte, choisissez parmi trois cartes cachées."],
+  ["jokers","Jokers limités et boutique","Un indice, un mélange, une passe. Boutique entre les cartes."],
+  ["evenements","Cartes événement","Une carte sur cinq apporte un risque et une récompense."],
+  ["coffre","Coffres mystère","Un coffre à ouvrir après les cartes 3, 6 et 9."],
+  ["legendaire","Carte légendaire","Une fois par partie : 10 lettres et plus, gain ×3."],
+];
+const EVENEMENTS = [
+  {cle:"double", nom:"Double ou rien", mult:2,    classe:"c-rouge",  texte:"Un seul essai, aucun joker. Gain ×2."},
+  {cle:"eclair", nom:"Sablier éclair", mult:1.5,  classe:"c-orange", texte:"Le temps de la carte est divisé par 2. Gain ×1,5."},
+  {cle:"masque", nom:"Mot masqué",     mult:1.5,  classe:"c-violet", texte:"Les lettres sont visibles 3 secondes, puis cachées. Gain ×1,5."},
+  {cle:"miroir", nom:"Carte miroir",   mult:1.25, classe:"c-bleu",   texte:"Le mot de départ est affiché à l'envers. Gain ×1,25."},
+  {cle:"temps",  nom:"Prime de temps", mult:1,    classe:"c-vert",   texte:"+30 secondes sur la carte. Gain normal."},
+  {cle:"vie",    nom:"Vie gagnante",   mult:1,    classe:"c-jaune",  texte:"Réussissez la carte et vous regagnez une vie (3 au maximum)."},
+];
+const COFFRE_POS = [3,6,9];
+const PRIX = {indice:30, passe:60, temps:40, esquive:30};
+const serieMult = s => s>=2 ? 2 : s===1 ? 1.5 : 1;
+const fmtMult = m => "×" + String(m).replace(".", ",");
+const arr5 = n => Math.round(n/5)*5;
+const NOM_JOKER = {indices:"un indice", melanges:"un mélange", passes:"une passe"};
+const FESTIVAL = [
+  {nom:"Montée des marches", cartes:["v","v","b","b","r"], vies:3, regles:{serie:true}, mesure:"reussies", seuils:[3,4,5], objectif:"3 cartes réussies", resume:"5 cartes. La série est expliquée en route."},
+  {nom:"Les sélections", cartes:["v","b","b","r","r","r"], vies:3, regles:{serie:true}, mesure:"banque", seuils:[150,190,225], objectif:"150 € en banque", resume:"6 cartes, série ou banque."},
+  {nom:"Nuit blanche", cartes:["r","r","r","n","r","r","n","n"], vies:3, regles:{serie:true, coffre:true}, tf:.75, coffrePos:[4], mesure:"banque", seuils:[250,310,375], objectif:"250 € en banque", resume:"8 cartes rouges ou noires, sabliers réduits d'un quart, un coffre."},
+  {nom:"Le jury", cartes:["v","b","b","r","r"], vies:1, gm:2, regles:{}, mesure:"banque", seuils:[240,300,360], objectif:"240 € en banque", resume:"5 cartes, une seule vie, tous les gains ×2."},
+  {nom:"La Palme d'or", cartes:[...PARCOURS_DEFI], vies:3, regles:{serie:true, jokers:true, evenements:true, coffre:true, legendaire:true}, mesure:"banque", seuils:[500,625,750], objectif:"500 € en banque", resume:"10 cartes : événements, coffres et carte légendaire."},
+];
+const MEDAILLES = [{nom:"Bronze", c:"#c98463"}, {nom:"Argent", c:"#d9dce0"}, {nom:"Or", c:"#ffcf3a"}];
+const TWISTS = [
+  {nom:"Sablier éclair", resume:"Tous les sabliers sont réduits d'un quart. Gains ×1,25.", tf:.75, gm:1.25},
+  {nom:"Sans filet", resume:"Aucun joker, ni indice ni passe. Tous les gains ×1,5.", regles:{jokers:false}, sansJoker:true, gm:1.5},
+  {nom:"Montée en puissance", resume:"Sept cartes : bleues, rouges et noires seulement.", cartes:["b","b","b","r","r","n","n"]},
+  {nom:"Une seule vie", resume:"Une seule vie. Tous les gains ×2.", vies:1, gm:2},
+];
+function cleSemaine(){
+  const d = new Date(), t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  t.setUTCDate(t.getUTCDate() + 4 - (t.getUTCDay() || 7));
+  const an = t.getUTCFullYear(); return an*100 + Math.ceil(((t - Date.UTC(an,0,1))/864e5 + 1)/7);
+}
+function medailleDe(F, res){
+  const v = F.mesure==="reussies" ? res.reussies : res.banque;
+  let m = v>=F.seuils[0] ? 0 : -1;
+  if(v>=F.seuils[1]) m = 1; if(v>=F.seuils[2]) m = 2;
+  if(m>=1 && res.sansJoker) m = 2;
+  return m;
+}
+function tirerCoffre(rnd){
+  const r = rnd(), j = rnd();
+  if(r < .30) return {type:"or", montant:50};
+  if(r < .45) return {type:"or", montant:100};
+  if(r < .70) return {type:"joker", joker:["indices","melanges","passes"][Math.floor(j*3)]};
+  if(r < .75) return {type:"vie"};
+  if(r < .90) return {type:"malus"};
+  return {type:"perte"};
+}
+function fantome(p){
+  const j = aujourdhui(), f = store.get("fantome", null);
+  if(f && f.jour === j) return {traj:f.traj, nom:"Votre meilleure partie"};
+  const r = aleaGraine(j*5 + 3), pr = {v:.84, b:.62, r:.40, n:.20}; let cum = 0; const traj = [];
+  for(const nv of p.parcours){ if(r() < pr[nv]) cum += Math.round(NIVEAUX[nv].gain*1.4); traj.push(cum); }
+  return {traj, nom:"L'ombre"};
+}
+
 let P = null, minuteur = null;
-function nouvellePartie(mode, nivEntrainement){
+function nouvellePartie(mode, nivEntrainement, opt={}){
   arreterVitrine();
-  const quotidien = mode === "jour";
-  const rnd = quotidien ? aleaGraine(aujourdhui()*7 + 13) : Math.random;
-  P = { mode, rnd, nivEntrainement, parcours: mode==="entrainement" ? null : PARCOURS_DEFI,
+  Pub.avantPartie().then(() => demarrerPartie(mode, nivEntrainement, opt));
+}
+function demarrerPartie(mode, nivEntrainement, opt){
+  const seed = (mode==="jour" || mode==="duel") ? aujourdhui()*7 + 13 : mode==="semaine" ? cleSemaine()*11 + 5 : null;
+  const rnd = seed != null ? aleaGraine(seed) : Math.random;
+  let cfg = null;
+  if(mode==="defi") cfg = {cartes:[...PARCOURS_DEFI], vies:VIES, regles:{...REGLES_DEFAUT, ...store.get("reglesDefi", {})}};
+  else if(mode==="jour" || mode==="duel") cfg = {cartes:[...PARCOURS_DEFI], vies:VIES, regles:{...REGLES_JOUR}};
+  else if(mode==="semaine"){ const t = TWISTS[cleSemaine() % TWISTS.length];
+    cfg = {cartes:[...(t.cartes || PARCOURS_DEFI)], vies:t.vies || VIES, regles:{...REGLES_JOUR, ...(t.regles || {})}, tf:t.tf || 1, gm:t.gm || 1, sansJoker:!!t.sansJoker, twist:t}; }
+  else if(mode==="festival"){ const F = FESTIVAL[opt.manche];
+    cfg = {cartes:[...F.cartes], vies:F.vies, regles:{...REGLES_NULLES, ...F.regles}, tf:F.tf || 1, gm:F.gm || 1, coffrePos:F.coffrePos, legPos:F.legPos, F, manche:opt.manche}; }
+  const R = cfg ? cfg.regles : {...REGLES_NULLES}, sans = !!(cfg && cfg.sansJoker);
+  P = { mode, rnd, nivEntrainement, cfg, regles:R, parcours: cfg ? cfg.cartes : null,
     chrono: mode==="entrainement" ? store.get("chronoEntr", false) : true,
-    manche:0, banque:0, vies:VIES, indices:INDICES, deja:new Set(), historique:[], carte:null };
-  P.evenements = {};
-  if(P.parcours){
-    for(let i=1;i<P.parcours.length;i++){ if(rnd() < .28) P.evenements[i] = Math.floor(rnd()*CASES_SPECIALES.length); }
-    P.cartes = P.parcours.map(n => tirerCarte(n, rnd, P.deja));
+    manche:0, banque:0, cagnotte:0, serie:0, vies: cfg ? cfg.vies : VIES, viesMax: cfg ? cfg.vies : VIES,
+    indices: sans ? 0 : (R.jokers ? 1 : INDICES), melanges: R.jokers ? 1 : Infinity, passes: (R.jokers && !sans) ? 1 : 0,
+    tempsBonus:0, jokersUtilises:0, pubsRecompense:0,
+    deja:new Set(), historique:[], carte:null, evenements:{}, evts:{}, coffres:{}, legendaire:null, traj:[], ghost:null };
+  if(cfg){
+    const n = cfg.cartes.length;
+    if(mode==="defi" && !R.coffre) for(let i=1; i<n; i++){ if(rnd() < .28) P.evenements[i] = Math.floor(rnd()*CASES_SPECIALES.length); }
+    P.cartes = cfg.cartes.map(nv => tirerCarte(nv, rnd, P.deja));
+    if(R.evenements){ let prec = -9; for(let i=1; i<n; i++){ const a = rnd(), b = Math.floor(rnd()*EVENEMENTS.length); if(i - prec > 1 && a < .2){ P.evts[i] = EVENEMENTS[b]; prec = i; } } }
+    if(R.coffre) for(const pos of (cfg.coffrePos || COFFRE_POS)) if(pos < n) P.coffres[pos] = [0,1,2].map(() => tirerCoffre(rnd));
+    if(R.legendaire){ const pos = cfg.legPos != null ? cfg.legPos : 7; if(pos < n) P.legendaire = {pos, carte:tirerCarte("n", rnd, P.deja), fait:false}; }
   }
+  if(mode==="duel") P.ghost = fantome(P);
+  etapesAvantCarte();
+}
+
+/* ----- étapes entre deux cartes : coffre, légendaire, événement, choix de la carte ----- */
+async function etapesAvantCarte(){
+  if(!P.parcours) return lancerManche();
+  const i = P.manche;
+  if(P.coffres[i]) await ouvrirCoffre(P.coffres[i]);
+  P.legAccepte = false;
+  if(P.legendaire && P.legendaire.pos === i && !P.legendaire.fait){
+    P.legendaire.fait = true;
+    if(await offreLegendaire()){ P.cartes[i] = P.legendaire.carte; P.parcours[i] = "n"; P.legAccepte = true; }
+  }
+  if(!P.legAccepte && P.evts[i]){ P.evtCourant = (await annonceEvenement(P.evts[i])) ? P.evts[i] : null; }
+  if(P.regles.choix3 && !P.legAccepte) await choisirCarte();
   lancerManche();
 }
+function annonceEvenement(evt){
+  return new Promise(res => {
+    const v = panneau({ classe:evt.classe, titre:"Carte événement", corps:`
+      <div class="case-speciale piece ${evt.classe}">${esc(evt.nom)}</div>
+      <p class="texte-centre">${evt.texte}</p>
+      <div class="duo"><button class="bouton piece c-vert" id="ev-oui">Relever</button><button class="bouton piece c-noir" id="ev-non" ${P.banque < PRIX.esquive ? "disabled" : ""}>Esquiver −${PRIX.esquive} €</button></div>` });
+    $("#ev-oui", v).focus();
+    $("#ev-oui", v).onclick = () => { v.remove(); res(true); };
+    $("#ev-non", v).onclick = () => { P.banque -= PRIX.esquive; Son.ko(); v.remove(); res(false); };
+  });
+}
+function offreLegendaire(){
+  return new Promise(res => {
+    const v = panneau({ classe:"c-noir", titre:"Carte légendaire", valeur:"×3", corps:`
+      <div class="case-speciale piece c-noir">Légendaire</div>
+      <p class="texte-centre">Un mot de 10 lettres ou plus, 3 minutes, gain ×3. Un échec coûte une vie.</p>
+      <div class="duo"><button class="bouton piece c-rouge" id="lg-oui">Tenter</button><button class="bouton piece c-noir" id="lg-non">Refuser</button></div>` });
+    $("#lg-oui", v).onclick = () => { v.remove(); res(true); };
+    $("#lg-non", v).onclick = () => { v.remove(); res(false); };
+  });
+}
+function choisirCarte(){
+  return new Promise(res => {
+    const i = P.manche, niv = P.parcours[i], N = NIVEAUX[niv];
+    let cartes = [P.cartes[i], tirerCarte(niv, P.rnd, P.deja), tirerCarte(niv, P.rnd, P.deja)];
+    cartes = melanger(cartes);
+    const v = panneau({ classe:N.classe, titre:"Choisissez votre carte", valeur:N.gain+" €", corps:`
+      <p class="texte-centre">Trois cartes ${N.nom.toLowerCase()}s face cachée. Seule la longueur du mot est visible.</p>
+      <div class="trois">${cartes.map((c,k) => `<button class="piece ${N.classe}" data-k="${k}"><b>${norm(c.origine).length}</b><small>lettres</small></button>`).join("")}</div>` });
+    $$("[data-k]", v).forEach(b => b.onclick = () => { P.cartes[i] = cartes[+b.dataset.k]; v.remove(); res(); });
+  });
+}
+function appliquerCoffre(o){
+  if(o.type==="or"){ P.banque += o.montant; Son.piece(); return {classe:"c-violet", titre:"+"+o.montant+" €", texte:"La banque vous verse "+o.montant+" €."}; }
+  if(o.type==="joker"){ P[o.joker]++; Son.piece(); return {classe:"c-vert", titre:"Joker", texte:"Vous gagnez "+NOM_JOKER[o.joker]+"."}; }
+  if(o.type==="vie"){
+    if(P.vies < P.viesMax){ P.vies++; Son.piece(); return {classe:"c-jaune", titre:"Une vie", texte:"Vous regagnez une vie."}; }
+    P.banque += 50; Son.piece(); return {classe:"c-violet", titre:"+50 €", texte:"Vies au maximum : la banque vous verse 50 € à la place."};
+  }
+  if(o.type==="malus"){ const m = Math.min(30, P.banque); P.banque -= m; Son.ko(); return {classe:"c-orange", titre:"−"+m+" €", texte:"Vous versez "+m+" € à la banque."}; }
+  const avant = P.cagnotte; P.cagnotte = arr5(P.cagnotte*0.75); Son.ko();
+  return {classe:"c-orange", titre:"Voleur", texte: avant>0 ? "Un voleur emporte "+euros(avant-P.cagnotte)+" de votre cagnotte." : "Un voleur passe, mais votre cagnotte est vide."};
+}
+function ouvrirCoffre(contenus){
+  return new Promise(res => {
+    const v = panneau({ classe:"c-violet", titre:"Coffre mystère", corps:`
+      <div id="cf-choix"><p class="texte-centre" style="margin-bottom:12px">Ouvrez un coffre.</p>
+      <div class="trois">${["A","B","C"].map((l,k) => `<button class="piece c-violet" data-k="${k}"><b>${l}</b><small>coffre</small></button>`).join("")}</div></div>
+      <div id="cf-res" hidden style="display:grid; gap:12px"></div>` });
+    $$("[data-k]", v).forEach(b => b.onclick = () => {
+      const t = appliquerCoffre(contenus[+b.dataset.k]);
+      $("#cf-choix", v).hidden = true; const r = $("#cf-res", v); r.hidden = false;
+      r.innerHTML = `<div class="case-speciale piece ${t.classe}">${esc(t.titre)}</div><p class="texte-centre">${t.texte}</p><button class="bouton piece c-jaune" id="cf-ok">Continuer</button>`;
+      $("#cf-ok", v).focus(); $("#cf-ok", v).onclick = () => { v.remove(); res(); };
+    });
+  });
+}
+function ouvrirBoutique(onFerme){
+  const v = panneau({ classe:"c-violet", titre:"Boutique", corps:`<div id="bq" style="display:grid; gap:12px"></div>` });
+  const rendre = () => {
+    $("#bq", v).innerHTML = `<p class="texte-centre">Banque : <b>${euros(P.banque)}</b></p>
+      <div class="lignes">${[["indice","Indice","une solution commence par…",PRIX.indice],["passe","Passe","sans perdre de vie",PRIX.passe],["temps","+10 secondes","sur la prochaine carte",PRIX.temps]].map(([k,n,d,p]) =>
+        `<div style="align-items:center"><span>${n}<br><small style="font-size:13px; color:var(--gris)">${d}</small></span><button class="bouton petit piece c-vert" data-k="${k}" ${P.banque<p?"disabled":""}>${p} €</button></div>`).join("")}</div>
+      <p style="font-size:14px; color:var(--gris)">Vos jokers : ${P.indices} indice${P.indices>1?"s":""}, ${P.melanges===Infinity?"mélange illimité":P.melanges+" mélange"+(P.melanges>1?"s":"")}, ${P.passes} passe${P.passes>1?"s":""}.</p>
+      <button class="bouton piece c-jaune" id="bq-ok">Fermer</button>`;
+    $$("[data-k]", v).forEach(b => b.onclick = () => {
+      const k = b.dataset.k, p = PRIX[k]; if(P.banque < p) return;
+      P.banque -= p; if(k==="indice") P.indices++; if(k==="passe") P.passes++; if(k==="temps") P.tempsBonus++;
+      Son.piece(); rendre();
+    });
+    $("#bq-ok", v).onclick = () => { v.remove(); onFerme && onFerme(); };
+  };
+  rendre();
+}
+
 function lancerManche(){
   const niv = P.parcours ? P.parcours[P.manche] : P.nivEntrainement;
   P.carte = P.parcours ? P.cartes[P.manche] : tirerCarte(niv, P.rnd, P.deja);
-  P.m = { trouves:[], indice:false, debut:performance.now(), duree:NIVEAUX[niv].temps*1000, reste:NIVEAUX[niv].temps*1000, gain:0, premierA:null, fini:false };
+  const evt = P.evtCourant || null; P.evtCourant = null;
+  const leg = !!P.legAccepte; P.legAccepte = false;
+  const tf = (P.cfg && P.cfg.tf) || 1, gm = (P.cfg && P.cfg.gm) || 1;
+  let duree = NIVEAUX[niv].temps*1000*tf;
+  if(P.mode==="braquage") duree = P.reste;
+  if(evt && evt.cle==="eclair") duree = Math.round(duree/2);
+  if(evt && evt.cle==="temps") duree += 30000;
+  if(P.tempsBonus){ duree += P.tempsBonus*10000; P.tempsBonus = 0; }
+  const sm = P.regles.serie ? serieMult(P.serie) : 1;
+  const mult = (evt ? evt.mult : 1) * (leg ? 3 : 1) * sm * gm;
+  P.m = { trouves:[], indice:false, debut:performance.now(), duree, reste:duree, gain:0, base:0, premierA:null, fini:false,
+    evt, legend:leg, mult, sm, gm, arcMax: P.mode==="braquage" ? Math.max(BRAQ_TEMPS, duree) : duree };
   ecranJeu();
   if(P.chrono) demarrerMinuteur();
+  if(evt && evt.cle==="masque"){ const m = P.m; setTimeout(() => { if(P && P.m === m && !m.fini) $(".ecran")?.classList.add("masque"); }, 3000); }
+}
+function majInfos(){
+  const z = $("#serie-info"); if(!z || !P) return;
+  const parts = [];
+  if(P.regles.serie) parts.push(`<span class="pastille-info">Cagnotte <b>${euros(P.cagnotte)}</b></span><span class="pastille-info mult">Série ${fmtMult(serieMult(P.serie))}</span>`);
+  if(P.m && P.m.evt) parts.push(`<span class="pastille-info evt ${P.m.evt.classe}">${esc(P.m.evt.nom)}</span>`);
+  if(P.m && P.m.legend) parts.push(`<span class="pastille-info evt c-noir">Légendaire ×3</span>`);
+  if(P.ghost){ const k = P.manche, g = k>0 ? P.ghost.traj[k-1] : 0; parts.push(`<span class="pastille-info">${esc(P.ghost.nom)} <b>${euros(g)}</b></span>`); }
+  z.innerHTML = parts.join("");
 }
 function ecranJeu(){
-  const c = P.carte, n = norm(c.origine).length, nbSol = solutionsDe(c).length;
+  const c = P.carte, n = norm(c.origine).length, nbSol = solutionsDe(c).length, brq = P.mode==="braquage";
   const piste = P.parcours ? `<div class="piste">${P.parcours.map((nv,i)=>{ const h=P.historique.filter(x=>!x.special)[i]; return `<i class="${NIVEAUX[nv].classe} ${h?(h.reussi?"fait":"rate"):(i===P.manche?"encours":"")}"></i>`; }).join("")}</div>` : "";
   app.innerHTML = `
   <section class="ecran" style="--tw:${largeurTuile(n)}px">
     <div class="hud">
       <button class="icone-btn" id="b-quitter" aria-label="Quitter la partie">${ICO.croix}</button>
-      <div class="hud-centre"><span class="hud-titre">${P.parcours ? `Carte ${P.manche+1} sur ${P.parcours.length}` : `Entraînement · carte ${P.historique.length+1}`}</span>${piste}</div>
-      <div class="banque"><span class="piece-or">€</span><b id="banque">${euros(P.banque)}</b></div>
+      <div class="hud-centre"><span class="hud-titre">${P.parcours ? `${brq?"Mot":"Carte"} ${P.manche+1} sur ${P.parcours.length}` : `Entraînement · carte ${P.historique.length+1}`}</span>${piste}</div>
+      <div class="banque"><span class="piece-or">${brq?"★":"€"}</span><b id="banque">${brq ? P.mots+"/"+P.parcours.length : euros(P.banque)}</b></div>
     </div>
-    ${P.parcours ? `<div class="vies" aria-label="${pluriel(P.vies,"vie")}" style="justify-content:center">${Array.from({length:VIES},(_,i)=>pionSVG("#ffcf3a", i>=P.vies?"perdue":"")).join("")}</div>` : ""}
-    <div class="table-carte">${carteHTML(c, {chrono:P.chrono, indic:`<b>${pluriel(nbSol,"anagramme")}</b> à trouver`})}</div>
+    ${P.parcours && !brq ? `<div class="vies" aria-label="${pluriel(P.vies,"vie")}" style="justify-content:center">${Array.from({length:P.viesMax},(_,i)=>pionSVG("#ffcf3a", i>=P.vies?"perdue":"")).join("")}</div>` : ""}
+    <div class="serie-info" id="serie-info"></div>
+    <div class="table-carte">${carteHTML(c, {chrono:P.chrono, inverse: !!(P.m.evt && P.m.evt.cle==="miroir"), indic:`<b>${pluriel(nbSol,"anagramme")}</b> à trouver`})}</div>
     <div id="compo">
       <div class="reponse" id="reponse" aria-live="polite"></div>
       <div class="message" id="message" role="status"></div>
@@ -984,15 +1223,42 @@ function ecranJeu(){
     </div>
     <div class="legende-cmd" aria-hidden="true"><span>Effacer</span><span>Mélanger</span><span></span><span>Indice</span><span id="leg-passer">Passer</span></div>
     <div class="trouves" id="trouves"></div>
+    ${Pub.bandeau()}
   </section>`;
-  P.compo = Composeur($("#compo"), c, { onComplet: () => valider(), onValider: () => valider(), onChange: () => message("") });
+  P.compo = Composeur($("#compo"), c, { onComplet: () => valider(), onValider: () => valider(), onChange: () => message(""),
+    avantMelanger: () => { if(P.melanges <= 0) return false; if(P.melanges !== Infinity){ P.melanges--; P.jokersUtilises++; majJokers(); } } });
   $("#b-quitter").onclick = confirmerQuitter;
   $("#b-effacer").onclick = () => P.compo.effacer();
   $("#b-melanger").onclick = () => P.compo.melanger();
   $("#b-indice").onclick = donnerIndice;
-  $("#b-passer").onclick = () => finManche(P.m.trouves.length ? "fini" : "passe");
+  $("#b-passer").onclick = passerCarte;
   $("#b-valider").onclick = valider;
-  if(P.chrono) majChrono(P.m.reste, P.m.duree);
+  if(P.chrono) majChrono(P.m.reste, P.m.arcMax);
+  majInfos(); majJokers();
+  Pub.animerBandeau();
+}
+function passerCarte(){
+  if(P.m.trouves.length) return finManche("fini");
+  const double = P.m.evt && P.m.evt.cle==="double";
+  if(P.parcours && P.passes > 0 && !double){ P.passes--; P.jokersUtilises++; return finManche("joker"); }
+  finManche("passe");
+}
+function majJokers(){
+  if(!P || !P.m) return;
+  const mel = $("#b-melanger"), pas = $("#b-passer");
+  if(mel){
+    const fini = P.parcours && P.melanges !== Infinity;
+    mel.disabled = P.m.fini || P.melanges <= 0;
+    let s = $("small", mel);
+    if(fini){ if(!s){ s = document.createElement("small"); mel.appendChild(s); } s.textContent = P.melanges; } else if(s) s.remove();
+  }
+  if(pas && P.parcours){
+    const brq = P.mode==="braquage", double = P.m.evt && P.m.evt.cle==="double";
+    pas.disabled = brq || P.m.fini;
+    let s = $("small", pas);
+    if(P.passes > 0 && !double && !brq){ if(!s){ s = document.createElement("small"); pas.appendChild(s); } s.textContent = P.passes; } else if(s) s.remove();
+    const leg = $("#leg-passer"); if(leg && !P.m.trouves.length) leg.textContent = brq ? "—" : (P.passes>0 && !double ? "Passe" : "Passer");
+  }
   majIndice();
 }
 function majTrouves(){
@@ -1001,17 +1267,26 @@ function majTrouves(){
   $("#indic").innerHTML = reste>0 ? `Gagnée ! Encore <b>${pluriel(reste,"anagramme")}</b> en bonus` : "<b>Toutes les anagrammes trouvées !</b>";
   $("#leg-passer").textContent = "Suivante";
 }
-function majIndice(){ const b=$("#b-indice"); if(b) b.disabled = P.m.indice || P.m.trouves.length>0 || (P.parcours && P.indices<=0); }
+function majIndice(){
+  const b = $("#b-indice"); if(!b) return;
+  const double = P.m.evt && P.m.evt.cle==="double";
+  b.disabled = P.m.indice || P.m.trouves.length>0 || (P.parcours && P.indices<=0) || double || P.m.fini;
+  const s = $("small", b); if(s && P.parcours) s.textContent = P.indices;
+}
 function message(txt, cls=""){ const m=$("#message"); if(m){ m.textContent=txt; m.className="message "+cls; } }
 function donnerIndice(){
-  if(P.m.indice || P.m.trouves.length || (P.parcours && P.indices<=0)) return;
-  if(P.parcours) P.indices--;
+  if(P.m.indice || P.m.trouves.length || (P.parcours && P.indices<=0) || (P.m.evt && P.m.evt.cle==="double")) return;
+  if(P.parcours){ P.indices--; P.jokersUtilises++; }
   P.m.indice = true;
   const premiere = norm(solutionsDe(P.carte)[0])[0];
   P.compo.imposer(premiere);
-  const s = $("#b-indice small"); if(s) s.textContent = P.indices;
-  majIndice();
-  message(`Une solution commence par ${premiere}. Gain divisé par deux.`, "info");
+  if(P.mode==="braquage"){ P.m.debut -= 10000; message(`Une solution commence par ${premiere}. −10 secondes.`, "info"); }
+  else message(`Une solution commence par ${premiere}. Gain divisé par deux.`, "info");
+  majJokers();
+}
+function crediter(g){
+  if(P.regles.serie){ P.cagnotte += g; majInfos(); }
+  else { const avant = P.banque; P.banque += g; compterVers($("#banque"), avant, P.banque); }
 }
 function valider(){
   if(P.m.fini) return;
@@ -1019,24 +1294,28 @@ function valider(){
   if(!compo.complet){ message(`Utilisez les ${n} lettres.`, "ko"); compo.marquer("erreur"); Son.ko(); return; }
   const prop = compo.mot, c = P.carte;
   const raz = () => setTimeout(()=>{ if(P && !P.m.fini && P.compo===compo) compo.vider(); }, 650);
-  if(prop === norm(c.origine)){ message("C'est le mot de la carte. Cherchez-en un autre.", "ko"); compo.marquer("erreur"); Son.ko(); return raz(); }
+  const unique = P.m.evt && P.m.evt.cle==="double" && !P.m.trouves.length;
+  const rate = () => unique ? setTimeout(() => { if(P && !P.m.fini) finManche("essai"); }, 700) : raz();
+  if(prop === norm(c.origine)){ message("C'est le mot de la carte. Cherchez-en un autre.", "ko"); compo.marquer("erreur"); Son.ko(); return rate(); }
   const mot = chercherMot(c, prop);
-  if(!mot){ message(`${prop} n'est pas dans le dictionnaire du jeu.`, "ko"); compo.marquer("erreur"); Son.ko(); return raz(); }
+  if(!mot){ message(`${prop} n'est pas dans le dictionnaire du jeu.`, "ko"); compo.marquer("erreur"); Son.ko(); return rate(); }
   if(P.m.trouves.some(w=>norm(w)===prop)){ message("Déjà trouvé.", "ko"); compo.marquer("erreur"); return raz(); }
+  if(P.mode==="braquage") return braquageReussi(mot);
   const N = NIVEAUX[c.niv], ecoule = performance.now() - P.m.debut;
-  let gain;
+  let base;
   if(!P.m.trouves.length){
-    gain = N.gain;
-    if(P.chrono && ecoule < P.m.duree/2) gain += Math.round(N.gain*BONUS_RAPIDITE);
-    if(P.m.indice) gain = Math.round(gain/2);
+    base = N.gain;
+    if(P.chrono && ecoule < P.m.duree/2) base += Math.round(N.gain*BONUS_RAPIDITE);
+    if(P.m.indice) base = Math.round(base/2);
     P.m.premierA = ecoule;
-  } else gain = Math.round(N.gain*BONUS_EXTRA);
+  } else base = Math.round(N.gain*BONUS_EXTRA);
+  const gain = Math.round(base * P.m.mult);
+  P.m.base += base; P.m.gain += gain;
   P.m.trouves.push(mot.toUpperCase());
-  const avant = P.banque; P.m.gain += gain; P.banque += gain;
   Son.ok(); compo.marquer("juste"); envolerGain(gain);
   message(P.m.trouves.length===1 ? `Bravo ! ${mot.toUpperCase()}` : `Bonus ! ${mot.toUpperCase()}`, "ok");
-  compterVers($("#banque"), avant, P.banque);
-  majTrouves(); majIndice();
+  crediter(gain);
+  majTrouves(); majJokers();
   if(P.m.trouves.length === solutionsDe(c).length) return setTimeout(()=>finManche("fini"), 750);
   raz();
 }
@@ -1045,7 +1324,7 @@ function demarrerMinuteur(){
   const tick = () => {
     if(!P || P.m.fini) return;
     P.m.reste = Math.max(0, P.m.duree - (performance.now() - P.m.debut));
-    majChrono(P.m.reste, P.m.duree);
+    majChrono(P.m.reste, P.m.arcMax || P.m.duree);
     const s = Math.ceil(P.m.reste/1000);
     if(s<=5 && s!==dernierTic && s>0){ dernierTic=s; Son.tic(); }
     if(P.m.reste<=0) return finManche("temps");
@@ -1057,12 +1336,27 @@ function arreterMinuteur(){ if(minuteur) cancelAnimationFrame(minuteur); minuteu
 
 function finManche(raison){
   if(P.m.fini) return;
-  P.m.fini = true; arreterMinuteur(); P.compo.bloquer(true); composeurActif = null;
-  const c = P.carte, N = NIVEAUX[c.niv], reussi = P.m.trouves.length>0;
-  if(!reussi){ if(P.parcours) P.vies--; Son.echec(); }
-  P.historique.push({niv:c.niv, origine:c.origine, trouves:[...P.m.trouves], gain:P.m.gain, reussi});
+  P.m.fini = true; arreterMinuteur(); P.compo.bloquer(true); composeurActif = null; $(".ecran")?.classList.remove("masque");
+  if(P.mode==="braquage") return finBraquage(false);
+  const c = P.carte, N = NIVEAUX[c.niv], reussi = P.m.trouves.length>0, joker = raison==="joker";
+  let perte = 0, cadeau = "";
+  if(!reussi && !joker){
+    if(P.parcours) P.vies--;
+    Son.echec();
+    if(P.regles.serie){ const avant = P.cagnotte; P.cagnotte = arr5(P.cagnotte/2); perte = avant - P.cagnotte; }
+    P.serie = 0;
+  }
+  if(reussi){
+    P.serie++;
+    if(P.m.evt && P.m.evt.cle==="vie" && P.vies < P.viesMax){ P.vies++; cadeau = "Une vie regagnée !"; }
+    if(P.regles.jokers && P.serie % 3 === 0){ const t = ["indices","melanges","passes"][Math.floor(Math.random()*3)]; P[t]++; cadeau += (cadeau ? " " : "") + `Trois réussites d'affilée : vous gagnez ${NOM_JOKER[t]}.`; }
+  }
+  P.historique.push({niv:c.niv, origine:c.origine, trouves:[...P.m.trouves], gain:P.m.gain, reussi, joker});
+  P.traj.push(P.banque + P.cagnotte);
   const trouvesN = new Set(P.m.trouves.map(norm));
-  const titre = reussi ? "Carte gagnée" : (raison==="temps" ? "Sablier écoulé" : "Carte passée");
+  const titre = reussi ? "Carte gagnée" : joker ? "Carte passée (joker)" : raison==="temps" ? "Sablier écoulé" : raison==="essai" ? "Un seul essai : raté" : "Carte passée";
+  const fin = !!P.parcours && (P.vies<=0 || P.manche+1 >= P.parcours.length);
+  if(fin && P.cagnotte > 0){ P.banque += P.cagnotte; P.cagnotte = 0; }
   const lignes = [];
   if(reussi){
     const rapide = P.chrono && P.m.premierA < P.m.duree/2, br = rapide ? Math.round(N.gain*BONUS_RAPIDITE) : 0;
@@ -1070,25 +1364,42 @@ function finManche(raison){
     if(rapide) lignes.push(["Rapidité", br]);
     if(P.m.indice) lignes.push(["Indice (gain ÷ 2)", -Math.round((N.gain+br)/2)]);
     if(P.m.trouves.length>1) lignes.push([`Anagrammes bonus × ${P.m.trouves.length-1}`, (P.m.trouves.length-1)*Math.round(N.gain*BONUS_EXTRA)]);
+    if(P.m.mult !== 1){
+      const det = []; if(P.m.sm>1) det.push("série "+fmtMult(P.m.sm)); if(P.m.evt && P.m.evt.mult!==1) det.push(P.m.evt.nom.toLowerCase()+" "+fmtMult(P.m.evt.mult)); if(P.m.legend) det.push("légendaire ×3"); if(P.m.gm!==1) det.push("scénario "+fmtMult(P.m.gm));
+      lignes.push([`Multiplicateur ${fmtMult(+P.m.mult.toFixed(3))} <small style="color:var(--gris)">(${det.join(", ")})</small>`, P.m.gain - P.m.base]);
+    }
   }
-  const fin = P.parcours && (P.vies<=0 || P.manche+1 >= P.parcours.length);
+  const encaissable = P.regles.serie && !fin && P.cagnotte > 0;
+  const boutons = fin ? `<button class="bouton piece c-jaune" id="b-suivant">Voir le résultat</button>`
+    : encaissable ? `<div class="duo"><button class="bouton piece c-vert" id="b-encaisser">Encaisser ${euros(P.cagnotte)}</button><button class="bouton piece c-jaune" id="b-suivant">Continuer ${fmtMult(serieMult(P.serie))}</button></div>`
+    : `<button class="bouton piece c-jaune" id="b-suivant">${P.parcours ? "Carte suivante" : "Nouvelle carte"}</button>`;
   const v = panneau({ classe:N.classe, titre, valeur: reussi ? "+"+euros(P.m.gain) : "0 €", corps:`
     <h3>Face B · toutes les solutions de ${esc(norm(c.origine))}</h3>
     <div class="solutions">${c.mots.map(w=>{ const n=norm(w); const cls = n===norm(c.origine)?"origine":(trouvesN.has(n)?"trouve":""); return `<button class="sol ${cls}" data-def="${esc(w)}">${esc(w)}</button>`; }).join("")}</div>
     <p style="font-size:13.5px; color:var(--gris)">Touchez un mot pour voir sa définition.</p>
-    ${lignes.length ? `<div class="lignes">${lignes.map(([l,val])=>`<div><span>${l}</span><b class="${val<0?"neg":""}">${val>0?"+":""}${euros(val)}</b></div>`).join("")}<div class="total"><span>Banque</span><b>${euros(P.banque)}</b></div></div>` : ""}
-    ${!reussi && P.parcours ? `<p class="texte-centre">${P.vies>0 ? `Une vie perdue. Il vous en reste ${P.vies}.` : "Plus de vie : la partie s'arrête."}</p>` : ""}
-    <button class="bouton piece c-jaune" id="b-suivant">${fin ? "Voir le résultat" : (P.parcours ? "Carte suivante" : "Nouvelle carte")}</button>
+    ${lignes.length || P.regles.serie || P.parcours ? `<div class="lignes">${lignes.map(([l,val])=>`<div><span>${l}</span><b class="${val<0?"neg":""}">${val>0?"+":""}${euros(val)}</b></div>`).join("")}${P.regles.serie && !fin ? `<div><span>Cagnotte en cours</span><b>${euros(P.cagnotte)}</b></div>` : ""}<div class="total"><span>Banque</span><b id="total-banque">${euros(P.banque)}</b></div></div>` : ""}
+    ${!reussi && !joker && P.parcours ? `<p class="texte-centre">${P.vies>0 ? `Une vie perdue. Il vous en reste ${P.vies}.` : "Plus de vie : la partie s'arrête."}${perte ? ` Vous perdez ${euros(perte)} de cagnotte.` : ""}</p>` : ""}
+    ${cadeau ? `<p class="texte-centre" style="color:#2f7a1c">${cadeau}</p>` : ""}
+    ${boutons}
+    ${!fin && P.parcours && (P.regles.jokers || P.mode==="defi") ? `<button class="bouton-plat" id="b-boutique" style="color:var(--gris); justify-self:center">Boutique : indice, passe, +10 s</button>` : ""}
+    ${!fin && P.mode==="defi" && Pub.actif() && P.pubsRecompense < 2 ? `<button class="recompense" id="b-pubrec">▶ Regarder une pub : +1 indice</button>` : ""}
     ${!P.parcours ? `<button class="bouton-plat" id="b-stop" style="color:var(--gris); justify-self:center">Arrêter l'entraînement</button>` : ""}` });
   $("#b-suivant", v).focus();
-  $("#b-suivant", v).onclick = () => {
+  const suite = async encaisse => {
+    if(encaisse){ P.banque += P.cagnotte; P.cagnotte = 0; P.serie = 0; Son.piece(); }
     v.remove();
     if(!P.parcours) return lancerManche();
     if(fin) return ecranFin();
+    await Pub.entreCartes();
     P.manche++;
     if(P.evenements[P.manche] != null) return caseSpeciale(CASES_SPECIALES[P.evenements[P.manche]]);
-    lancerManche();
+    etapesAvantCarte();
   };
+  $("#b-suivant", v).onclick = () => suite(false);
+  const enc = $("#b-encaisser", v); if(enc) enc.onclick = () => suite(true);
+  const bq = $("#b-boutique", v); if(bq) bq.onclick = () => ouvrirBoutique(() => { const t = $("#total-banque", v); if(t) t.textContent = euros(P.banque); });
+  const pr = $("#b-pubrec", v);
+  if(pr) pr.onclick = async () => { pr.disabled = true; if(await Pub.recompenseVideo()){ P.indices++; P.pubsRecompense++; Son.piece(); toast("+1 indice !"); pr.remove(); } else pr.disabled = false; };
   const stop = $("#b-stop", v); if(stop) stop.onclick = () => { v.remove(); ecranFinEntrainement(); };
 }
 async function caseSpeciale(evt){
@@ -1103,45 +1414,181 @@ async function caseSpeciale(evt){
   $("#evt-res", v).hidden = false; const b = $("#b-evt", v); b.hidden = false; b.focus();
   if(evt.montant){ P.banque = Math.max(0, P.banque + evt.montant); evt.montant>0 ? Son.piece() : Son.ko(); }
   P.historique.push({special:evt});
-  b.onclick = () => { v.remove(); lancerManche(); };
+  b.onclick = () => { v.remove(); etapesAvantCarte(); };
 }
-const etoiles = total => total>=900?3 : total>=500?2 : total>=200?1 : 0;
+
+/* ----- Le braquage : six mots de plus en plus longs, un chrono commun ----- */
+const BRAQ_LONG = [5,6,7,8,9,10], BRAQ_TEMPS = 360000, BRAQ_PLUS = 20000;
+let IDX_LONG = null;
+function carteLongueur(L, rnd, deja){
+  if(!IDX_LONG){ IDX_LONG = {}; for(const niv of Object.keys(DICO)) for(const g of DICO[niv]){ const l = norm(g[0]).length; (IDX_LONG[l] = IDX_LONG[l] || []).push({niv, g}); } }
+  const liste = IDX_LONG[L];
+  for(let e=0; e<80; e++){ const {niv, g} = liste[Math.floor(rnd()*liste.length)], k = cleTri(g[0]); if(deja.has(k)) continue; deja.add(k); return {niv, origine:g[rnd() < .6 ? 0 : 1], mots:g, cle:k}; }
+  const {niv, g} = liste[0]; return {niv, origine:g[0], mots:g, cle:cleTri(g[0])};
+}
+function nouveauBraquage(){
+  arreterVitrine();
+  Pub.avantPartie().then(() => {
+    const deja = new Set(), cartes = BRAQ_LONG.map(L => carteLongueur(L, Math.random, deja));
+    P = { mode:"braquage", rnd:Math.random, cfg:null, regles:{...REGLES_NULLES}, cartes, parcours:cartes.map(c => c.niv), chrono:true,
+      manche:0, banque:0, cagnotte:0, serie:0, vies:3, viesMax:3, indices:2, melanges:Infinity, passes:0, tempsBonus:0, jokersUtilises:0, pubsRecompense:0,
+      deja, historique:[], carte:null, evenements:{}, evts:{}, coffres:{}, legendaire:null, traj:[], ghost:null, reste:BRAQ_TEMPS, mots:0 };
+    lancerManche();
+  });
+}
+function braquageReussi(mot){
+  const compo = P.compo; P.m.fini = true; arreterMinuteur();
+  P.m.trouves.push(mot.toUpperCase()); P.mots++;
+  const rest = Math.max(0, P.m.duree - (performance.now() - P.m.debut));
+  Son.ok(); compo.marquer("juste"); compo.bloquer(true);
+  message(`Bravo ! ${mot.toUpperCase()}${P.manche < BRAQ_LONG.length-1 ? " · +20 s" : ""}`, "ok");
+  const b = $("#banque"); if(b) b.textContent = P.mots+"/"+P.parcours.length;
+  P.historique.push({niv:P.carte.niv, origine:P.carte.origine, trouves:[...P.m.trouves], gain:0, reussi:true});
+  setTimeout(() => {
+    if(!P || P.mode!=="braquage") return;
+    if(P.manche >= BRAQ_LONG.length-1){ P.restFinal = rest; return finBraquage(true); }
+    P.reste = rest + BRAQ_PLUS; P.manche++; lancerManche();
+  }, 900);
+}
+function finBraquage(ok){
+  arreterMinuteur(); composeurActif = null;
+  const reste = ok ? P.restFinal : 0, st = store.get("braquage", {meilleur:0});
+  let record = false; if(ok && reste > (st.meilleur||0)){ st.meilleur = reste; store.set("braquage", st); record = true; }
+  if(!ok) P.historique.push({niv:P.carte.niv, origine:P.carte.origine, trouves:[], gain:0, reussi:false});
+  app.innerHTML = `
+  <section class="ecran">
+    <h1 class="titre-ecran">${ok ? "Coffre ouvert !" : "La police arrive"}</h1>
+    <p class="sous-titre">${P.mots} mot${P.mots>1?"s":""} sur ${BRAQ_LONG.length}${ok ? " · temps restant" : " · temps écoulé"}</p>
+    <div class="score-final"><span>${ok ? fmtTemps(reste) : "—"}</span></div>
+    ${record ? `<div class="tampon">Nouveau record</div>` : (st.meilleur ? `<p class="sous-titre">Meilleur temps restant : ${fmtTemps(st.meilleur)}</p>` : "")}
+    <div class="recap">${P.historique.map(h => `<div class="recap-l"><span class="pastille piece ${NIVEAUX[h.niv].classe}">${h.reussi?"✓":"✕"}</span><span><span data-def="${esc(h.origine)}">${esc(norm(h.origine))}</span> → ${h.trouves.length ? h.trouves.map(w=>`<span data-def="${esc(w.toLowerCase())}">${esc(w)}</span>`).join(", ") : "<i>non trouvé</i>"}</span><b>${norm(h.origine).length} lettres</b></div>`).join("")}</div>
+    <div class="duo"><button class="bouton piece c-vert" id="b-rejouer">Rejouer</button><button class="bouton piece c-noir" id="b-menu">Solo</button></div>
+    ${Pub.bandeau()}
+  </section>`;
+  if(ok){ Son.fin(); setTimeout(() => confettis(record ? 180 : 100), 300); } else Son.echec();
+  $("#b-menu").onclick = ecranSolo; $("#b-rejouer").onclick = nouveauBraquage;
+  Pub.animerBandeau();
+}
+
+/* ----- Choix de la partie ----- */
+function ecranSolo(){
+  arreterVitrine(); Definitions.fermer();
+  if(window.PlateauIA) PlateauIA.stop();
+  arreterMinuteur(); P = null; composeurActif = null; app.classList.remove("large");
+  const regles = {...REGLES_DEFAUT, ...store.get("reglesDefi", {})};
+  const fest = store.get("festival", {m:[-1,-1,-1,-1,-1]}), nbMed = fest.m.filter(x => x >= 0).length;
+  const br = store.get("braquage", {meilleur:0}), rec = store.get("records", {defi:0});
+  const sem = TWISTS[cleSemaine() % TWISTS.length], sc = store.get("semaine", {});
+  const f = store.get("fantome", null), ombre = f && f.jour === aujourdhui() ? "votre meilleure partie du jour" : "l'ombre";
+  app.innerHTML = `
+  <section class="ecran">
+    <div class="entete-ecran"><button class="icone-btn" id="b-retour" aria-label="Retour">${ICO.retour}</button><h1>Mode solo</h1><span></span></div>
+    <p class="sous-titre">Choisissez votre partie.</p>
+    <div class="modes">
+      <button class="mode large piece c-vert" id="s-defi"><span class="filigrane" aria-hidden="true">A</span><span class="ico">${ICO.escalier}</span><span><span class="nom">Le Défi</span><span class="desc">Partie libre : 10 cartes, 3 vies, séries, événements et coffres${rec.defi ? " · record "+euros(rec.defi) : ""}</span></span></button>
+    </div>
+    <details class="reglages"><summary>Règles de la partie libre</summary>
+      ${REGLES_INFO.map(([k,n,d]) => `<label class="interrupteur" for="rg-${k}"><span>${n}<small>${d}</small></span><input type="checkbox" id="rg-${k}" data-k="${k}" ${regles[k]?"checked":""}></label>`).join("")}
+      <p class="note-regles">Le record n'est enregistré que si toutes les règles sont actives.</p>
+    </details>
+    <h2 class="titre-section">Campagnes</h2>
+    <div class="modes">
+      <button class="mode piece c-violet" id="s-fest"><span class="filigrane" aria-hidden="true">F</span><span class="ico">${ICO.escalier}</span><span><span class="nom">Le Festival</span><span class="desc">5 manches à objectif · ${nbMed}/5 médaille${nbMed>1?"s":""}</span></span></button>
+      <button class="mode piece c-noir" id="s-braq"><span class="filigrane" aria-hidden="true">B</span><span class="ico">${ICO.indice}</span><span><span class="nom">Le Braquage</span><span class="desc">6 mots, un seul chrono${br.meilleur ? " · record "+fmtTemps(br.meilleur) : ""}</span></span></button>
+      <button class="mode piece c-bleu" id="s-duel"><span class="filigrane" aria-hidden="true">D</span><span class="ico">${ICO.groupe}</span><span><span class="nom">Duel de l'ombre</span><span class="desc">Cartes du jour contre ${ombre}</span></span></button>
+      <button class="mode piece c-orange" id="s-sem"><span class="filigrane" aria-hidden="true">S</span><span class="ico">${ICO.calendrier}</span><span><span class="nom">Défi de la semaine</span><span class="desc">${esc(sem.nom)}${sc.cle===cleSemaine() ? " · classé "+euros(sc.score) : " · 1 essai classé"}</span></span></button>
+    </div>
+  </section>`;
+  $("#b-retour").onclick = ecranAccueil;
+  $$(".reglages input").forEach(i => i.onchange = () => { const r = {...REGLES_DEFAUT, ...store.get("reglesDefi", {})}; r[i.dataset.k] = i.checked; store.set("reglesDefi", r); });
+  $("#s-defi").onclick = () => nouvellePartie("defi");
+  $("#s-fest").onclick = ecranFestival;
+  $("#s-braq").onclick = nouveauBraquage;
+  $("#s-duel").onclick = () => nouvellePartie("duel");
+  $("#s-sem").onclick = () => nouvellePartie("semaine");
+}
+function ecranFestival(){
+  const st = store.get("festival", {m:[-1,-1,-1,-1,-1], best:[0,0,0,0,0]});
+  app.innerHTML = `
+  <section class="ecran">
+    <div class="entete-ecran"><button class="icone-btn" id="b-retour" aria-label="Retour">${ICO.retour}</button><h1>Le Festival</h1><span></span></div>
+    <p class="sous-titre">Atteignez l'objectif pour gagner une médaille et ouvrir la manche suivante. Argent : objectif +25 %. Or : objectif +50 %, ou argent sans aucun joker.</p>
+    <div class="manches">${FESTIVAL.map((F,i) => {
+      const ouvert = i===0 || st.m[i-1] >= 0, m = st.m[i];
+      return `<button class="manche piece ${ouvert ? "c-violet" : "c-noir"}" data-i="${i}" ${ouvert?"":"disabled"}>
+        <span class="num">${i+1}</span>
+        <span class="txt"><b>${esc(F.nom)}</b><small>${esc(F.resume)}</small><small>Objectif : ${esc(F.objectif)}</small></span>
+        <span class="med">${ouvert ? (m>=0 ? `<i style="background:${MEDAILLES[m].c}"></i>${MEDAILLES[m].nom}` : "Jouer") : "Verrouillée"}</span></button>`; }).join("")}
+    </div>
+  </section>`;
+  $("#b-retour").onclick = ecranSolo;
+  $$("[data-i]").forEach(b => b.onclick = () => nouvellePartie("festival", null, {manche:+b.dataset.i}));
+}
+
 function ecranFin(){
   arreterMinuteur(); composeurActif = null;
-  const total = P.banque, nb = etoiles(total);
+  if(P.cagnotte > 0){ P.banque += P.cagnotte; P.cagnotte = 0; }
+  const total = P.banque, sv = P.regles.serie ? [300,800,1500] : [200,500,900];
+  const nb = total>=sv[2] ? 3 : total>=sv[1] ? 2 : total>=sv[0] ? 1 : 0;
   const rec = store.get("records", {defi:0, jour:{}});
-  let record = false;
-  if(P.mode==="defi" && total > (rec.defi||0)){ rec.defi = total; record = true; }
-  if(P.mode==="jour"){ rec.jour = rec.jour||{}; if(rec.jour[aujourdhui()]==null) rec.jour[aujourdhui()] = total; }
-  store.set("records", rec);
   const cartes = P.historique.filter(h=>!h.special), reussies = cartes.filter(h=>h.reussi).length;
+  let record = false, extra = "", sousTitre = `${reussies} carte${reussies>1?"s":""} gagnée${reussies>1?"s":""} sur ${cartes.length}`, suivant = false;
+  const complet = Object.keys(REGLES_DEFAUT).every(k => P.regles[k]);
+  if(P.mode==="defi" && complet && total > (rec.defi||0)){ rec.defi = total; record = true; }
+  if(P.mode==="jour"){ rec.jour = rec.jour||{}; if(rec.jour[aujourdhui()]==null) rec.jour[aujourdhui()] = total; sousTitre += " · Défi du jour"; }
+  store.set("records", rec);
+  if(P.mode==="jour" || P.mode==="duel"){ const f = store.get("fantome", null); if(!f || f.jour !== aujourdhui() || total > f.total) store.set("fantome", {jour:aujourdhui(), total, traj:P.traj}); }
+  if(P.mode==="duel"){
+    const g = P.ghost.traj[P.ghost.traj.length-1] || 0; sousTitre += " · Duel";
+    extra = total > g ? `<div class="tampon">Vous battez ${esc(P.ghost.nom.toLowerCase())} (${euros(g)})</div>` : `<p class="sous-titre">${esc(P.ghost.nom)} l'emporte avec ${euros(g)}. Revanche ?</p>`;
+  }
+  if(P.mode==="semaine"){
+    const k = cleSemaine(), s = store.get("semaine", {}); sousTitre += " · "+P.cfg.twist.nom;
+    if(s.cle !== k){ store.set("semaine", {cle:k, score:total}); extra = `<div class="tampon">Essai classé enregistré</div>`; }
+    else extra = `<p class="sous-titre">Essai libre. Votre score classé de la semaine : ${euros(s.score)}</p>`;
+  }
+  let medailleNb = -2;
+  if(P.mode==="festival"){
+    const F = P.cfg.F, i = P.cfg.manche, st = store.get("festival", {m:[-1,-1,-1,-1,-1], best:[0,0,0,0,0]});
+    medailleNb = medailleDe(F, {reussies, banque:total, sansJoker:P.jokersUtilises===0});
+    if(medailleNb > st.m[i]) st.m[i] = medailleNb;
+    st.best[i] = Math.max(st.best[i]||0, F.mesure==="reussies" ? reussies : total); store.set("festival", st);
+    sousTitre += " · "+F.nom; suivant = medailleNb >= 0 && i < FESTIVAL.length-1;
+    extra = medailleNb >= 0 ? `<div class="tampon" style="background:${MEDAILLES[medailleNb].c}">Médaille ${MEDAILLES[medailleNb].nom.toLowerCase()}</div>` : `<p class="sous-titre">Objectif manqué : ${esc(F.objectif)}. Retentez !</p>`;
+  }
   app.innerHTML = `
   <section class="ecran">
     <h1 class="titre-ecran">${P.vies>0 ? "Arrivée !" : "Partie terminée"}</h1>
-    <p class="sous-titre">${reussies} carte${reussies>1?"s":""} gagnée${reussies>1?"s":""} sur ${cartes.length}${P.mode==="jour"?" · Défi du jour":""}</p>
+    <p class="sous-titre">${sousTitre}</p>
     <div class="score-final"><span id="score">0 €</span></div>
-    <div class="etoiles" aria-label="${nb} étoile(s) sur 3">${[1,2,3].map(i=>etoileSVG(i<=nb)).join("")}</div>
-    ${record ? `<div class="tampon">Nouveau record</div>` : ""}
+    ${P.mode==="festival" ? "" : `<div class="etoiles" aria-label="${nb} étoile(s) sur 3">${[1,2,3].map(i=>etoileSVG(i<=nb)).join("")}</div>`}
+    ${record ? `<div class="tampon">Nouveau record</div>` : ""}${extra}
     <div class="recap">${P.historique.map(h=> h.special
       ? `<div class="recap-l"><span class="pastille piece ${h.special.classe}">◆</span><span>Case ${h.special.titre}</span><b class="${h.special.montant<0?"neg":""}">${h.special.montant?(h.special.montant>0?"+":"")+euros(h.special.montant):"—"}</b></div>`
-      : `<div class="recap-l"><span class="pastille piece ${NIVEAUX[h.niv].classe}">${h.reussi?"✓":"✕"}</span><span><span data-def="${esc(h.origine)}">${esc(norm(h.origine))}</span> → ${h.trouves.length?h.trouves.map(w=>`<span data-def="${esc(w.toLowerCase())}">${esc(w)}</span>`).join(", "):"<i>non trouvé</i>"}</span><b>${h.gain?"+"+euros(h.gain):"—"}</b></div>`).join("")}</div>
+      : `<div class="recap-l"><span class="pastille piece ${NIVEAUX[h.niv].classe}">${h.reussi?"✓":(h.joker?"»":"✕")}</span><span><span data-def="${esc(h.origine)}">${esc(norm(h.origine))}</span> → ${h.trouves.length?h.trouves.map(w=>`<span data-def="${esc(w.toLowerCase())}">${esc(w)}</span>`).join(", "):(h.joker?"<i>passée</i>":"<i>non trouvé</i>")}</span><b>${h.gain?"+"+euros(h.gain):"—"}</b></div>`).join("")}</div>
     <div class="duo">
       <button class="bouton piece c-vert" id="b-rejouer">${P.mode==="jour"?"Partager":"Rejouer"}</button>
-      <button class="bouton piece c-noir" id="b-menu">Menu</button>
+      <button class="bouton piece c-noir" id="b-menu">${P.mode==="festival" ? "Festival" : "Menu"}</button>
     </div>
+    ${suivant ? `<button class="bouton piece c-jaune" id="b-suiv">Manche suivante</button>` : ""}
+    ${Pub.bandeau()}
   </section>`;
   compterVers($("#score"), 0, total, 900);
-  if(nb>=1 || record){ Son.fin(); setTimeout(()=>confettis(nb>=2||record?180:90), 300); } else Son.echec();
-  const mode = P.mode;
-  $("#b-menu").onclick = ecranAccueil;
-  $("#b-rejouer").onclick = mode==="jour" ? partager : () => nouvellePartie(mode);
+  if(nb>=1 || record || medailleNb>=0){ Son.fin(); setTimeout(()=>confettis(nb>=2||record||medailleNb>=1?180:90), 300); } else Son.echec();
+  const mode = P.mode, man = P.cfg ? P.cfg.manche : 0;
+  $("#b-menu").onclick = mode==="festival" ? ecranFestival : ecranAccueil;
+  $("#b-rejouer").onclick = mode==="jour" ? partager : () => nouvellePartie(mode, null, {manche:man});
+  const sb = $("#b-suiv"); if(sb) sb.onclick = () => nouvellePartie("festival", null, {manche:man+1});
+  Pub.animerBandeau();
 }
 function partager(){
   const d = String(aujourdhui());
   const ligne = P.historique.filter(h=>!h.special).map(h => h.reussi ? {v:"🟩",b:"🟦",r:"🟥",n:"⬛"}[h.niv] : "⬜").join("");
-  const txt = `Le-QLN · Défi du jour ${d.slice(6)}/${d.slice(4,6)}\n${ligne}\n${euros(P.banque)} ${"★".repeat(etoiles(P.banque))}`;
+  const nb = P.banque>=1500?3 : P.banque>=800?2 : P.banque>=300?1 : 0;
+  const txt = `Le-QLN · Défi du jour ${d.slice(6)}/${d.slice(4,6)}\n${ligne}\n${euros(P.banque)} ${"★".repeat(nb)}`;
   try{ navigator.clipboard.writeText(txt).then(()=>toast("Résultat copié : collez-le où vous voulez."), ()=>toast(txt, 6000)); }catch(e){ toast(txt, 6000); }
 }
+
 function ecranFinEntrainement(){
   const reussies = P.historique.filter(h=>h.reussi).length;
   app.innerHTML = `
@@ -1172,6 +1619,8 @@ if("serviceWorker" in navigator && location.protocol==="https:" && !location.hos
   navigator.serviceWorker.register("sw.js").catch(()=>{});
 }
 </script>
+<script src="pub.js"></script>
+<script src="infos.js"></script>
 <script src="plateau.js"></script>
 <script>
 chargerDico().then(ecranAccueil).catch(() => {

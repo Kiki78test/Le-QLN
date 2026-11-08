@@ -1,0 +1,22 @@
+<!doctype html><meta charset="utf-8"><link rel="stylesheet" href="base.css"><style>
+body{background:radial-gradient(90% 90% at 50% 20%,#7a4a2b,#2b160c)}
+.tasse{position:absolute;left:230px;top:150px;width:180px;height:120px;background:linear-gradient(#fff6e6,#e9d3b2);border-radius:0 0 90px 90px;box-shadow:0 14px 0 #b98d5b,0 30px 30px rgba(0,0,0,.5)}
+.tasse::after{content:"";position:absolute;right:-42px;top:20px;width:60px;height:60px;border:14px solid #f3e3c8;border-left:0;border-radius:0 50px 50px 0}
+.cafe{position:absolute;left:238px;top:150px;width:164px;height:26px;border-radius:50%;background:#3b1d0d;box-shadow:inset 0 4px 6px #000}
+.vap{position:absolute;bottom:200px;width:14px;height:90px;border-radius:50%;background:linear-gradient(rgba(255,255,255,.55),transparent);filter:blur(5px);animation:mont 2.2s ease-in infinite}
+@keyframes mont{from{transform:translateY(30px) scaleX(.6);opacity:0}30%{opacity:.8}to{transform:translateY(-70px) scaleX(1.4);opacity:0}}
+.t1{position:absolute;left:0;right:0;top:40px;text-align:center;color:#ffe9c4;font-size:54px}
+.s2{background:#f6e7cd}.t2{position:absolute;left:0;right:0;top:110px;text-align:center;color:#3b1d0d;font-size:64px}
+.grains{position:absolute;inset:0}.grain{position:absolute;width:34px;height:20px;border-radius:50%;background:#4b2713;transform:rotate(var(--r));animation:chute 2.5s ease-in infinite;left:var(--x);top:-30px;animation-delay:var(--d)}
+@keyframes chute{to{top:380px}}
+.s3{background:#2b160c;display:grid;place-items:center;text-align:center;color:#ffe9c4}
+.marque{font-size:78px;color:#ffcf3a}.slogan{font-size:28px;font-weight:600;margin-top:6px}.cta{margin-top:18px;display:inline-block;background:#ffcf3a;color:#2b160c;font-weight:800;font-size:24px;padding:8px 24px;border-radius:30px;animation:pulse 1s ease-in-out infinite alternate}
+@keyframes pulse{to{transform:scale(1.08)}}
+</style>
+<div class="scene s1"><div class="t1 titre pop">Le matin<br>a du goût</div><div class="tasse"></div><div class="cafe"></div>
+<i class="vap" style="left:270px;animation-delay:0s"></i><i class="vap" style="left:315px;animation-delay:.7s"></i><i class="vap" style="left:358px;animation-delay:1.4s"></i></div>
+<div class="scene s2"><div class="grains">
+<i class="grain" style="--x:40px;--r:20deg;--d:0s"></i><i class="grain" style="--x:130px;--r:-30deg;--d:.4s"></i><i class="grain" style="--x:220px;--r:50deg;--d:1s"></i><i class="grain" style="--x:330px;--r:10deg;--d:.2s"></i><i class="grain" style="--x:420px;--r:-60deg;--d:.8s"></i><i class="grain" style="--x:520px;--r:35deg;--d:1.3s"></i><i class="grain" style="--x:590px;--r:-10deg;--d:.5s"></i></div>
+<div class="t2 titre pop">100 % torréfié<br>près de chez vous</div></div>
+<div class="scene s3"><div><div class="marque titre">Zéphyr Café</div><div class="slogan">Le premier café de la journée</div><div class="cta">Découvrir</div></div></div>
+<div class="mention">Publicité fictive · simulation</div>
