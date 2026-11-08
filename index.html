@@ -295,6 +295,7 @@ button.piece[disabled]{filter:grayscale(.85) brightness(.6); cursor:default; tra
 .docs{display:grid; gap:12px}
 .doc{display:grid; grid-template-columns:auto 1fr auto; gap:14px; align-items:center; background:var(--ivoire); color:var(--sombre); border-radius:14px; padding:14px 16px; text-decoration:none; box-shadow:0 2px 0 var(--ivoire-3), 0 10px 24px rgba(0,0,0,.35)}
 .doc:hover{transform:translateY(-2px)}
+.doc .pdf.xls{background:linear-gradient(160deg,var(--vert-b),var(--vert-a)); box-shadow:0 3px 0 var(--vert-o)}
 .doc .pdf{width:44px; height:54px; border-radius:6px; background:linear-gradient(160deg,var(--rouge-b),var(--rouge-a)); color:#fff; font-family:var(--f-ui); font-weight:800; font-size:13px; display:grid; place-items:end center; padding-bottom:7px; box-shadow:0 3px 0 var(--rouge-o)}
 .doc b{display:block; font-family:var(--f-titre); font-weight:400; font-size:26px; letter-spacing:.03em; line-height:1}
 .doc small{display:block; font-family:var(--f-ui); font-weight:700; font-size:14px; color:var(--gris); letter-spacing:.04em; text-transform:uppercase; margin-top:3px}
@@ -790,7 +791,7 @@ async function ecranDocs(){
     const docs = await (await fetch("docs/index.json", {cache:"no-store"})).json();
     const fmt = d => new Date(d+"T12:00:00").toLocaleDateString("fr-FR", {day:"numeric", month:"long", year:"numeric"});
     $("#docs").innerHTML = docs.map(d => `<a class="doc" href="docs/${encodeURI(d.fichier)}" target="_blank" rel="noopener">
-      <span class="pdf" aria-hidden="true">PDF</span>
+      <span class="pdf ${/\.xlsx?$/i.test(d.fichier)?"xls":""}" aria-hidden="true">${(d.fichier.split(".").pop()||"").toUpperCase()}</span>
       <span><b>${esc(d.titre)}</b><small>Mis à jour le ${fmt(d.date)}</small><p>${esc(d.description)}</p></span>
       <span class="ouvrir" aria-hidden="true">↗</span></a>`).join("") || `<p class="sous-titre">Aucun document pour l'instant.</p>`;
   }catch(e){ $("#docs").innerHTML = `<p class="sous-titre">Impossible de charger la liste des documents.</p>`; }
