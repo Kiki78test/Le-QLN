@@ -1076,6 +1076,7 @@ function ecranAccueil(){
     <div class="bareme" aria-label="Gains et temps par couleur">
       ${Object.values(NIVEAUX).map(n=>`<div class="piece ${n.classe}"><b>${n.gain}€</b><small>${n.temps<60?n.temps+" s":(n.temps/60)+" min"}</small></div>`).join("")}
     </div>
+    ${Pub.bandeau()}
     <div class="pied"><button class="bouton-plat" id="b-regles">Règles du jeu</button><button class="bouton-plat" id="b-docs">Documentation</button><button class="bouton-plat" id="b-install" hidden>Installer l'appli</button></div>
     <p class="credit">Dictionnaire construit à partir de Lexique 3.83 (licence CC BY-SA 4.0).</p>
   </section>`;
@@ -1086,7 +1087,7 @@ function ecranAccueil(){
   if(typeof Multi !== "undefined"){ $("#b-multi").onclick = Multi.ecran; const bp = $("#b-profil"); if(bp) bp.onclick = () => Multi.profil(); }
   $("#b-regles").onclick = $("#b-regles-h").onclick = ecranRegles;
   $("#b-docs").onclick = ecranDocs;
-  brancherSon();
+  brancherSon(); Pub.animerBandeau();
   if(installEvt){ const b=$("#b-install"); b.hidden=false; b.onclick=()=>{ installEvt.prompt(); installEvt=null; b.hidden=true; }; }
   demarrerVitrine();
 }
@@ -1415,7 +1416,6 @@ function ecranJeu(){
     </div>
     <div class="legende-cmd" aria-hidden="true"><span>Effacer</span><span>Mélanger</span><span></span><span>Indice</span><span id="leg-passer">Passer</span></div>
     <div class="trouves" id="trouves"></div>
-    ${Pub.bandeau()}
   </section>`;
   P.compo = Composeur($("#compo"), c, { onComplet: () => valider(), onValider: () => valider(), onChange: () => message(""),
     avantMelanger: () => { if(P.melanges <= 0) return false; if(P.melanges !== Infinity){ P.melanges--; P.jokersUtilises++; majJokers(); } } });
@@ -1654,8 +1654,8 @@ function finBraquage(ok){
     <div class="score-final"><span>${ok ? fmtTemps(reste) : "—"}</span></div>
     ${record ? `<div class="tampon">Nouveau record</div>` : (st.meilleur ? `<p class="sous-titre">Meilleur temps restant : ${fmtTemps(st.meilleur)}</p>` : "")}
     <div class="recap">${P.historique.map(h => `<div class="recap-l"><span class="pastille piece ${NIVEAUX[h.niv].classe}">${h.reussi?"✓":"✕"}</span><span><span data-def="${esc(h.origine)}">${esc(norm(h.origine))}</span> → ${h.trouves.length ? h.trouves.map(w=>`<span data-def="${esc(w.toLowerCase())}">${esc(w)}</span>`).join(", ") : "<i>non trouvé</i>"}</span><b>${norm(h.origine).length} lettres</b></div>`).join("")}</div>
+    ${Pub.bandeau("grand")}
     <div class="duo"><button class="bouton piece c-vert" id="b-rejouer">Rejouer</button><button class="bouton piece c-noir" id="b-menu">Solo</button></div>
-    ${Pub.bandeau()}
   </section>`;
   if(ok){ Son.fin(); setTimeout(() => confettis(record ? 180 : 100), 300); } else Son.echec();
   $("#b-menu").onclick = ecranSolo; $("#b-rejouer").onclick = nouveauBraquage;
@@ -1758,12 +1758,12 @@ function ecranFin(){
     <div class="recap">${P.historique.map(h=> h.special
       ? `<div class="recap-l"><span class="pastille piece ${h.special.classe}">◆</span><span>Case ${h.special.titre}</span><b class="${h.special.montant<0?"neg":""}">${h.special.montant?(h.special.montant>0?"+":"")+euros(h.special.montant):"—"}</b></div>`
       : `<div class="recap-l"><span class="pastille piece ${NIVEAUX[h.niv].classe}">${h.reussi?"✓":(h.joker?"»":"✕")}</span><span><span data-def="${esc(h.origine)}">${esc(norm(h.origine))}</span> → ${h.trouves.length?h.trouves.map(w=>`<span data-def="${esc(w.toLowerCase())}">${esc(w)}</span>`).join(", "):(h.joker?"<i>passée</i>":"<i>non trouvé</i>")}</span><b>${h.gain?"+"+euros(h.gain):"—"}</b></div>`).join("")}</div>
+    ${Pub.bandeau("grand")}
     <div class="duo">
       <button class="bouton piece c-vert" id="b-rejouer">${P.mode==="jour"?"Partager":"Rejouer"}</button>
       <button class="bouton piece c-noir" id="b-menu">${P.mode==="festival" ? "Festival" : "Menu"}</button>
     </div>
     ${suivant ? `<button class="bouton piece c-jaune" id="b-suiv">Manche suivante</button>` : ""}
-    ${Pub.bandeau()}
   </section>`;
   compterVers($("#score"), 0, total, 900);
   if(nb>=1 || record || medailleNb>=0){ Son.fin(); setTimeout(()=>confettis(nb>=2||record||medailleNb>=1?180:90), 300); } else Son.echec();

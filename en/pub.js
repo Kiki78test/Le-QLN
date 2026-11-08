@@ -1,8 +1,13 @@
 /* =========================================================================
    Le-QLN — simulation publicitaire (version test)
    Bouton « Pub / No Pub » en haut de l'écran. Les spots sont des vidéos fictives de 6 s (dossier pubs/).
-   Principes : jamais de vidéo pendant un sablier ; au plus une vidéo imposée toutes les 2 min 30 ;
-   la vidéo « récompense » est toujours facultative ; en mode No Pub, rien ne s'affiche.
+   Principes (révisés, voir docs/monetisation-publicitaire.pdf) :
+   - jamais rien pendant un sablier ni sur l'écran de la carte : la concentration du joueur est sacrée ;
+   - aucune vidéo imposée à la première partie de la session, puis au plus une toutes les 3 min, aux transitions
+     (entre deux parties, ou entre deux cartes toutes les 5 cartes) ;
+   - la vidéo « récompense » est toujours à l'initiative du joueur ;
+   - les bandeaux ne vivent que sur les écrans calmes : accueil, fin de partie (grand format), plateau et salon ;
+   - en mode No Pub, rien ne s'affiche.
    Pour passer en réel : remplacer jouerSpot() et bandeau() par le kit d'une régie (AdSense, AdMob…).
    ========================================================================= */
 "use strict";
@@ -12,10 +17,11 @@ const SPOTS = [
   {n:2, marque:"Voltaïa", accroche:"The scooter that goes further", fond:"linear-gradient(90deg,#0d3b2a,#1f8a4d)", c:"#9fe870"},
   {n:3, marque:"Pixelia", accroche:"The studio that makes you play", fond:"linear-gradient(90deg,#14083d,#3b2a8c)", c:"#ffe34d"},
 ];
-const DELAI_MS = 150000, DUREE_S = 6;
-let actif = store.get("pub", true), dernier = 0, cartesVues = 0, idx = Math.floor(Math.random()*SPOTS.length);
-let stats = store.get("pubStats", {videos:0, bandeaux:0, recompenses:0});
-const revenu = () => stats.videos*0.012 + stats.recompenses*0.02 + stats.bandeaux*0.0008;
+const DELAI_MS = 180000, DUREE_S = 6, CARTES_ENTRE = 5;
+let actif = store.get("pub", true), dernier = 0, cartesVues = 0, parties = 0, idx = Math.floor(Math.random()*SPOTS.length);
+let stats = store.get("pubStats", {videos:0, bandeaux:0, recompenses:0, grands:0});
+// eCPM retenus pour la simulation (France, régie mobile, ordres de grandeur 2026) : interstitiel 6 $, récompense 9 $, bandeau 0,30 $, grand format 1,10 $ ; 1 $ ≈ €0,92
+const revenu = () => (stats.videos*6 + stats.recompenses*9 + stats.bandeaux*.3 + (stats.grands||0)*1.1) / 1000 * .92;
 
 const css = document.createElement("style");
 css.textContent = `
@@ -46,6 +52,11 @@ body{padding-top:var(--bp-h)}
 .pub-bandeau .pb-m{font-family:var(--f-titre); font-size:22px; letter-spacing:.04em; line-height:1; flex:none}
 .pub-bandeau .pb-a{font-family:var(--f-ui); font-weight:600; font-size:15px; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0}
 .pub-bandeau .pb-cre{display:flex; align-items:center; gap:10px; min-width:0; animation:apparait .5s}
+.pub-bandeau.grand{display:grid; grid-template-columns:auto 1fr; grid-template-rows:auto auto; gap:6px 12px; padding:10px 12px; align-items:center}
+.pub-bandeau.grand img{grid-row:1/3; width:112px; aspect-ratio:16/9; object-fit:cover; border-radius:8px; box-shadow:0 4px 10px rgba(0,0,0,.4)}
+.pub-bandeau.grand .pb-tag{justify-self:start}
+.pub-bandeau.grand .pb-cre{flex-direction:column; align-items:flex-start; gap:2px}
+.pub-bandeau.grand .pb-a{white-space:normal}
 .recompense{display:flex; align-items:center; justify-content:center; gap:8px; font-family:var(--f-ui); font-weight:800; font-size:16px; letter-spacing:.04em; color:var(--sombre); background:rgba(0,0,0,.06); border:2px dashed rgba(0,0,0,.25); border-radius:14px; padding:9px 12px 8px; width:100%}
 .recompense:hover{background:rgba(0,0,0,.12)}
 .recompense[disabled]{opacity:.5}
@@ -76,11 +87,11 @@ function majBarre(){
     const v = b.dataset.v === "1"; if(v === actif) return;
     actif = v; store.set("pub", actif); majBarre();
     if(!actif){ $$(".pub-bandeau").forEach(x => x.remove()); toast("No Ads mode: no advertising."); }
-    else toast("Ads mode: a spot before the game, a banner during timers, optional videos for bonuses.", 5000);
+    else toast("Ads mode: a spot between two games, a banner on quiet screens, optional videos for bonuses. Never during a timer.", 5000);
   });
 }
 majBarre();
-function compter(k){ stats[k]++; store.set("pubStats", stats); majBarre(); }
+function compter(k){ stats[k] = (stats[k]||0)+1; store.set("pubStats", stats); majBarre(); }
 
 /* ----- spot vidéo plein écran ----- */
 function jouerSpot({passerApres = 3, recompense = false, titre = "Advertisement"} = {}){
@@ -106,17 +117,19 @@ function jouerSpot({passerApres = 3, recompense = false, titre = "Advertisement"
 }
 
 /* ----- points d'insertion ----- */
-const libre = () => performance.now() - dernier > DELAI_MS || dernier === 0;
+const libre = () => dernier === 0 || performance.now() - dernier > DELAI_MS;
+/* entre deux parties : jamais à la première partie de la session (le joueur vient d'arriver) */
 async function avantPartie(){
-  if(!actif || !libre()) return;
+  parties++;
+  if(!actif || parties === 1 || !libre()){ if(dernier === 0) dernier = performance.now(); return; }
   await jouerSpot({passerApres:3, titre:"Advertisement before the game"});
   dernier = performance.now(); compter("videos");
 }
-/* appelé entre deux cartes, sablier arrêté : une vidéo toutes les 4 cartes au plus */
+/* appelé entre deux cartes, sablier arrêté : une vidéo toutes les 5 cartes au plus, et pas plus d'une toutes les 3 min */
 async function entreCartes(){
   if(!actif) return;
   cartesVues++;
-  if(cartesVues < 4 || !libre()) return;
+  if(cartesVues < CARTES_ENTRE || !libre()) return;
   cartesVues = 0;
   await jouerSpot({passerApres:3, titre:"Advertisement"});
   dernier = performance.now(); compter("videos");
@@ -130,18 +143,24 @@ async function recompenseVideo(){
 function actifOui(){ return actif; }
 
 /* ----- bandeau discret, pendant les sabliers ----- */
-function bandeau(){ return actif ? `<div class="pub-bandeau" role="complementary" aria-label="Advertisement"></div>` : ""; }
+/* bandeau : format "grand" (type 300×250) sur l'écran de fin, format discret ailleurs ; rotation toutes les 20 s */
+function bandeau(format = ""){ return actif ? `<div class="pub-bandeau ${format === "grand" ? "grand" : ""}" role="complementary" aria-label="Advertisement"></div>` : ""; }
 function animerBandeau(){
-  const el = $(".pub-bandeau"); if(!el) return;
-  let i = Math.floor(Math.random()*SPOTS.length);
-  const montrer = () => {
-    if(!document.body.contains(el) || !actif){ clearInterval(it); return; }
-    const s = SPOTS[i++ % SPOTS.length];
-    el.style.background = s.fond;
-    el.innerHTML = `<span class="pb-tag">Ad</span><div class="pb-cre"><span class="pb-m" style="color:${s.c}">${esc(s.marque)}</span><span class="pb-a">${esc(s.accroche)}</span></div>`;
-    compter("bandeaux");
-  };
-  const it = setInterval(montrer, 12000); montrer();
+  $$(".pub-bandeau").forEach(el => {
+    if(el.dataset.anime) return; el.dataset.anime = "1";
+    const grand = el.classList.contains("grand");
+    let i = Math.floor(Math.random()*SPOTS.length);
+    const montrer = () => {
+      if(!document.body.contains(el) || !actif){ clearInterval(it); return; }
+      const s = SPOTS[i++ % SPOTS.length];
+      el.style.background = s.fond;
+      el.innerHTML = grand
+        ? `<span class="pb-tag">Ad</span><img src="../pubs/spot${s.n}.jpg" alt="" loading="lazy"><div class="pb-cre"><span class="pb-m" style="color:${s.c}">${esc(s.marque)}</span><span class="pb-a">${esc(s.accroche)}</span></div>`
+        : `<span class="pb-tag">Ad</span><div class="pb-cre"><span class="pb-m" style="color:${s.c}">${esc(s.marque)}</span><span class="pb-a">${esc(s.accroche)}</span></div>`;
+      compter(grand ? "grands" : "bandeaux");
+    };
+    const it = setInterval(montrer, 20000); montrer();
+  });
 }
 return { avantPartie, entreCartes, recompenseVideo, bandeau, animerBandeau, actif: actifOui };
 })();
