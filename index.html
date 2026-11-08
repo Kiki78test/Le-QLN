@@ -559,6 +559,25 @@ button.piece:active, .piece.enfonce{transform:translateY(calc(var(--lip) - 1px))
 .joueur{transition:transform .25s cubic-bezier(.2,1.4,.4,1), box-shadow .25s}
 .joueur.actif .argent{text-shadow:0 0 12px rgba(255,207,58,.8)}
 @media (prefers-reduced-motion:reduce){ .rayons,.medaille-hero svg,.score-final,.etoiles .on,.tapis-cadre::after,.panneau.face-b,.dos-carte,.dos-carte::after{animation:none!important} .dos-carte{display:none} }
+
+/* =====================  DESIGN V5 — dé 3D, pions qui sautent  ===================== */
+.de{--d:78px; width:var(--d); height:var(--d); padding:0; display:block; background:none!important; box-shadow:none!important; border-radius:0; perspective:420px; position:relative}
+.dock .de{--d:64px; padding:0}
+.de .cube{position:relative; width:100%; height:100%; transform-style:preserve-3d; transition:none}
+.de .face{position:absolute; inset:0; border-radius:calc(var(--d)*.2); display:grid; grid-template-columns:repeat(3,1fr); grid-template-rows:repeat(3,1fr); padding:calc(var(--d)*.15); backface-visibility:hidden;
+  background:radial-gradient(120% 100% at 25% 15%, #fff, #ece6d4 55%, #cfc7ae); box-shadow:inset 0 0 0 2px rgba(0,0,0,.07), inset 0 -5px 8px rgba(0,0,0,.14), inset 0 2px 0 #fff}
+.de .face i{width:calc(var(--d)*.17); height:calc(var(--d)*.17); border-radius:50%; background:radial-gradient(circle at 35% 30%, #666, #0a0a0a 70%); place-self:center; box-shadow:inset 0 -1px 1px rgba(255,255,255,.2)}
+.dock .de .face i{width:11px; height:11px}
+.de .f1{transform:translateZ(calc(var(--d)/2))} .de .f6{transform:rotateY(180deg) translateZ(calc(var(--d)/2))}
+.de .f2{transform:rotateY(90deg) translateZ(calc(var(--d)/2))} .de .f5{transform:rotateY(-90deg) translateZ(calc(var(--d)/2))}
+.de .f3{transform:rotateX(90deg) translateZ(calc(var(--d)/2))} .de .f4{transform:rotateX(-90deg) translateZ(calc(var(--d)/2))}
+.de.vide .face i{visibility:hidden!important}
+.de::after{content:""; position:absolute; left:10%; right:10%; bottom:-14px; height:12px; border-radius:50%; background:radial-gradient(closest-side, rgba(0,0,0,.5), transparent); transform:scaleX(1); z-index:-1}
+.de.roule{animation:sautDe var(--dur,.7s) cubic-bezier(.3,.6,.4,1)}
+.de.roule::after{animation:ombreDe var(--dur,.7s) cubic-bezier(.3,.6,.4,1)}
+@keyframes sautDe{0%{transform:translateY(-46px) scale(1.25)} 30%{transform:translateY(0) scale(1)} 45%{transform:translateY(-18px) scale(1.07)} 62%{transform:translateY(0) scale(1)} 76%{transform:translateY(-6px)} 100%{transform:translateY(0)}}
+@keyframes ombreDe{0%{transform:scaleX(.5); opacity:.3} 30%,62%,100%{transform:scaleX(1); opacity:1} 45%{transform:scaleX(.8); opacity:.6}}
+@media (prefers-reduced-motion:reduce){ .de.roule,.de.roule::after{animation:none} }
 </style>
 </head>
 <body>
@@ -643,14 +662,42 @@ const Son = {
       }
     }catch(e){}
   },
+  _c(){ this.ctx = this.ctx || new (window.AudioContext||window.webkitAudioContext)(); if(this.ctx.state==="suspended") this.ctx.resume(); return this.ctx; },
+  note(f, t0, dur=.25, vol=.14, type="triangle", harm=true){
+    if(!this.actif) return;
+    try{
+      const c=this._c(), t=c.currentTime+t0;
+      [[1,1],[2,.35],[3,.15]].slice(0, harm?3:1).forEach(([m,a]) => {
+        const o=c.createOscillator(), g=c.createGain(); o.type=type; o.frequency.value=f*m;
+        g.gain.setValueAtTime(.0001,t); g.gain.exponentialRampToValueAtTime(vol*a,t+.015); g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+        o.connect(g).connect(c.destination); o.start(t); o.stop(t+dur+.02);
+      });
+    }catch(e){}
+  },
+  bruit(t0=0, dur=.05, vol=.12, fc=1800){
+    if(!this.actif) return;
+    try{
+      const c=this._c(), n=Math.max(1,Math.floor(c.sampleRate*dur)), b=c.createBuffer(1,n,c.sampleRate), d=b.getChannelData(0);
+      for(let i=0;i<n;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/n,2);
+      const s=c.createBufferSource(), f=c.createBiquadFilter(), g=c.createGain(); s.buffer=b; f.type="bandpass"; f.frequency.value=fc; f.Q.value=1.2; g.gain.value=vol;
+      s.connect(f).connect(g).connect(c.destination); s.start(c.currentTime+t0);
+    }catch(e){}
+  },
   tap(){ this.bip([700],.05,"sine",.07); },
-  ok(){ this.bip([523,659,784,1047],.1); },
+  saut(){ this.note(330,0,.09,.07,"sine",false); this.note(520,.04,.09,.05,"sine",false); },
+  atterrit(grand){ this.note(grand?110:140,0,.16,grand?.22:.14,"sine",false); this.bruit(0,.06,grand?.1:.05,900); },
+  clac(f=1){ this.bruit(0,.05,.16*f,2200+Math.random()*1200); this.note(180+Math.random()*80,0,.06,.07*f,"square",false); },
+  ok(){ [523,659,784,1047].forEach((f,i)=>this.note(f,i*.08,.22,.12)); },
   ko(){ this.bip([220,165],.18,"sawtooth",.1); },
-  tic(){ this.bip([1250],.04,"square",.04); },
-  de(){ this.bip([300,420,360,480],.035,"square",.04); },
-  piece(){ this.bip([1320,1760],.07,"sine",.12); },
-  fin(){ this.bip([392,523,659,784],.16,"triangle",.14); },
-  echec(){ this.bip([392,330,262],.2,"triangle",.14); },
+  tic(s){ const fort = s!=null && s<=3; this.note((s%2) ? 1500 : 1050, 0, .05, fort?.1:.06, "square", false); this.bruit(0,.02,fort?.08:.04,3500); },
+  de(){ this.clac(.8); },
+  piece(){ this.note(1320,0,.12,.1,"sine",false); this.note(1760,.07,.2,.1,"sine",false); },
+  fin(){ // fanfare de victoire
+    const m=[[523,0,.14],[523,.14,.14],[523,.28,.14],[659,.42,.28],[587,.7,.14],[659,.84,.14],[784,.98,.55],[1047,1.45,.9]];
+    m.forEach(([f,t,d]) => { this.note(f,t,d+.12,.13,"triangle"); this.note(f/2,t,d+.12,.07,"sine",false); });
+    [0,.14,.28].forEach(t => this.bruit(t+1.45,.25,.05,6000));
+  },
+  echec(){ [[392,0],[370,.22],[349,.44],[330,.66]].forEach(([f,t]) => this.note(f,t,.4,.12,"sawtooth",false)); },
 };
 function boutonSon(){ return `<button class="icone-btn" id="b-son" aria-label="${Son.actif?"Couper le son":"Activer le son"}">${Son.actif?ICO.son:ICO.muet}</button>`; }
 function brancherSon(){ const b=$("#b-son"); if(b) b.onclick=()=>{ Son.actif=!Son.actif; store.set("son",Son.actif); b.innerHTML=Son.actif?ICO.son:ICO.muet; b.setAttribute("aria-label", Son.actif?"Couper le son":"Activer le son"); }; }
@@ -910,15 +957,20 @@ function panneau({classe="c-noir", titre, valeur="", corps, large=false}){
   return v;
 }
 const FACES = {1:[4],2:[0,8],3:[0,4,8],4:[0,2,6,8],5:[0,2,4,6,8],6:[0,2,3,5,6,8]};
-function afficherDe(el, v){ $$("i", el).forEach((p,i)=>p.style.visibility = FACES[v].includes(i)?"visible":"hidden"); }
+const ROT_DE = {1:[0,0], 2:[0,-90], 3:[-90,0], 4:[90,0], 5:[0,90], 6:[0,-180]};
+function afficherDe(el, v){ const c = $(".cube", el); if(!c) return; el.classList.remove("vide"); const [x,y] = ROT_DE[v] || [0,0]; c.style.transform = `rotateX(${x}deg) rotateY(${y}deg)`; }
 function lancerDeAnime(el, valeur, ms=640){
   return new Promise(res => {
-    el.classList.remove("roule"); void el.offsetWidth; el.classList.add("roule");
-    let n = 0; const total = Math.max(4, Math.round(ms/80));
-    const it = setInterval(()=>{ afficherDe(el, n<total-1 ? 1+Math.floor(Math.random()*6) : valeur); Son.de(); if(++n>=total){ clearInterval(it); res(valeur); } }, 80);
+    const c = $(".cube", el), [x,y] = ROT_DE[valeur];
+    el.classList.remove("vide","roule"); void el.offsetWidth; el.classList.add("roule");
+    c.style.transform = `rotateX(${x}deg) rotateY(${y}deg)`;
+    if(c.animate && !matchMedia("(prefers-reduced-motion: reduce)").matches)
+      c.animate([{transform:`rotateX(${x+1080}deg) rotateY(${y-720}deg)`},{transform:`rotateX(${x}deg) rotateY(${y}deg)`}], {duration:ms, easing:"cubic-bezier(.12,.7,.25,1)"});
+    [.18,.38,.58,.78,.95].forEach((f,i) => setTimeout(() => { if(Son.clac) Son.clac(i === 4 ? 1 : .55); else Son.de(); }, ms*f));
+    setTimeout(() => res(valeur), ms);
   });
 }
-const deHTML = (id="de") => `<div class="de" id="${id}">${"<i></i>".repeat(9)}</div>`;
+const deHTML = (id="de") => `<div class="de" id="${id}"><div class="cube">${[1,2,3,4,5,6].map(v => `<div class="face f${v}">${Array.from({length:9}, (_,i) => `<i style="visibility:${FACES[v].includes(i)?"visible":"hidden"}"></i>`).join("")}</div>`).join("")}</div></div>`;
 
 /* =========================================================================
    Accueil
@@ -1424,7 +1476,7 @@ function demarrerMinuteur(){
     P.m.reste = Math.max(0, P.m.duree - (performance.now() - P.m.debut));
     majChrono(P.m.reste, P.m.arcMax || P.m.duree);
     const s = Math.ceil(P.m.reste/1000);
-    if(s<=5 && s!==dernierTic && s>0){ dernierTic=s; Son.tic(); }
+    if(s<=10 && s!==dernierTic && s>0){ dernierTic=s; Son.tic(s); }
     if(P.m.reste<=0) return finManche("temps");
     minuteur = requestAnimationFrame(tick);
   };

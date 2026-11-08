@@ -383,12 +383,36 @@ function choixIA(j, opts){
   for(const o of opts){ const v = valeurCase(j, o.id, j.pos); if(v > best){ best = v; meilleur = o; } }
   return meilleur;
 }
+const NS_SVG = "http://www.w3.org/2000/svg";
+const reduitMvt = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
+function poussiere(j, grosse){
+  const svg = $("#tapis"); if(!svg || !G || reduitMvt()) return;
+  let fx = $("#fx", svg); if(!fx){ fx = document.createElementNS(NS_SVG, "g"); fx.id = "fx"; fx.setAttribute("pointer-events", "none"); svg.appendChild(fx); }
+  const [x, y, s] = positionPion(j), n = grosse ? 9 : 5, pied = y + 21*s;
+  for(let i=0;i<n;i++){
+    const c = document.createElementNS(NS_SVG, "circle"); c.setAttribute("cx", x + (Math.random()-.5)*10); c.setAttribute("cy", pied); c.setAttribute("r", 2.5 + Math.random()*(grosse?5:3.5));
+    c.setAttribute("fill", i%3 ? "rgba(255,244,214,.85)" : "rgba(255,207,58,.9)"); fx.appendChild(c);
+    const dir = (i/(n-1) - .5)*2, dx = dir*(18+Math.random()*(grosse?30:16)), dy = -(4 + Math.random()*(grosse?20:10));
+    const a = c.animate([{transform:"translate(0,0) scale(.6)", opacity:.95},{transform:`translate(${dx}px,${dy}px) scale(1.5)`, opacity:0}], {duration:420 + Math.random()*200, easing:"ease-out"});
+    a.onfinish = () => c.remove();
+  }
+}
+function sauterPion(j, ms, dernier){
+  if(reduitMvt()) return;
+  const e = $(`#tapis .pion[data-id="${j.id}"]`), c = e && $(".corps-pion", e); if(!c || !c.animate) return;
+  c.style.transformBox = "fill-box"; c.style.transformOrigin = "50% 100%";
+  c.animate([{transform:"translateY(0) scale(1,1)"},{transform:"translateY(-30px) scale(.88,1.16)", offset:.45},{transform:"translateY(0) scale(1.24,.78)", offset:.82},{transform:"translateY(0) scale(1,1)"}], {duration:ms, easing:"ease-out"});
+  setTimeout(() => { poussiere(j, dernier); if(Son.atterrit) Son.atterrit(dernier); }, ms*.8);
+}
 async function deplacer(j, chemin){
-  for(const id of chemin){
+  const ms = j.ia ? 210 : 230;
+  for(let k=0;k<chemin.length;k++){
+    const id = chemin[k];
     j.pos = id;
     if(id === "A") break;
-    dessinerPions(); centrerSur(j); Son.tap();
-    await attendre(j.ia ? 190 : 170);
+    dessinerPions(); centrerSur(j); if(Son.saut) Son.saut(); else Son.tap();
+    sauterPion(j, ms, k === chemin.length-1);
+    await attendre(ms);
   }
 }
 
@@ -539,7 +563,7 @@ function carteHumaine(j, c){
       if(!G){ terminer({proposition:null}); return; }
       const reste = Math.max(0, duree - (performance.now()-t0));
       majChrono(reste, duree);
-      const s = Math.ceil(reste/1000); if(s<=5 && s!==dernier && s>0){ dernier = s; Son.tic(); }
+      const s = Math.ceil(reste/1000); if(s<=10 && s!==dernier && s>0){ dernier = s; Son.tic(s); }
       if(reste <= 0){
         if(compo.complet && compo.mot !== norm(c.origine)) return proposer();
         return terminer({proposition:null});
@@ -926,7 +950,7 @@ function dock({de, msg, sous}){
   const garderDe = de !== false && deEl;
   $(".dock-haut", d).innerHTML = `${de===false ? "" : deHTML("de-dock")}<div class="dock-msg">${msg||""}${sous?`<small>${sous}</small>`:""}</div>`;
   const nouveau = $(".de", d);
-  if(nouveau){ afficherDe(nouveau, typeof de === "number" ? de : (garderDe ? 1 : 1)); if(typeof de !== "number") $$("i", nouveau).forEach(i=>i.style.visibility="hidden"); }
+  if(nouveau){ afficherDe(nouveau, typeof de === "number" ? de : 1); if(typeof de !== "number") nouveau.classList.add("vide"); }
   $("#dock-actions").innerHTML = "";
 }
 function boutonDock(texte, classe){
