@@ -578,6 +578,28 @@ button.piece:active, .piece.enfonce{transform:translateY(calc(var(--lip) - 1px))
 @keyframes sautDe{0%{transform:translateY(-46px) scale(1.25)} 30%{transform:translateY(0) scale(1)} 45%{transform:translateY(-18px) scale(1.07)} 62%{transform:translateY(0) scale(1)} 76%{transform:translateY(-6px)} 100%{transform:translateY(0)}}
 @keyframes ombreDe{0%{transform:scaleX(.5); opacity:.3} 30%,62%,100%{transform:scaleX(1); opacity:1} 45%{transform:scaleX(.8); opacity:.6}}
 @media (prefers-reduced-motion:reduce){ .de.roule,.de.roule::after{animation:none} }
+
+/* =====================  DESIGN V6 — plateau en perspective, volumes  ===================== */
+.tapis-cadre{--rx:0; --ry:0; transform-style:preserve-3d; transform-origin:50% 100%; margin:8px 0 26px;
+  transform:perspective(1000px) rotateX(calc(16deg + var(--rx)*1deg)) rotateY(calc(var(--ry)*1deg)); transition:transform .25s ease-out; will-change:transform;
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.55), 0 1px 0 #a87a22, 0 2px 0 #9a6c1a, 0 3px 0 #8a5a12, 0 4px 0 #7c4f0f, 0 5px 0 #6e440c, 0 6px 0 #603a09, 0 7px 0 #523006, 0 8px 0 #452704, 0 9px 0 #3a2003, 0 10px 0 #2f1a02,
+  0 24px 30px rgba(0,0,0,.55), 0 50px 60px rgba(0,0,0,.35)!important}
+.tapis-cadre.sans-persp{transform:none}
+#tapis .case-g{filter:drop-shadow(0 2px 0 #000) drop-shadow(0 4px 0 rgba(0,0,0,.55)) drop-shadow(0 7px 4px rgba(0,0,0,.4))}
+#tapis .case-g:not(.cible):hover{filter:brightness(1.1) drop-shadow(0 2px 0 #000) drop-shadow(0 7px 4px rgba(0,0,0,.4))}
+#tapis .case-g.cible{filter:drop-shadow(0 0 10px #ffcf3a) drop-shadow(0 4px 0 #000)}
+#tapis .pion{filter:drop-shadow(0 6px 3px rgba(0,0,0,.45))}
+#tapis .pion.actif{filter:drop-shadow(0 0 8px rgba(255,230,120,.9)) drop-shadow(0 8px 4px rgba(0,0,0,.5))}
+.bouton{box-shadow:0 1px 0 #fff6 inset, 0 3px 0 rgba(0,0,0,.28), 0 6px 0 rgba(0,0,0,.2), 0 12px 18px rgba(0,0,0,.35)!important; transition:transform .08s, box-shadow .08s}
+.bouton:active{transform:translateY(4px)!important; box-shadow:0 1px 0 #fff6 inset, 0 1px 0 rgba(0,0,0,.3), 0 3px 6px rgba(0,0,0,.35)!important}
+.lettre{box-shadow:inset 0 2px 0 #fff9, inset 0 -3px 0 rgba(0,0,0,.18), 0 2px 0 #0003, 0 4px 0 #0002, 0 7px 0 #0002, 0 12px 14px rgba(0,0,0,.35)!important; transition:transform .08s, box-shadow .08s}
+.lettre:active{transform:translateY(5px)!important}
+.joueur{transition:transform .25s; transform-style:preserve-3d} .joueur.actif,.joueur[aria-current="true"]{transform:translateZ(0) scale(1.02)}
+.dock{box-shadow:0 2px 0 #fff inset, 0 6px 0 #d8d0b4, 0 10px 0 #b8ae8c, 0 24px 30px rgba(0,0,0,.45)!important}
+@media (prefers-reduced-motion:reduce){ .tapis-cadre{transform:perspective(1000px) rotateX(10deg); transition:none} }
+
+.quitter-voile{position:absolute; top:max(12px, env(safe-area-inset-top)); left:12px; width:44px; height:44px; border-radius:50%; border:1px solid rgba(255,255,255,.25); background:rgba(10,20,50,.75); color:#fff; display:grid; place-items:center; cursor:pointer; z-index:5; backdrop-filter:blur(4px)}
+.quitter-voile svg{width:20px; height:20px}
 </style>
 </head>
 <body>
@@ -1851,6 +1873,28 @@ chargerDico().then(ecranAccueil).catch(() => {
       const reduit = matchMedia("(prefers-reduced-motion: reduce)").matches; if(reduit) return;
       p.classList.add("face-b"); const d = document.createElement("div"); d.className = "dos-carte"; d.innerHTML = "<span>LE - QLN</span>"; p.prepend(d); setTimeout(() => d.remove(), 1300); }); }
   new MutationObserver(() => { ameliorerFin(); ameliorerFaceB(); }).observe(document.body, {childList:true, subtree:true});
+})();
+</script>
+<script>
+/* V6 : inclinaison du plateau selon le doigt / le téléphone */
+(function(){
+  const reduit = matchMedia("(prefers-reduced-motion: reduce)").matches; if(reduit) return;
+  const set = (rx,ry) => { const c = document.querySelector(".tapis-cadre"); if(!c) return; c.style.setProperty("--rx", rx.toFixed(2)); c.style.setProperty("--ry", ry.toFixed(2)); };
+  const lim = (v,m) => Math.max(-m, Math.min(m, v));
+  addEventListener("pointermove", e => { if(e.pointerType==="touch") return; set(lim(-(e.clientY/innerHeight-.5)*6,4), lim((e.clientX/innerWidth-.5)*10,6)); }, {passive:true});
+  addEventListener("deviceorientation", e => { if(e.gamma==null) return; set(lim((e.beta-50)*.12,5), lim(e.gamma*.18,7)); }, {passive:true});
+})();
+</script>
+<script>
+/* Quitter la partie même quand une carte (voile) est affichée */
+(function(){
+  new MutationObserver(ms => { ms.forEach(m => m.addedNodes.forEach(n => {
+    if(!(n instanceof HTMLElement) || !n.classList.contains("voile") || n.querySelector(".quitter-voile,#q-oui")) return;
+    const q = document.getElementById("b-quitter"); if(!q) return;
+    const b = document.createElement("button"); b.className = "quitter-voile"; b.setAttribute("aria-label", q.getAttribute("aria-label") || "Quitter"); b.innerHTML = q.innerHTML;
+    b.onclick = e => { e.stopPropagation(); q.click(); }; n.appendChild(b);
+  })); }).observe(document.body, {childList:true});
+  document.addEventListener("click", e => { if(e.target && e.target.id === "q-oui") setTimeout(() => document.querySelectorAll(".voile").forEach(v => v.remove()), 0); }, true);
 })();
 </script>
 </body>

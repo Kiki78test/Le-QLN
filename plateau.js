@@ -789,7 +789,8 @@ const caseArrivee = i => [XA + 38, Y0 + CH*1.05 + i*CH + CH/2];
 const GRAD = {v:["#1e6a29","#8fca42"], b:["#1b47a3","#62a4ec"], r:["#7e0c14","#ea3039"], n:["#0b0b0d","#4a4c52"], orange:["#e46d16","#fbad38"], violet:["#3b1c70","#7444bd"], jaune:["#d8cb12","#fff47a"]};
 
 function svgTapis(){
-  const defs = Object.entries(GRAD).map(([k,[a,b]])=>`<linearGradient id="g-${k}" x1="0" y1="0" x2="1" y2=".35"><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${b}"/></linearGradient>`).join("")
+  const sphereDef = `<radialGradient id="sphere" cx=".32" cy=".26" r=".9"><stop offset="0" stop-color="#fff" stop-opacity=".55"/><stop offset=".35" stop-color="#fff" stop-opacity="0"/><stop offset=".7" stop-color="#000" stop-opacity=".12"/><stop offset="1" stop-color="#000" stop-opacity=".5"/></radialGradient>`;
+  const defs = sphereDef + Object.entries(GRAD).map(([k,[a,b]])=>`<linearGradient id="g-${k}" x1="0" y1="0" x2="1" y2=".35"><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${b}"/></linearGradient>`).join("")
     + `<linearGradient id="g-reflet" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".28"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>`
     + `<marker id="fl" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#000"/></marker>`
     + `<marker id="fl-c" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="4" markerHeight="4" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#cfe0ff"/></marker>`
@@ -882,9 +883,13 @@ function pionG(j, x, y, s){
   const id = j.couleur.slice(1);
   return `<g class="pion ${G.courant===j.id?"actif":""}" data-id="${j.id}" style="transform:translate(${x}px, ${y}px) scale(${s})">
     <circle class="aura" cx="0" cy="2" r="27"/>
-    <ellipse cx="0" cy="21" rx="16" ry="5" fill="#000" opacity=".45"/>
+    <ellipse class="ombre-pion" cx="7" cy="22" rx="19" ry="6" fill="#000" opacity=".5"/>
+    <ellipse cx="0" cy="21" rx="15" ry="4.5" fill="#000" opacity=".35"/>
     <g class="corps-pion"><path d="M-12 20C-12 9-6 5-5-1H5C6 5 12 9 12 20Z" fill="url(#gp-${id})" stroke="#000" stroke-width="2.6"/>
+    <path d="M-12 20C-12 9-6 5-5-1H-1C-3 6-4 12-3 20Z" fill="#fff" opacity=".16"/><path d="M12 20C12 9 6 5 5-1H1C3 6 5 12 6 20Z" fill="#000" opacity=".28"/>
+    <ellipse cx="0" cy="19.5" rx="12" ry="3.4" fill="#000" opacity=".3"/><ellipse cx="0" cy="18" rx="12" ry="3.2" fill="url(#gp-${id})" stroke="#000" stroke-width="1.6"/>
     <circle cx="0" cy="-11" r="11" fill="url(#gp-${id})" stroke="#000" stroke-width="2.6"/>
+    <circle cx="0" cy="-11" r="10" fill="url(#sphere)"/>
     <ellipse cx="-4" cy="-15" rx="3.6" ry="2.4" fill="#fff" opacity=".85"/><path d="M-8 18C-8 12-5 9-3 6" stroke="#fff" stroke-width="2" fill="none" opacity=".45" stroke-linecap="round"/></g>
   </g>`;
 }
