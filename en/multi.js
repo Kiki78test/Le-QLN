@@ -37,6 +37,8 @@ const TXT = {
   modeLigne:"Connected to the Le-QLN server.",
   chat:["👋","😄","🔥","😮","⏳","👏"], chatAide:"Quick reactions",
   reglesSalon:"Same rules as \u201cVs AI\u201d: full board, bidding, prison.",
+  ouverts:"Open rooms", aucunSalon:"No open room right now: create yours!", salonDe:n=>`${n}'s room`, rejoindreBtn:"Join",
+  coupe:"Connection to the server lost.", serveurAttente:"Connecting to the server… (the first wake-up can take 30 s)",
 };
 
 /* ---------- Styles ---------- */
@@ -48,6 +50,7 @@ css.textContent = `
 .m-profil-chip.vide{border:1.5px dashed rgba(255,255,255,.3); background:rgba(0,0,0,.2); color:var(--brume)}
 .mode.c-multi{--a:#ffb347; --b:#d9741a; --o:#7a3d08}
 .m-carte{background:rgba(3,10,30,.5); border-radius:18px; padding:16px; display:grid; gap:12px; box-shadow:inset 0 0 0 1px rgba(255,255,255,.07), 0 10px 30px rgba(0,0,0,.35)}
+.m-carte > div > .pion-svg{width:28px; height:38px; flex:none; filter:drop-shadow(0 3px 3px rgba(0,0,0,.6))}
 .m-carte h2{margin:0; font-family:var(--f-titre); font-weight:400; font-size:26px; letter-spacing:.04em; color:#fff}
 .m-carte .lbl{font:700 13px var(--f-ui); letter-spacing:.1em; text-transform:uppercase; color:var(--brume)}
 .m-aide{font:500 14px/1.35 var(--f-ui); color:var(--brume-2)}
@@ -75,6 +78,7 @@ css.textContent = `
 .m-joueur .etat i{width:10px; height:10px; border-radius:50%; background:#6b7ca3; box-shadow:0 0 0 2px rgba(0,0,0,.3)}
 .m-joueur.pret .etat{color:#9be15d} .m-joueur.pret .etat i{background:#9be15d; box-shadow:0 0 10px #9be15d}
 .m-joueur.absent{opacity:.45}
+.m-salon{grid-template-columns:40px 1fr auto} .m-salon .bouton-plat{font-size:15px; padding:6px 10px; color:#ffe68f}
 .m-joueur .bulle{position:absolute; right:12px; top:-18px; font-size:26px; animation:bulle 2.2s forwards}
 .m-joueur{position:relative}
 @keyframes bulle{0%{opacity:0; transform:translateY(8px) scale(.6)} 15%{opacity:1; transform:translateY(0) scale(1.1)} 80%{opacity:1} 100%{opacity:0; transform:translateY(-14px)}}
@@ -155,25 +159,70 @@ function chipProfil(){
 const avecProfil = suite => { if(Compte.get()) suite(); else ecranProfil(ok => ok ? suite() : ecranMulti()); };
 
 /* =========================================================================
-   Canaux réseau
+   Réseau : canal d'un salon + annuaire des salons ouverts
+   Deux implémentations, même interface :
+     local  → BroadcastChannel (onglets du même navigateur, sans serveur)
+     ligne  → WebSocket vers le serveur relais (server/index.js), activé par window.QLN_WS_URL
    ========================================================================= */
+const enLigne = () => !!window.QLN_WS_URL;
+
+/* --- Socket partagée (mode ligne) --- */
+const Socket = {
+  ws:null, file:[], abonnes:new Set(), etat:"ferme", tentatives:0,
+  ouvrir(){
+    if(this.ws && this.ws.readyState <= 1) return;
+    this.etat = "connexion"; const ws = this.ws = new WebSocket(window.QLN_WS_URL);
+    ws.onopen = () => { if(ws !== this.ws) return; this.etat = "ouvert"; this.tentatives = 0; this.file.forEach(m => ws.send(JSON.stringify(m))); this.file = []; this.abonnes.forEach(f => f({t:"__ouvert"})); };
+    ws.onmessage = e => { if(ws !== this.ws) return; let m; try{ m = JSON.parse(e.data); }catch(x){ return; } this.abonnes.forEach(f => f(m)); };
+    ws.onclose = () => { if(ws !== this.ws) return; this.etat = "ferme"; this.abonnes.forEach(f => f({t:"__coupe"})); if(this.abonnes.size && this.tentatives < 5){ this.tentatives++; setTimeout(() => this.ouvrir(), 1500*this.tentatives); } };
+    ws.onerror = () => {};
+  },
+  envoyer(m){ if(this.ws && this.ws.readyState === 1) this.ws.send(JSON.stringify(m)); else { this.file.push(m); this.ouvrir(); } },
+  // la socket reste ouverte entre les écrans (annuaire → salon) ; le serveur coupe les clients muets
+  ecouter(f){ this.abonnes.add(f); this.ouvrir(); return () => { this.abonnes.delete(f); }; },
+};
+
+/* --- Canal d'un salon --- */
 class CanalLocal {
-  constructor(code){ this.bc = new BroadcastChannel("qln-salon-"+code); this.bc.onmessage = e => this.recevoir && this.recevoir(e.data); this.type = "local"; }
+  constructor(code){ this.type = "local"; this.bc = new BroadcastChannel("qln-salon-"+code); this.bc.onmessage = e => this.recevoir && this.recevoir(e.data); }
   envoyer(m){ try{ this.bc.postMessage(m); }catch(e){} }
   fermer(){ try{ this.bc.close(); }catch(e){} }
 }
 class CanalWS {
-  /* Protocole relais minimal : le serveur rediffuse tout message JSON reçu sur /salon/<code> aux autres connectés.
-     À brancher avec un petit serveur WebSocket ; l'interface est identique à CanalLocal. */
-  constructor(code, url){ this.type = "ligne"; this.ws = new WebSocket(url.replace(/\/$/,"")+"/salon/"+code); this.file = [];
-    this.ws.onopen = () => { this.file.forEach(m => this.ws.send(JSON.stringify(m))); this.file = []; };
-    this.ws.onmessage = e => { try{ this.recevoir && this.recevoir(JSON.parse(e.data)); }catch(x){} };
-    this.ws.onclose = () => { this.recevoir && this.recevoir({t:"__coupe"}); }; }
-  envoyer(m){ if(this.ws.readyState === 1) this.ws.send(JSON.stringify(m)); else this.file.push(m); }
-  fermer(){ try{ this.ws.close(); }catch(e){} }
+  constructor(code, hote, id){ this.type = "ligne"; this.code = code;
+    this.off = Socket.ecouter(m => { if(m.t === "__ouvert"){ Socket.envoyer({t:"entrer", code, hote, de:id}); this.recevoir && this.recevoir({t:"__ouvert"}); return; } if(m.t === "__coupe"){ this.recevoir && this.recevoir({t:"__coupe"}); return; } if(m.code === code && this.recevoir) this.recevoir(m); });
+    if(Socket.etat === "ouvert") Socket.envoyer({t:"entrer", code, hote, de:id}); }
+  envoyer(m){ Socket.envoyer(m); }
+  fermer(){ Socket.envoyer({t:"sortir", code:this.code}); this.off(); }
 }
-const ouvrirCanal = code => window.QLN_WS_URL ? new CanalWS(code, window.QLN_WS_URL) : new CanalLocal(code);
-const canalDispo = () => !!window.QLN_WS_URL || "BroadcastChannel" in window;
+const ouvrirCanal = (code, hote, id) => enLigne() ? new CanalWS(code, hote, id) : new CanalLocal(code);
+const canalDispo = () => enLigne() || "BroadcastChannel" in window;
+
+/* --- Annuaire : liste des salons ouverts, visible de tous --- */
+const Annuaire = {
+  bc:null, off:null, carte:new Map(), fn:null, timer:null,
+  ecouter(fn){
+    this.arreter(); this.fn = fn; this.carte.clear();
+    if(enLigne()){
+      this.off = Socket.ecouter(m => { if(m.t === "__ouvert") Socket.envoyer({t:"annuaire"}); else if(m.t === "salons") fn(m.liste, "ligne"); else if(m.t === "__coupe") fn(null, "coupe"); });
+      if(Socket.etat === "ouvert") Socket.envoyer({t:"annuaire"});
+    } else {
+      this.bc = new BroadcastChannel("qln-annuaire");
+      this.bc.onmessage = e => { const m = e.data; if(!m) return; if(m.t === "publier") this.carte.set(m.resume.code, {...m.resume, vu:Date.now()}); if(m.t === "depublier") this.carte.delete(m.code); this.pousser(); };
+      this.bc.postMessage({t:"demande"});
+      this.timer = setInterval(() => { const t = Date.now(); let chg = false; for(const [c,r] of this.carte) if(t - r.vu > 7000){ this.carte.delete(c); chg = true; } if(chg) this.pousser(); }, 2000);
+      this.pousser();
+    }
+  },
+  pousser(){ if(this.fn) this.fn([...this.carte.values()].filter(r => r.phase === "attente"), "local"); },
+  arreter(){ if(this.off){ if(Socket.etat === "ouvert") Socket.envoyer({t:"annuaire-stop"}); this.off(); this.off = null; } if(this.bc){ this.bc.close(); this.bc = null; } clearInterval(this.timer); this.fn = null; },
+  // côté hôte
+  publier(resume){ if(enLigne()) Socket.envoyer({t:"publier", resume}); else { try{ this.canalPub().postMessage({t:"publier", resume}); }catch(e){} } },
+  depublier(code){ if(!enLigne()){ try{ this.canalPub().postMessage({t:"depublier", code}); }catch(e){} } },
+  canalPub(){ if(!this.pub){ this.pub = new BroadcastChannel("qln-annuaire"); this.pub.onmessage = e => { if(e.data && e.data.t === "demande" && S && estHote()) publierSalon(); }; } return this.pub; },
+};
+function resumeSalon(){ const h = S.joueurs.find(j => j.hote) || S.moi; return {code:S.code, hote:h.pseudo, couleur:h.couleur, nb:S.joueurs.length, max:MAX, phase:S.phase, t:Date.now()}; }
+function publierSalon(){ if(S && estHote()) Annuaire.publier(resumeSalon()); }
 
 /* =========================================================================
    Salon (hôte-autoritaire)
@@ -182,7 +231,7 @@ let S = null; // {code, hote, moi, joueurs:[{id,pseudo,couleur,pret,vu,hote}], c
 const moi = () => S && S.joueurs.find(j => j.id === S.moi.id);
 const estHote = () => S && S.hote;
 const envoyer = m => S && S.canal.envoyer({...m, de:S.moi.id, code:S.code});
-const fermerSalon = () => { if(!S) return; clearInterval(S.timers.tick); S.canal.fermer(); S = null; };
+const fermerSalon = () => { if(!S) return; clearInterval(S.timers.tick); if(estHote()) Annuaire.depublier(S.code); S.canal.fermer(); S = null; };
 
 // Identité dans le salon = compte + onglet (permet de tester à plusieurs onglets dans un même navigateur)
 const onglet = () => { try{ let o = sessionStorage.getItem("qln-onglet"); if(!o){ o = Math.random().toString(36).slice(2,8); sessionStorage.setItem("qln-onglet", o); } return o; }catch(e){ return "x"; } };
@@ -196,17 +245,20 @@ function couleurLibre(souhait){
 function diffuserEtat(){ if(!estHote()) return; envoyer({t:"etat", joueurs:S.joueurs.map(({id,pseudo,couleur,pret,hote})=>({id,pseudo,couleur,pret,hote})), phase:S.phase}); }
 
 function creerSalon(){
+  Annuaire.arreter();
   const j = {...joueurDepuisCompte(), hote:true};
   S = {code:codeAleatoire(), hote:true, moi:j, joueurs:[j], canal:null, timers:{}, phase:"attente", rendu:null};
-  S.canal = ouvrirCanal(S.code); S.canal.recevoir = recevoir;
+  S.canal = ouvrirCanal(S.code, true, j.id); S.canal.recevoir = recevoir;
   S.timers.tick = setInterval(tick, 2500);
+  publierSalon();
   ecranSalon();
 }
 function rejoindreSalon(code){
+  Annuaire.arreter();
   const j = joueurDepuisCompte();
   S = {code, hote:false, moi:j, joueurs:[], canal:null, timers:{}, phase:"connexion", rendu:null, dernierEtat:0, essais:0};
-  S.canal = ouvrirCanal(code); S.canal.recevoir = recevoir;
-  envoyer({t:"bonjour", joueur:j});
+  S.canal = ouvrirCanal(code, false, j.id); S.canal.recevoir = recevoir;
+  if(S.canal.type === "local" || Socket.etat === "ouvert") envoyer({t:"bonjour", joueur:j});
   S.timers.tick = setInterval(tick, 1200);
   ecranSalon();
 }
@@ -219,7 +271,7 @@ function tick(){
     const avant = S.joueurs.length;
     S.joueurs = S.joueurs.filter(j => j.hote || t - j.vu < 8000);
     if(S.joueurs.length !== avant) rafraichir();
-    diffuserEtat();
+    diffuserEtat(); publierSalon();
   } else {
     envoyer({t:"ping"});
     if(S.phase === "connexion"){ if(++S.essais === 3) envoyer({t:"bonjour", joueur:S.moi}); if(S.essais >= 6){ fermerSalon(); ecranMulti(); toast(TXT.introuvable, 5000); } }
@@ -228,8 +280,15 @@ function tick(){
 }
 
 function recevoir(m){
-  if(!S || !m || m.code !== S.code || m.de === S.moi.id) { if(m && m.t === "__coupe" && S){ fermerSalon(); ecranMulti(); toast(TXT.salonFerme); } return; }
+  if(m && m.t === "__coupe" && S){ if(S.canal.type === "ligne"){ fermerSalon(); ecranMulti(); toast(TXT.coupe, 5000); } return; }
+  if(m && m.t === "__ouvert" && S){ if(!estHote()) envoyer({t:"bonjour", joueur:S.moi}); return; }
+  if(!S || !m || m.code !== S.code || m.de === S.moi.id) return;
   const j = S.joueurs.find(x => x.id === m.de);
+  if(m.de === "serveur"){
+    if(m.t === "ferme"){ fermerSalon(); ecranMulti(); toast(TXT.salonFerme); }
+    else if(m.t === "refus" && m.pour === S.moi.id){ fermerSalon(); ecranMulti(); toast(TXT[m.raison] || TXT.introuvable, 5000); }
+    return;
+  }
   if(estHote()){
     switch(m.t){
       case "bonjour": {
@@ -240,10 +299,10 @@ function recevoir(m){
         S.joueurs.push({...m.joueur, couleur, pret:false, vu:Date.now(), hote:false});
         if(couleur !== m.joueur.couleur) envoyer({t:"info", pour:m.de, texte:"couleurPrise"});
         toast(TXT.rejoint(m.joueur.pseudo), 2200); Son.ok(); vibre(15);
-        rafraichir(); diffuserEtat(); break; }
+        rafraichir(); diffuserEtat(); publierSalon(); break; }
       case "ping": if(j){ j.vu = Date.now(); } break;
       case "pret": if(j){ j.pret = !!m.pret; j.vu = Date.now(); rafraichir(); diffuserEtat(); Son.tap(); } break;
-      case "quitter": if(j){ S.joueurs = S.joueurs.filter(x => x !== j); toast(TXT.parti(j.pseudo), 2200); rafraichir(); diffuserEtat(); } break;
+      case "quitter": if(j){ S.joueurs = S.joueurs.filter(x => x !== j); toast(TXT.parti(j.pseudo), 2200); rafraichir(); diffuserEtat(); publierSalon(); } break;
       case "chat": if(j){ j.vu = Date.now(); bulle(j.id, m.emoji); envoyer({t:"chat", emoji:m.emoji, auteur:j.id}); } break;
     }
   } else {
@@ -289,7 +348,7 @@ function lancer(){
   const n = S.joueurs.length;
   if(n < 2 || !S.joueurs.every(j => j.pret)){ toast(TXT.lancerAide(n)); return; }
   S.phase = "jeu"; S.graine = Math.floor(Math.random()*1e9);
-  envoyer({t:"demarrer", graine:S.graine}); diffuserEtat();
+  envoyer({t:"demarrer", graine:S.graine}); diffuserEtat(); publierSalon();
   Son.fin(); vibre([30,40,30]);
   ecranDepart();
 }
@@ -318,6 +377,10 @@ function ecranMulti(){
       <button class="mode piece c-multi" id="m-creer"><span class="ico">${ICO.groupe}</span><span><span class="nom">${TXT.creerSalon}</span><span class="desc">${TXT.creerSalonDesc}</span></span></button>
       <button class="mode piece c-bleu" id="m-rejoindre"><span class="ico">${ICO.cible || ICO.groupe}</span><span><span class="nom">${TXT.rejoindre}</span><span class="desc">${TXT.rejoindreDesc}</span></span></button>
     </div>
+    <div class="m-carte">
+      <span class="lbl">${TXT.ouverts} <span id="m-nb-ouverts"></span></span>
+      <div class="m-liste" id="m-ouverts"><div class="m-vide"><i></i>${enLigne() ? TXT.serveurAttente : TXT.aucunSalon}</div></div>
+    </div>
     <div class="m-carte" id="m-zone-code" hidden>
       <label class="lbl" for="m-code">${TXT.code}</label>
       <div class="m-saisie"><input class="champ" id="m-code" maxlength="5" placeholder="ABCDE" autocomplete="off" autocapitalize="characters" spellcheck="false" inputmode="latin"><button class="bouton piece c-jaune" id="m-go" style="width:auto; padding:0 18px">OK</button></div>
@@ -325,7 +388,7 @@ function ecranMulti(){
     <div class="m-note">${ICO.livre ? ICO.livre.replace('<svg','<svg width="22" height="22"') : ""}<span>${TXT.reglesSalon}</span></div>
     <div class="m-etat"><i class="pt ${window.QLN_WS_URL ? "" : "local"}"></i>${window.QLN_WS_URL ? TXT.modeLigne : TXT.modeLocal}</div>
   </section>`;
-  $("#b-retour").onclick = ecranAccueil;
+  $("#b-retour").onclick = () => { Annuaire.arreter(); ecranAccueil(); };
   $("#m-profil").onclick = () => ecranProfil(() => ecranMulti());
   $("#m-creer").onclick = () => avecProfil(creerSalon);
   $("#m-rejoindre").onclick = () => { const z = $("#m-zone-code"); z.hidden = !z.hidden; if(!z.hidden){ $("#m-code").focus(); z.scrollIntoView({behavior:"smooth", block:"center"}); } };
@@ -335,6 +398,16 @@ function ecranMulti(){
   $("#m-code").addEventListener("keydown", e => { if(e.key === "Enter") go(); });
   const code = new URLSearchParams(location.search).get("salon");
   if(code && normCode(code).length === 5){ history.replaceState(null, "", location.pathname); $("#m-zone-code").hidden = false; $("#m-code").value = normCode(code); }
+  Annuaire.ecouter((liste, mode) => {
+    const el = $("#m-ouverts"); if(!el){ Annuaire.arreter(); return; }
+    if(liste === null){ el.innerHTML = `<div class="m-vide"><i></i>${TXT.coupe}</div>`; return; }
+    liste = liste.filter(r => r.nb < r.max).sort((a,b) => (b.t||0) - (a.t||0));
+    $("#m-nb-ouverts").textContent = liste.length ? liste.length : "";
+    el.innerHTML = liste.length ? liste.map((r,i) => `<div class="m-joueur m-salon" data-code="${r.code}" style="animation-delay:${i*40}ms">${pionSVG(pions()[(r.couleur||0) % pions().length].c)}
+        <span class="nom">${esc(TXT.salonDe(r.hote))}<small class="vous">${r.nb}/${r.max}</small></span>
+        <button class="bouton-plat" data-code="${r.code}">${TXT.rejoindreBtn} ›</button></div>`).join("") : `<div class="m-vide"><i></i>${TXT.aucunSalon}</div>`;
+    $$("#m-ouverts button").forEach(b => b.onclick = () => avecProfil(() => rejoindreSalon(b.dataset.code)));
+  });
 }
 
 function ecranSalon(){
@@ -398,7 +471,7 @@ function ecranDepart(){
     <div class="duo"><button class="bouton piece c-noir" id="m-retour">${TXT.retourSalon}</button><button class="bouton piece c-jaune" id="m-accueil">${TXT.retourAccueil}</button></div>
   </section>`;
   if(typeof confettis === "function") setTimeout(() => confettis(120), 300);
-  $("#m-retour").onclick = () => { S.phase = "attente"; S.joueurs.forEach(j => j.pret = false); if(estHote()) diffuserEtat(); ecranSalon(); };
+  $("#m-retour").onclick = () => { S.phase = "attente"; S.joueurs.forEach(j => j.pret = false); if(estHote()){ diffuserEtat(); publierSalon(); } ecranSalon(); };
   $("#m-accueil").onclick = () => { if(estHote()) envoyer({t:"ferme"}); else envoyer({t:"quitter"}); fermerSalon(); ecranAccueil(); };
 }
 

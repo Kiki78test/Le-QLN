@@ -1,0 +1,75 @@
+/* Le-QLN — serveur relais multijoueur (Node + ws)
+   - Annuaire des salons ouverts (publié par l'hôte, visible par tous)
+   - Relais des messages d'un salon à ses membres (l'hôte reste autoritaire)
+   Aucune donnée persistée : tout est en mémoire, un salon disparaît avec son hôte. */
+"use strict";
+const http = require("http");
+const { WebSocketServer } = require("ws");
+
+const PORT = process.env.PORT || 8080;
+const ORIGINES = (process.env.ORIGINES || "").split(",").map(s => s.trim()).filter(Boolean); // vide = toutes
+
+const salons = new Map();   // code -> {resume, hote:ws, membres:Set<ws>, vu}
+const annuaire = new Set(); // sockets abonnées à la liste
+
+const server = http.createServer((req, res) => {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  if(req.url === "/sante"){ res.writeHead(200, {"Content-Type":"application/json"}); return res.end(JSON.stringify({ok:true, salons:salons.size, clients:wss.clients.size})); }
+  res.writeHead(200, {"Content-Type":"text/plain; charset=utf-8"}); res.end("Le-QLN relais multijoueur\n");
+});
+const wss = new WebSocketServer({ server, path:"/ws", verifyClient: ({origin}) => !ORIGINES.length || !origin || ORIGINES.includes(origin) });
+
+const envoyer = (ws, m) => { if(ws.readyState === 1) ws.send(JSON.stringify(m)); };
+const liste = () => [...salons.values()].filter(s => s.resume && s.resume.phase === "attente").map(s => s.resume);
+const diffuserAnnuaire = () => { const m = {t:"salons", liste:liste()}; for(const ws of annuaire) envoyer(ws, m); };
+
+function quitterSalon(ws){
+  const code = ws.salon; if(!code) return;
+  const s = salons.get(code); ws.salon = null;
+  if(!s) return;
+  s.membres.delete(ws);
+  if(s.hote === ws){ // l'hôte part : le salon est fermé pour tous
+    for(const m of s.membres) envoyer(m, {t:"ferme", code, de:"serveur"});
+    salons.delete(code); diffuserAnnuaire();
+  } else {
+    // prévenir l'hôte (il retirera le joueur de son état)
+    envoyer(s.hote, {t:"quitter", code, de:ws.id});
+  }
+}
+
+wss.on("connection", ws => {
+  ws.vivant = true; ws.on("pong", () => ws.vivant = true);
+  ws.on("message", data => {
+    let m; try{ m = JSON.parse(data); }catch(e){ return; }
+    if(!m || typeof m.t !== "string") return;
+    if(m.de) ws.id = String(m.de).slice(0,80);
+    switch(m.t){
+      case "annuaire": annuaire.add(ws); envoyer(ws, {t:"salons", liste:liste()}); return;
+      case "annuaire-stop": annuaire.delete(ws); return;
+      case "entrer": { // rejoint (ou crée) le canal d'un salon
+        const code = String(m.code||"").toUpperCase().slice(0,5); if(code.length !== 5) return;
+        if(ws.salon && ws.salon !== code) quitterSalon(ws);
+        let s = salons.get(code);
+        if(!s){ if(!m.hote) return envoyer(ws, {t:"refus", code, pour:ws.id, raison:"introuvable", de:"serveur"}); s = {resume:null, hote:ws, membres:new Set(), vu:Date.now()}; salons.set(code, s); }
+        s.membres.add(ws); ws.salon = code; return; }
+      case "publier": { const s = salons.get(ws.salon); if(s && s.hote === ws){ s.resume = {...m.resume, code:ws.salon}; s.vu = Date.now(); diffuserAnnuaire(); } return; }
+      case "sortir": quitterSalon(ws); return;
+      default: { // relais aux autres membres du salon
+        const s = salons.get(m.code || ws.salon); if(!s || !s.membres.has(ws)) return;
+        s.vu = Date.now();
+        const txt = JSON.stringify(m);
+        for(const w of s.membres) if(w !== ws && w.readyState === 1) w.send(txt);
+      }
+    }
+  });
+  ws.on("close", () => { annuaire.delete(ws); quitterSalon(ws); });
+});
+
+// nettoyage : clients muets et salons abandonnés
+setInterval(() => {
+  for(const ws of wss.clients){ if(!ws.vivant) return ws.terminate(); ws.vivant = false; ws.ping(); }
+  const t = Date.now();
+  for(const [code, s] of salons) if(t - s.vu > 2*3600e3){ for(const m of s.membres) envoyer(m, {t:"ferme", code, de:"serveur"}); salons.delete(code); }
+}, 30000);
+
+server.listen(PORT, () => console.log("Le-QLN relais sur le port", PORT));
