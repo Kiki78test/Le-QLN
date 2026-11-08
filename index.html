@@ -1,0 +1,787 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Le-QLN</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Le-QLN, le jeu d'anagrammes : trouvez l'anagramme avant la fin du sablier.">
+<meta name="theme-color" content="#0b1a3a">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&display=swap">
+<style>
+/* Mise en page : une colonne centrée façon tapis de jeu, cases du plateau comme tuiles de lettres.
+   Thème unique et assumé : le bleu nuit du tapis Le-QLN. */
+:root{
+  color-scheme: dark;
+  --nuit:#0b1a3a; --nuit-2:#132b5e; --nuit-3:#1c3a78;
+  --encre:#f3f6ff; --brume:#a9b8dc; --trait:#000;
+  --vert-a:#1f6b2a; --vert-b:#8cc63f;
+  --bleu-a:#1d4aa6; --bleu-b:#5d9ee6;
+  --rouge-a:#7d0d15; --rouge-b:#e32b33;
+  --noir-a:#0c0c0c; --noir-b:#3d3d3d;
+  --orange-a:#e8741c; --orange-b:#f7a530;
+  --violet-a:#3e1f73; --violet-b:#6a3db0;
+  --jaune:#f2ec2f; --jaune-b:#fff86a;
+  --ok:#8cc63f; --ko:#ff5a5f;
+  --f-titre:"Bebas Neue", "Oswald", "Arial Narrow", Impact, sans-serif;
+  --f-ui:"Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
+  --f-texte:"Barlow", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0; color:var(--encre); font-family:var(--f-texte); font-size:16px;
+  background:
+    radial-gradient(120% 80% at 30% 20%, #1f4790 0%, transparent 60%),
+    radial-gradient(90% 70% at 80% 90%, #17356f 0%, transparent 65%),
+    var(--nuit);
+  background-attachment:fixed;
+  -webkit-tap-highlight-color:transparent;
+  overscroll-behavior:none;
+}
+body::after{ /* grain du tapis */
+  content:""; position:fixed; inset:0; pointer-events:none; opacity:.22; mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .9 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+button{font:inherit; color:inherit; cursor:pointer; border:0; background:none}
+button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--jaune); outline-offset:3px}
+.app{
+  position:relative; z-index:1; max-width:560px; margin:0 auto; min-height:100%;
+  padding-block:16px 28px;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));
+  padding-right:max(16px, env(safe-area-inset-right, 0px));
+  display:flex; flex-direction:column;
+}
+.ecran{display:flex; flex-direction:column; gap:18px; flex:1}
+
+/* ---------- Logo ---------- */
+.logo{display:flex; justify-content:center; padding-top:10px}
+.logo span{
+  display:inline-block; background:#000; color:#fff; font-family:var(--f-titre);
+  font-size:clamp(54px, 15vw, 84px); line-height:1; letter-spacing:.02em;
+  padding:.16em .55em .08em; border-radius:50%;
+  transform:rotate(-9deg); text-shadow:4px 4px 0 #5a6a8a;
+  box-shadow:0 10px 30px rgba(0,0,0,.45);
+}
+.accroche{text-align:center; color:var(--brume); font-family:var(--f-ui); font-size:19px; letter-spacing:.04em; margin:6px 0 0; text-wrap:balance}
+
+/* ---------- Case (style plateau) ---------- */
+.case{
+  border:2px solid var(--trait); color:#fff; font-family:var(--f-titre);
+  background:linear-gradient(100deg, var(--a), var(--b));
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.12), inset 0 -6px 12px rgba(0,0,0,.25);
+}
+.c-vert{--a:var(--vert-a); --b:var(--vert-b)}
+.c-bleu{--a:var(--bleu-a); --b:var(--bleu-b)}
+.c-rouge{--a:var(--rouge-a); --b:var(--rouge-b)}
+.c-noir{--a:var(--noir-a); --b:var(--noir-b)}
+.c-orange{--a:var(--orange-a); --b:var(--orange-b)}
+.c-violet{--a:var(--violet-a); --b:var(--violet-b)}
+.c-jaune{--a:#d8d21c; --b:var(--jaune-b); color:#111}
+
+/* ---------- Menu ---------- */
+.menu{display:grid; gap:10px}
+.btn-case{
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+  padding:14px 18px; font-size:30px; letter-spacing:.03em; text-align:left; min-height:72px;
+  transition:transform .12s ease, filter .12s ease;
+}
+.btn-case small{display:block; font-family:var(--f-ui); font-size:16px; letter-spacing:.02em; opacity:.92; font-weight:600}
+.btn-case .fleche{font-size:30px}
+.btn-case:hover{filter:brightness(1.1)}
+.btn-case:active{transform:scale(.98)}
+.btn-case[disabled]{filter:grayscale(.7) brightness(.7); cursor:default}
+.badge{font-family:var(--f-ui); font-size:14px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; background:#000; color:var(--jaune); padding:3px 8px}
+
+.tableau{ /* bandeau gains / temps, repris du tapis */
+  display:grid; grid-template-columns:repeat(4,1fr); border:3px solid #000; background:#000;
+  font-family:var(--f-titre); text-align:center;
+}
+.tableau div{padding:6px 2px; font-size:clamp(15px, 4.4vw, 21px); letter-spacing:.03em}
+.tableau .entete{color:#fff; background:#000; font-size:clamp(13px,3.6vw,17px)}
+.records{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+.record{background:rgba(0,0,0,.35); border:2px solid #000; padding:10px 12px}
+.record b{display:block; font-family:var(--f-titre); font-size:30px; letter-spacing:.03em; color:var(--jaune); font-weight:400; font-variant-numeric:tabular-nums}
+.record span{font-family:var(--f-ui); color:var(--brume); font-size:15px; letter-spacing:.03em}
+.liens{display:flex; justify-content:center; gap:18px; flex-wrap:wrap}
+.lien{font-family:var(--f-ui); font-size:18px; color:var(--brume); text-decoration:underline; text-underline-offset:4px; padding:6px}
+.lien:hover{color:#fff}
+
+/* ---------- Jeu ---------- */
+.barre{display:flex; align-items:center; justify-content:space-between; gap:10px; font-family:var(--f-ui); font-weight:700; font-size:18px; letter-spacing:.03em}
+.barre .quitter{font-size:26px; line-height:1; padding:4px 8px; color:var(--brume)}
+.manche{color:var(--brume)}
+.banque{font-family:var(--f-titre); font-size:32px; font-weight:400; color:var(--jaune); font-variant-numeric:tabular-nums; letter-spacing:.03em}
+.vies{display:flex; gap:5px}
+.vie{width:16px; height:22px; border-radius:50% 50% 30% 30% / 40% 40% 20% 20%; background:var(--jaune); border:2px solid #000; position:relative}
+.vie::before{content:""; position:absolute; left:50%; top:-9px; width:12px; height:12px; border-radius:50%; background:inherit; border:2px solid #000; transform:translateX(-50%)}
+.vie.perdue{background:#3a4566}
+.niveau{display:flex; align-items:stretch; border:3px solid #000}
+.niveau .nom{flex:1; padding:8px 14px; font-size:26px; letter-spacing:.04em; display:flex; align-items:center; gap:10px}
+.niveau .gain{padding:8px 14px; font-size:26px; background:rgba(0,0,0,.35); display:flex; align-items:center; font-variant-numeric:tabular-nums}
+
+.sablier{position:relative; height:16px; background:rgba(0,0,0,.5); border:2px solid #000}
+.sablier i{position:absolute; inset:0 auto 0 0; width:100%; background:linear-gradient(90deg, var(--a), var(--b)); transform-origin:left; }
+.sablier.urgent i{animation:clignote .5s steps(2) infinite}
+@keyframes clignote{50%{filter:brightness(1.8)}}
+.temps{display:flex; justify-content:space-between; font-family:var(--f-ui); font-weight:600; color:var(--brume); font-size:16px; margin-top:-10px}
+.temps b{color:#fff; font-variant-numeric:tabular-nums}
+
+.carte{ /* la carte piochée, face A */
+  background:#f5f1e6; color:#111; border:3px solid #000; padding:14px 12px 16px; text-align:center;
+  box-shadow:0 12px 30px rgba(0,0,0,.45); position:relative;
+}
+.carte .etiquette{font-family:var(--f-ui); font-weight:700; letter-spacing:.12em; text-transform:uppercase; font-size:13px; color:#555}
+.mot{display:flex; justify-content:center; flex-wrap:wrap; gap:5px; margin-top:8px}
+.mot .t{width:var(--tw); height:calc(var(--tw)*1.1); display:grid; place-items:center; font-size:calc(var(--tw)*.78); line-height:1}
+.carte .compteur{font-family:var(--f-ui); font-size:15px; color:#444; margin-top:10px}
+
+.reponse{display:flex; justify-content:center; gap:5px; min-height:calc(var(--tw)*1.1 + 4px); flex-wrap:wrap}
+.slot{width:var(--tw); height:calc(var(--tw)*1.1); border:2px dashed rgba(255,255,255,.35); display:grid; place-items:center; font-family:var(--f-titre); font-size:calc(var(--tw)*.78); line-height:1}
+.slot.plein{border:2px solid #000; background:#f5f1e6; color:#111}
+.reponse.erreur{animation:secoue .4s}
+.reponse.juste .slot.plein{background:var(--ok)}
+@keyframes secoue{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+.message{text-align:center; min-height:26px; font-family:var(--f-ui); font-weight:600; font-size:19px; letter-spacing:.02em}
+.message.ok{color:var(--ok)} .message.ko{color:var(--ko)}
+
+.reserve{display:flex; justify-content:center; gap:6px; flex-wrap:wrap}
+.lettre{width:var(--tw); height:calc(var(--tw)*1.1); font-size:calc(var(--tw)*.78); line-height:1; display:grid; place-items:center; transition:transform .1s, opacity .15s}
+.lettre:active{transform:scale(.92)}
+.lettre.utilisee{opacity:.18; pointer-events:none}
+.actions{display:grid; grid-template-columns:repeat(4,1fr); gap:8px}
+.act{font-family:var(--f-ui); font-weight:700; font-size:17px; letter-spacing:.03em; padding:12px 4px; background:rgba(0,0,0,.4); border:2px solid #000; display:flex; flex-direction:column; align-items:center; gap:2px}
+.act .ico{font-size:22px; line-height:1}
+.act:hover{background:rgba(0,0,0,.6)}
+.act[disabled]{opacity:.4; cursor:default}
+.valider{grid-column:span 4; font-family:var(--f-titre); font-size:30px; letter-spacing:.05em; padding:10px; min-height:58px}
+.trouves{display:flex; flex-wrap:wrap; gap:6px; justify-content:center}
+.chip{font-family:var(--f-ui); font-weight:700; font-size:17px; letter-spacing:.05em; padding:4px 10px; background:var(--ok); color:#0b2a0f; border:2px solid #000; text-transform:uppercase}
+
+/* ---------- Face B / bilan de manche ---------- */
+.voile{position:fixed; inset:0; z-index:20; background:rgba(4,10,26,.78); display:grid; place-items:center;
+  padding:max(16px, env(safe-area-inset-top,0px)) max(16px, env(safe-area-inset-right,0px)) max(16px, env(safe-area-inset-bottom,0px)) max(16px, env(safe-area-inset-left,0px));
+  animation:apparait .2s ease}
+@keyframes apparait{from{opacity:0}}
+.panneau{width:min(100%, 480px); max-height:100%; overflow:auto; background:#f5f1e6; color:#111; border:3px solid #000; box-shadow:0 20px 50px rgba(0,0,0,.6); animation:retourne .45s cubic-bezier(.2,.8,.2,1)}
+@keyframes retourne{from{transform:perspective(900px) rotateY(80deg); opacity:.3}}
+.panneau header{padding:12px 16px; font-family:var(--f-titre); font-size:30px; letter-spacing:.04em; color:#fff; display:flex; justify-content:space-between; align-items:center; border-bottom:3px solid #000}
+.panneau .corps{padding:16px; display:grid; gap:12px}
+.panneau h3{margin:0; font-family:var(--f-ui); font-weight:700; text-transform:uppercase; letter-spacing:.1em; font-size:13px; color:#555}
+.solutions{display:flex; flex-wrap:wrap; gap:6px}
+.sol{font-family:var(--f-ui); font-weight:700; letter-spacing:.05em; text-transform:uppercase; font-size:18px; padding:4px 10px; border:2px solid #111; background:#fff}
+.sol.trouve{background:var(--ok)}
+.sol.origine{background:#ddd; color:#666; text-decoration:line-through}
+.lignes{display:grid; gap:4px; font-family:var(--f-ui); font-size:18px}
+.lignes div{display:flex; justify-content:space-between; gap:12px; border-bottom:1px dashed #bbb; padding-bottom:3px}
+.lignes b{font-variant-numeric:tabular-nums}
+.lignes .total{border:0; font-family:var(--f-titre); font-size:28px; font-weight:400}
+.panneau .suivant{width:100%; font-size:28px; padding:12px; letter-spacing:.05em; min-height:56px}
+
+/* ---------- Événement (case spéciale) ---------- */
+.de{width:86px; height:86px; margin:4px auto; background:#fff; border:3px solid #000; border-radius:14px; display:grid; grid-template-columns:repeat(3,1fr); grid-template-rows:repeat(3,1fr); padding:10px; box-shadow:0 6px 0 #000}
+.de i{width:14px; height:14px; border-radius:50%; background:#111; place-self:center; visibility:hidden}
+.de.roule{animation:roule .6s ease-out}
+@keyframes roule{0%{transform:rotate(0) scale(.6)}70%{transform:rotate(380deg) scale(1.08)}100%{transform:rotate(360deg) scale(1)}}
+.evt-case{margin:6px auto 0; padding:14px 22px; font-size:38px; text-align:center; letter-spacing:.04em; line-height:1}
+.evt-case small{display:block; font-size:24px}
+.evt-texte{text-align:center; font-family:var(--f-ui); font-size:19px; margin:0}
+
+/* ---------- Fin de partie ---------- */
+.titre-ecran{font-family:var(--f-titre); font-size:46px; letter-spacing:.03em; margin:8px 0 0; text-align:center; line-height:1}
+.score-final{text-align:center; font-family:var(--f-titre); font-size:clamp(72px, 22vw, 110px); color:var(--jaune); line-height:1; text-shadow:5px 5px 0 #000; font-variant-numeric:tabular-nums}
+.etoiles{display:flex; justify-content:center; gap:10px; font-size:44px; line-height:1}
+.etoiles span{color:#2b3a63; -webkit-text-stroke:2px #000}
+.etoiles span.on{color:var(--jaune); animation:pop .4s backwards}
+.etoiles span.on:nth-child(2){animation-delay:.15s} .etoiles span.on:nth-child(3){animation-delay:.3s}
+@keyframes pop{from{transform:scale(0)}}
+.recap{display:grid; gap:6px}
+.recap-l{display:grid; grid-template-columns:34px 1fr auto; gap:10px; align-items:center; background:rgba(0,0,0,.35); border:2px solid #000; padding:6px 10px 6px 6px; font-family:var(--f-ui); font-size:17px}
+.recap-l .pastille{width:28px; height:28px; display:grid; place-items:center; font-size:17px}
+.recap-l b{font-variant-numeric:tabular-nums; font-weight:700}
+.recap-l .neg{color:var(--ko)}
+.nouveau-record{text-align:center; font-family:var(--f-ui); font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:#111; background:var(--jaune); border:2px solid #000; padding:6px; transform:rotate(-2deg)}
+.duo{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+.duo .btn-case{font-size:24px; justify-content:center; text-align:center; min-height:60px}
+
+/* ---------- Choix entraînement / règles ---------- */
+.choix-niv{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+.choix-niv .btn-case{flex-direction:column; align-items:flex-start; gap:2px; min-height:96px}
+.texte{background:rgba(0,0,0,.35); border:2px solid #000; padding:4px 18px 14px; line-height:1.55; font-size:16px}
+.texte h2{font-family:var(--f-titre); font-weight:400; font-size:28px; letter-spacing:.04em; margin:16px 0 4px; color:var(--jaune)}
+.texte p,.texte li{max-width:62ch}
+.texte ul{padding-left:20px; margin:6px 0}
+.option{display:flex; align-items:center; gap:10px; font-family:var(--f-ui); font-size:18px; justify-content:center}
+.option input{width:22px; height:22px; accent-color:var(--vert-b)}
+
+.toast{position:fixed; left:50%; bottom:calc(24px + env(safe-area-inset-bottom,0px)); transform:translateX(-50%); z-index:30; background:#000; color:#fff; font-family:var(--f-ui); font-weight:600; font-size:17px; padding:10px 16px; border:2px solid var(--jaune); max-width:calc(100% - 32px); text-align:center}
+.gain-vol{position:fixed; z-index:25; pointer-events:none; font-family:var(--f-titre); font-size:44px; color:var(--jaune); text-shadow:3px 3px 0 #000; animation:vol 1.1s ease-out forwards}
+@keyframes vol{from{transform:translate(-50%,0) scale(.6); opacity:0} 20%{opacity:1; transform:translate(-50%,-10px) scale(1.1)} to{transform:translate(-50%,-90px) scale(1); opacity:0}}
+.son{position:absolute; top:calc(12px + env(safe-area-inset-top,0px)); right:max(12px, env(safe-area-inset-right,0px)); font-size:22px; padding:6px; opacity:.8; z-index:2}
+.chargement{margin:auto; font-family:var(--f-ui); color:var(--brume); font-size:20px}
+@media (max-width:380px){ .btn-case{font-size:26px} .actions .act{font-size:15px} }
+@media (prefers-reduced-motion:reduce){ *,*::before,*::after{animation-duration:.01ms!important; animation-iteration-count:1!important; transition:none!important} }
+</style>
+</head>
+<body>
+<div class="app" id="app"><p class="chargement">Chargement du dictionnaire…</p></div>
+
+<script>
+"use strict";
+/* =========================================================================
+   Le-QLN — mode solo (Défi, Défi du jour, Entraînement)
+   ========================================================================= */
+const NIVEAUX = {
+  v:{cle:"v", nom:"Facile",        classe:"c-vert",  gain:20,  temps:30,  lettres:"4–5 lettres"},
+  b:{cle:"b", nom:"Intermédiaire", classe:"c-bleu",  gain:50,  temps:60,  lettres:"6–7 lettres"},
+  r:{cle:"r", nom:"Difficile",     classe:"c-rouge", gain:100, temps:120, lettres:"8–9 lettres"},
+  n:{cle:"n", nom:"Expert",        classe:"c-noir",  gain:200, temps:180, lettres:"10 lettres et +"},
+};
+const PARCOURS_DEFI = ["v","v","v","b","b","b","r","r","n","n"];
+const VIES = 3, INDICES = 2;
+const BONUS_RAPIDITE = 0.25;   // trouvé dans la 1re moitié du temps
+const BONUS_EXTRA = 0.5;       // chaque anagramme supplémentaire
+const CASES_SPECIALES = [      // inspirées du tapis
+  {type:"bonus", titre:"Bonus", montant:40,  classe:"c-violet", texte:"La banque vous verse 40 €."},
+  {type:"bonus", titre:"Bonus", montant:75,  classe:"c-violet", texte:"La banque vous verse 75 €."},
+  {type:"bonus", titre:"Bonus", montant:100, classe:"c-violet", texte:"La banque vous verse 100 €."},
+  {type:"malus", titre:"Malus", montant:-40, classe:"c-orange", texte:"Vous versez 40 € à la banque."},
+  {type:"malus", titre:"Malus", montant:-50, classe:"c-orange", texte:"Vous versez 50 € à la banque."},
+  {type:"passe", titre:"Passe", montant:0,   classe:"c-orange", texte:"Rien ne se passe, on continue."},
+  {type:"prison",titre:"Prison",montant:-50, classe:"c-orange", texte:"Caution de 50 € payée, vous repartez aussitôt."},
+];
+
+/* ---------- Outils ---------- */
+const $ = (s, el=document) => el.querySelector(s);
+const app = $("#app");
+const norm = w => w.normalize("NFD").replace(/[̀-ͯ]/g,"").toUpperCase().replace(/Œ/g,"OE").replace(/Æ/g,"AE");
+const cleTri = w => norm(w).split("").sort().join("");
+const euros = n => (n<0?"−":"") + Math.abs(n).toLocaleString("fr-FR") + " €";
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function aleaGraine(seed){ // mulberry32
+  let a = seed >>> 0;
+  return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ t>>>15, t|1); t ^= t + Math.imul(t ^ t>>>7, t|61); return ((t ^ t>>>14) >>> 0) / 4294967296; };
+}
+const melanger = (arr, rnd=Math.random) => { const a=[...arr]; for(let i=a.length-1;i>0;i--){const j=Math.floor(rnd()*(i+1)); [a[i],a[j]]=[a[j],a[i]];} return a; };
+const store = {
+  get(k, d){ try{ const v = localStorage.getItem("qln:"+k); return v==null ? d : JSON.parse(v); }catch(e){ return d; } },
+  set(k, v){ try{ localStorage.setItem("qln:"+k, JSON.stringify(v)); }catch(e){} },
+};
+const aujourdhui = () => { const d=new Date(); return d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate(); };
+
+/* ---------- Sons (WebAudio, après interaction) ---------- */
+const Son = {
+  ctx:null, actif: store.get("son", true),
+  bip(freqs, dur=.12, type="triangle", vol=.18){
+    if(!this.actif) return;
+    try{
+      this.ctx = this.ctx || new (window.AudioContext||window.webkitAudioContext)();
+      let t = this.ctx.currentTime;
+      for(const f of freqs){
+        const o=this.ctx.createOscillator(), g=this.ctx.createGain();
+        o.type=type; o.frequency.value=f; g.gain.setValueAtTime(vol,t); g.gain.exponentialRampToValueAtTime(.001,t+dur);
+        o.connect(g).connect(this.ctx.destination); o.start(t); o.stop(t+dur); t+=dur*.8;
+      }
+    }catch(e){}
+  },
+  tap(){ this.bip([660],.05,"sine",.08); },
+  ok(){ this.bip([523,659,784,1047],.11); },
+  ko(){ this.bip([220,165],.18,"sawtooth",.12); },
+  tic(){ this.bip([1200],.04,"square",.05); },
+  fin(){ this.bip([392,330,262],.2,"triangle",.15); },
+};
+
+/* ---------- Dictionnaire ---------- */
+let DICO = null;
+async function chargerDico(){
+  const r = await fetch("data/fr.json");
+  const brut = await r.json();
+  DICO = {};
+  for(const k of Object.keys(NIVEAUX)){
+    DICO[k] = brut[k].map(g => {
+      // dédoublonnage par forme sans accents (pâte/pâté -> une seule entrée)
+      const vus = new Set(), mots = [];
+      for(const w of g){ const n = norm(w); if(!vus.has(n)){ vus.add(n); mots.push(w); } }
+      return mots;
+    }).filter(g => g.length >= 2);
+  }
+}
+function tirerCarte(niv, rnd, deja){
+  const liste = DICO[niv];
+  for(let essai=0; essai<50; essai++){
+    const g = liste[Math.floor(rnd()*liste.length)];
+    const k = cleTri(g[0]);
+    if(deja.has(k)) continue;
+    deja.add(k);
+    const origine = g[rnd() < .6 ? 0 : 1]; // mot affiché : l'un des deux plus courants
+    return { niv, origine, mots:g, cle:k };
+  }
+  return null;
+}
+
+/* ---------- État ---------- */
+let P = null;          // partie en cours
+let minuteur = null;
+
+function nouvellePartie(mode, nivEntrainement){
+  const quotidien = mode === "jour";
+  const rnd = quotidien ? aleaGraine(aujourdhui()*7 + 13) : Math.random;
+  P = {
+    mode, rnd, nivEntrainement,
+    parcours: mode==="entrainement" ? null : PARCOURS_DEFI,
+    chrono: mode==="entrainement" ? store.get("chronoEntr", false) : true,
+    manche: 0, banque: 0, vies: VIES, indices: INDICES,
+    deja: new Set(), historique: [], carte:null,
+  };
+  // les cases spéciales du parcours sont tirées d'avance (identiques pour tous au Défi du jour)
+  P.evenements = {};
+  if(P.parcours){
+    for(let i=1;i<P.parcours.length;i++){ if(rnd() < .28) P.evenements[i] = Math.floor(rnd()*CASES_SPECIALES.length); }
+    P.cartes = P.parcours.map(n => tirerCarte(n, rnd, P.deja));
+  }
+  lancerManche();
+}
+
+function lancerManche(){
+  const niv = P.parcours ? P.parcours[P.manche] : P.nivEntrainement;
+  const carte = P.parcours ? P.cartes[P.manche] : tirerCarte(niv, P.rnd, P.deja);
+  if(!carte){ P.deja.clear(); return lancerManche(); }
+  P.carte = carte;
+  const lettres = norm(carte.origine).split("");
+  let ordre = melanger(lettres.map((l,i)=>({l,i})), Math.random);
+  // éviter que l'ordre mélangé reproduise le mot affiché
+  if(ordre.map(o=>o.l).join("") === lettres.join("") && lettres.length>1) ordre.reverse();
+  P.m = {
+    lettres: ordre, saisie: [], trouves: [], indice: false, debut: performance.now(),
+    duree: NIVEAUX[niv].temps*1000, reste: NIVEAUX[niv].temps*1000, gain: 0, premierA: null, fini:false,
+  };
+  ecranJeu();
+  if(P.chrono) demarrerMinuteur();
+}
+
+/* ---------- Écran d'accueil ---------- */
+function ecranAccueil(){
+  arreterMinuteur(); P = null;
+  const rec = store.get("records", {defi:0, jour:{}});
+  const jourFait = rec.jour && rec.jour[aujourdhui()];
+  app.innerHTML = `
+  <section class="ecran">
+    ${boutonSon()}
+    <div class="logo"><span>LE - QLN</span></div>
+    <p class="accroche">Une carte, un mot, un sablier. Trouvez l'anagramme.</p>
+    <div class="tableau" aria-label="Gains et temps par niveau">
+      <div class="entete">Facile</div><div class="entete">Intermédiaire</div><div class="entete">Difficile</div><div class="entete">Expert</div>
+      <div class="case c-vert">20€</div><div class="case c-bleu">50€</div><div class="case c-rouge">100€</div><div class="case c-noir">200€</div>
+      <div class="case c-vert">30 s</div><div class="case c-bleu">1 min</div><div class="case c-rouge">2 min</div><div class="case c-noir">3 min</div>
+    </div>
+    <div class="menu">
+      <button class="case c-vert btn-case" id="b-defi"><span>Le Défi<small>10 cartes, du vert au noir · 3 vies</small></span><span class="fleche">→</span></button>
+      <button class="case c-bleu btn-case" id="b-jour"><span>Défi du jour<small>${jourFait ? "Fait aujourd'hui : "+euros(jourFait)+" · rejouer pour le plaisir" : "Les mêmes cartes pour tous aujourd'hui"}</small></span><span class="fleche">→</span></button>
+      <button class="case c-rouge btn-case" id="b-entr"><span>Entraînement<small>Choisissez votre couleur, sans pression</small></span><span class="fleche">→</span></button>
+      <button class="case c-noir btn-case" disabled><span>Contre l'IA<small>Le plateau complet, enchères comprises</small></span><span class="badge">Bientôt</span></button>
+      <button class="case c-noir btn-case" disabled><span>Multijoueur<small>De 2 à 6 joueurs</small></span><span class="badge">Bientôt</span></button>
+    </div>
+    <div class="records">
+      <div class="record"><span>Record du Défi</span><b>${euros(rec.defi||0)}</b></div>
+      <div class="record"><span>Défi du jour</span><b>${jourFait ? euros(jourFait) : "—"}</b></div>
+    </div>
+    <div class="liens"><button class="lien" id="b-regles">Règles du jeu</button><button class="lien" id="b-install" hidden>Installer l'appli</button></div>
+  </section>`;
+  $("#b-defi").onclick = () => nouvellePartie("defi");
+  $("#b-jour").onclick = () => nouvellePartie("jour");
+  $("#b-entr").onclick = ecranEntrainement;
+  $("#b-regles").onclick = ecranRegles;
+  brancherSon();
+  if(installEvt){ const b=$("#b-install"); b.hidden=false; b.onclick=async()=>{ installEvt.prompt(); installEvt=null; b.hidden=true; }; }
+}
+function boutonSon(){ return `<button class="son" id="b-son" aria-label="${Son.actif?"Couper le son":"Activer le son"}">${Son.actif?"🔊":"🔇"}</button>`; }
+function brancherSon(){ const b=$("#b-son"); if(b) b.onclick=()=>{ Son.actif=!Son.actif; store.set("son",Son.actif); b.textContent=Son.actif?"🔊":"🔇"; b.setAttribute("aria-label", Son.actif?"Couper le son":"Activer le son"); }; }
+
+function ecranEntrainement(){
+  const chrono = store.get("chronoEntr", false);
+  app.innerHTML = `
+  <section class="ecran">
+    <div class="barre"><button class="quitter" id="b-retour" aria-label="Retour">←</button><span class="manche">Entraînement</span><span></span></div>
+    <h1 class="titre-ecran">Choisissez une couleur</h1>
+    <div class="choix-niv">
+      ${Object.values(NIVEAUX).map(n=>`<button class="case ${n.classe} btn-case" data-niv="${n.cle}">${n.nom}<small>${n.lettres} · ${DICO[n.cle].length} cartes</small></button>`).join("")}
+    </div>
+    <label class="option"><input type="checkbox" id="opt-chrono" ${chrono?"checked":""}> Jouer avec le sablier</label>
+  </section>`;
+  $("#b-retour").onclick = ecranAccueil;
+  $("#opt-chrono").onchange = e => store.set("chronoEntr", e.target.checked);
+  app.querySelectorAll("[data-niv]").forEach(b => b.onclick = () => nouvellePartie("entrainement", b.dataset.niv));
+}
+
+function ecranRegles(){
+  app.innerHTML = `
+  <section class="ecran">
+    <div class="barre"><button class="quitter" id="b-retour" aria-label="Retour">←</button><span class="manche">Règles</span><span></span></div>
+    <div class="texte">
+      <h2>Le principe</h2>
+      <p>On vous montre un mot. Trouvez un autre mot français qui utilise exactement les mêmes lettres avant la fin du sablier. Les accents ne comptent pas : PÂTE donne TAPE.</p>
+      <p>Mots acceptés : noms communs, adjectifs, verbes à l'infinitif, participes passés et présents. Les verbes conjugués et les noms propres sont refusés.</p>
+      <h2>Les couleurs</h2>
+      <ul>
+        <li><b>Vert</b> : 4–5 lettres, 20 €, 30 secondes</li>
+        <li><b>Bleu</b> : 6–7 lettres, 50 €, 1 minute</li>
+        <li><b>Rouge</b> : 8–9 lettres, 100 €, 2 minutes</li>
+        <li><b>Noir</b> : 10 lettres et plus, 200 €, 3 minutes</li>
+      </ul>
+      <h2>Le Défi</h2>
+      <p>Dix cartes de difficulté croissante et trois vies. Chaque carte non résolue coûte une vie. Entre deux cartes, le dé peut vous envoyer sur une case spéciale du tapis : Bonus, Malus, Passe ou Prison.</p>
+      <h2>Les bonus</h2>
+      <ul>
+        <li>Rapidité : +25 % si vous trouvez dans la première moitié du temps.</li>
+        <li>Chasse aux anagrammes : une fois la carte gagnée, le sablier continue. Chaque anagramme supplémentaire rapporte +50 % du gain de la carte.</li>
+        <li>Indice : révèle la première lettre d'une solution, mais divise le gain de la carte par deux. Deux indices par partie.</li>
+      </ul>
+      <h2>Le Défi du jour</h2>
+      <p>Mêmes cartes et mêmes cases spéciales pour tous les joueurs, une fois par jour. Partagez votre score.</p>
+      <h2>Au clavier</h2>
+      <p>Tapez les lettres, <b>Entrée</b> pour valider, <b>Retour arrière</b> pour effacer, <b>Espace</b> pour mélanger.</p>
+    </div>
+  </section>`;
+  $("#b-retour").onclick = ecranAccueil;
+}
+
+/* ---------- Écran de jeu ---------- */
+function largeurTuile(n){
+  const dispo = Math.min(window.innerWidth, 560) - 32;
+  return Math.max(26, Math.min(54, Math.floor((dispo - (n-1)*6) / n)));
+}
+function ecranJeu(){
+  const c = P.carte, N = NIVEAUX[c.niv], n = norm(c.origine).length;
+  const nbSol = c.mots.length - 1;
+  const titreManche = P.parcours ? `Carte ${P.manche+1}/${P.parcours.length}` : `Entraînement · ${P.historique.length+1}`;
+  app.innerHTML = `
+  <section class="ecran" style="--tw:${largeurTuile(n)}px">
+    <div class="barre">
+      <button class="quitter" id="b-quitter" aria-label="Quitter la partie">✕</button>
+      <span class="manche">${titreManche}</span>
+      ${P.parcours ? `<span class="vies" aria-label="${P.vies} vies">${Array.from({length:VIES},(_,i)=>`<i class="vie ${i>=P.vies?"perdue":""}"></i>`).join("")}</span>` : ""}
+      <span class="banque" id="banque">${euros(P.banque)}</span>
+    </div>
+    <div class="niveau case ${N.classe}"><span class="nom">${N.nom}</span><span class="gain">${N.gain}€</span></div>
+    ${P.chrono ? `<div class="sablier ${N.classe}" id="sablier"><i></i></div><div class="temps"><span>Sablier</span><b id="temps">${fmtTemps(P.m.reste)}</b></div>` : ""}
+    <div class="carte">
+      <div class="etiquette">Trouvez une anagramme de</div>
+      <div class="mot">${norm(c.origine).split("").map(l=>`<span class="t case ${N.classe}">${l}</span>`).join("")}</div>
+      <div class="compteur" id="compteur">${nbSol} anagramme${nbSol>1?"s":""} à trouver</div>
+    </div>
+    <div class="reponse" id="reponse" aria-live="polite"></div>
+    <div class="message" id="message" role="status"></div>
+    <div class="reserve" id="reserve"></div>
+    <div class="actions">
+      <button class="act" id="b-effacer"><span class="ico">⌫</span>Effacer</button>
+      <button class="act" id="b-melanger"><span class="ico">⟳</span>Mélanger</button>
+      <button class="act" id="b-indice"><span class="ico">?</span>Indice${P.parcours?` (${P.indices})`:""}</button>
+      <button class="act" id="b-passer"><span class="ico">⏭</span>${P.m.trouves.length?"Suivante":"Passer"}</button>
+      <button class="valider case c-jaune" id="b-valider">Valider</button>
+    </div>
+    <div class="trouves" id="trouves"></div>
+  </section>`;
+  $("#b-quitter").onclick = confirmerQuitter;
+  $("#b-effacer").onclick = () => { effacer(); };
+  $("#b-melanger").onclick = () => { melangerReserve(); };
+  $("#b-indice").onclick = donnerIndice;
+  $("#b-passer").onclick = () => finManche(P.m.trouves.length ? "fini" : "passe");
+  $("#b-valider").onclick = valider;
+  majReserve(); majReponse(); majTrouves(); majIndice();
+}
+function fmtTemps(ms){ const s=Math.ceil(ms/1000); return Math.floor(s/60)+":"+String(s%60).padStart(2,"0"); }
+
+function majReserve(){
+  const r = $("#reserve"); if(!r) return;
+  const N = NIVEAUX[P.carte.niv];
+  const utilises = new Set(P.m.saisie);
+  r.innerHTML = P.m.lettres.map((o,k)=>`<button class="lettre case ${N.classe} ${utilises.has(k)?"utilisee":""}" data-k="${k}" aria-label="Lettre ${o.l}">${o.l}</button>`).join("");
+  r.querySelectorAll(".lettre").forEach(b => b.onclick = () => ajouter(+b.dataset.k));
+}
+function majReponse(etat){
+  const r = $("#reponse"); if(!r) return;
+  const n = P.m.lettres.length;
+  r.className = "reponse" + (etat ? " "+etat : "");
+  r.innerHTML = Array.from({length:n},(_,i)=>{ const k=P.m.saisie[i]; return `<span class="slot ${k!=null?"plein":""}">${k!=null?P.m.lettres[k].l:""}</span>`; }).join("");
+}
+function majTrouves(){
+  const t = $("#trouves"); if(!t) return;
+  t.innerHTML = P.m.trouves.map(w=>`<span class="chip">${esc(w)}</span>`).join("");
+  const c = $("#compteur"); const reste = P.carte.mots.length - 1 - P.m.trouves.length;
+  if(c) c.textContent = P.m.trouves.length ? (reste>0 ? `Trouvé ! Encore ${reste} anagramme${reste>1?"s":""} en bonus` : "Toutes les anagrammes trouvées !") : c.textContent;
+  const bp = $("#b-passer"); if(bp && P.m.trouves.length) bp.innerHTML = `<span class="ico">⏭</span>Suivante`;
+}
+function majIndice(){ const b=$("#b-indice"); if(b) b.disabled = P.m.indice || P.m.trouves.length>0 || (P.parcours && P.indices<=0); }
+function message(txt, cls=""){ const m=$("#message"); if(m){ m.textContent=txt; m.className="message "+cls; } }
+
+function ajouter(k){
+  if(P.m.fini || P.m.saisie.includes(k) || P.m.saisie.length>=P.m.lettres.length) return;
+  P.m.saisie.push(k); Son.tap(); majReserve(); majReponse(); message("");
+  if(P.m.saisie.length === P.m.lettres.length) setTimeout(valider, 120);
+}
+function effacer(tout){ if(P.m.fini) return; if(tout) P.m.saisie=[]; else P.m.saisie.pop(); majReserve(); majReponse(); }
+function melangerReserve(){
+  if(P.m.fini) return;
+  const avant = P.m.saisie.map(k=>P.m.lettres[k]);
+  P.m.lettres = melanger(P.m.lettres);
+  P.m.saisie = avant.map(o => P.m.lettres.indexOf(o));
+  majReserve(); majReponse();
+}
+function donnerIndice(){
+  if(P.m.indice || P.m.trouves.length) return;
+  if(P.parcours){ if(P.indices<=0) return; P.indices--; }
+  P.m.indice = true;
+  const cible = P.carte.mots.find(w => norm(w)!==norm(P.carte.origine));
+  const premiere = norm(cible)[0];
+  // place la première lettre dans la réponse
+  P.m.saisie = [];
+  const k = P.m.lettres.findIndex(o=>o.l===premiere);
+  if(k>=0) P.m.saisie.push(k);
+  majReserve(); majReponse(); majIndice();
+  const b=$("#b-indice"); if(b && P.parcours) b.innerHTML = `<span class="ico">?</span>Indice (${P.indices})`;
+  message(`Une solution commence par ${premiere}. Gain divisé par deux.`, "");
+}
+function valider(){
+  if(P.m.fini) return;
+  const n = P.m.lettres.length;
+  if(P.m.saisie.length < n){ message(`Utilisez les ${n} lettres.`, "ko"); majReponse("erreur"); Son.ko(); return; }
+  const prop = P.m.saisie.map(k=>P.m.lettres[k].l).join("");
+  const c = P.carte;
+  const raz = () => setTimeout(()=>{ if(!P||P.m.fini) return; P.m.saisie=[]; majReserve(); majReponse(); }, 650);
+  if(prop === norm(c.origine)){ message("C'est le mot de départ. Cherchez-en un autre.", "ko"); majReponse("erreur"); Son.ko(); return raz(); }
+  const mot = c.mots.find(w => norm(w) === prop);
+  if(!mot){ message(`${prop} n'est pas dans le dictionnaire du jeu.`, "ko"); majReponse("erreur"); Son.ko(); return raz(); }
+  if(P.m.trouves.some(w=>norm(w)===prop)){ message("Déjà trouvé.", "ko"); majReponse("erreur"); return raz(); }
+  // bonne réponse
+  const N = NIVEAUX[c.niv];
+  const ecoule = performance.now() - P.m.debut;
+  let gain;
+  if(!P.m.trouves.length){
+    gain = N.gain;
+    if(P.chrono && ecoule < P.m.duree/2) gain += Math.round(N.gain*BONUS_RAPIDITE);
+    if(P.m.indice) gain = Math.round(gain/2);
+    P.m.premierA = ecoule;
+  } else {
+    gain = Math.round(N.gain*BONUS_EXTRA);
+  }
+  P.m.trouves.push(mot.toUpperCase());
+  P.m.gain += gain; P.banque += gain;
+  Son.ok(); majReponse("juste"); envolerGain(gain);
+  message(P.m.trouves.length===1 ? `Bravo ! ${mot.toUpperCase()}` : `Bonus ! ${mot.toUpperCase()}`, "ok");
+  $("#banque").textContent = euros(P.banque);
+  majTrouves(); majIndice();
+  if(P.m.trouves.length === c.mots.length-1) return setTimeout(()=>finManche("fini"), 700);
+  raz();
+}
+function envolerGain(g){
+  const b = $("#reponse").getBoundingClientRect();
+  const el = document.createElement("div"); el.className="gain-vol"; el.textContent="+"+g+" €";
+  el.style.left = (b.left+b.width/2)+"px"; el.style.top=(b.top)+"px";
+  document.body.appendChild(el); setTimeout(()=>el.remove(), 1200);
+}
+
+/* ---------- Minuteur ---------- */
+function demarrerMinuteur(){
+  arreterMinuteur();
+  let dernierTic = 99;
+  const tick = () => {
+    if(!P || P.m.fini) return;
+    P.m.reste = Math.max(0, P.m.duree - (performance.now() - P.m.debut));
+    const i = $("#sablier i"), t = $("#temps");
+    if(i) i.style.transform = `scaleX(${P.m.reste/P.m.duree})`;
+    if(t) t.textContent = fmtTemps(P.m.reste);
+    const s = Math.ceil(P.m.reste/1000);
+    if(s<=5 && s!==dernierTic && s>0){ dernierTic=s; Son.tic(); $("#sablier")?.classList.add("urgent"); }
+    if(P.m.reste<=0) return finManche("temps");
+    minuteur = requestAnimationFrame(tick);
+  };
+  minuteur = requestAnimationFrame(tick);
+}
+function arreterMinuteur(){ if(minuteur) cancelAnimationFrame(minuteur); minuteur=null; }
+
+/* ---------- Fin de manche : face B ---------- */
+function finManche(raison){
+  if(P.m.fini) return;
+  P.m.fini = true; arreterMinuteur();
+  const c = P.carte, N = NIVEAUX[c.niv], reussi = P.m.trouves.length>0;
+  if(!reussi && P.parcours){ P.vies--; Son.ko(); }
+  if(!reussi && !P.parcours) Son.fin();
+  P.historique.push({niv:c.niv, origine:c.origine, trouves:[...P.m.trouves], gain:P.m.gain, reussi});
+  const trouvesN = new Set(P.m.trouves.map(norm));
+  const titre = reussi ? "Carte gagnée" : (raison==="temps" ? "Sablier écoulé" : "Carte passée");
+  const lignes = [];
+  if(reussi){
+    lignes.push([`Gain ${N.nom.toLowerCase()}`, N.gain]);
+    if(P.chrono && P.m.premierA < P.m.duree/2) lignes.push(["Rapidité", Math.round(N.gain*BONUS_RAPIDITE)]);
+    if(P.m.indice) lignes.push(["Indice (÷2)", -Math.round((N.gain + (P.chrono && P.m.premierA<P.m.duree/2 ? Math.round(N.gain*BONUS_RAPIDITE):0))/2)]);
+    if(P.m.trouves.length>1) lignes.push([`Anagrammes bonus ×${P.m.trouves.length-1}`, (P.m.trouves.length-1)*Math.round(N.gain*BONUS_EXTRA)]);
+  }
+  const fin = P.parcours && (P.vies<=0 || P.manche+1 >= P.parcours.length);
+  const voile = document.createElement("div"); voile.className="voile";
+  voile.innerHTML = `
+    <div class="panneau" role="dialog" aria-modal="true" aria-labelledby="t-face-b">
+      <header class="case ${N.classe}"><span id="t-face-b">${titre}</span><span>${reussi?"+"+euros(P.m.gain):"0 €"}</span></header>
+      <div class="corps">
+        <h3>Face B · ${esc(norm(c.origine))}</h3>
+        <div class="solutions">${c.mots.map(w=>{ const n=norm(w); const cls = n===norm(c.origine)?"origine":(trouvesN.has(n)?"trouve":""); return `<span class="sol ${cls}">${esc(w)}</span>`; }).join("")}</div>
+        ${lignes.length ? `<div class="lignes">${lignes.map(([l,v])=>`<div><span>${l}</span><b>${v>0?"+":""}${euros(v)}</b></div>`).join("")}<div class="total"><span>Banque</span><b>${euros(P.banque)}</b></div></div>` : ""}
+        ${!reussi && P.parcours ? `<p class="evt-texte">${P.vies>0 ? `Une vie perdue. Il vous en reste ${P.vies}.` : "Plus de vie : la partie s'arrête."}</p>` : ""}
+        <button class="case c-jaune btn-case suivant" id="b-suivant">${fin ? "Voir le résultat" : (P.parcours ? "Carte suivante" : "Nouvelle carte")}</button>
+        ${!P.parcours ? `<button class="lien" id="b-stop" style="color:#333">Arrêter l'entraînement</button>` : ""}
+      </div>
+    </div>`;
+  document.body.appendChild(voile);
+  const suivant = $("#b-suivant", voile); suivant.focus();
+  suivant.onclick = () => {
+    voile.remove();
+    if(!P.parcours){ return lancerManche(); }
+    if(fin) return ecranFin();
+    P.manche++;
+    if(P.evenements[P.manche] != null) return caseSpeciale(CASES_SPECIALES[P.evenements[P.manche]]);
+    lancerManche();
+  };
+  const stop = $("#b-stop", voile); if(stop) stop.onclick = () => { voile.remove(); ecranFinEntrainement(); };
+}
+
+/* ---------- Case spéciale (dé) ---------- */
+const FACES = {1:[4],2:[0,8],3:[0,4,8],4:[0,2,6,8],5:[0,2,4,6,8],6:[0,2,3,5,6,8]};
+function caseSpeciale(evt){
+  const voile = document.createElement("div"); voile.className="voile";
+  voile.innerHTML = `
+    <div class="panneau" role="dialog" aria-modal="true" aria-labelledby="t-evt">
+      <header class="case c-noir"><span id="t-evt">Lancer de dé</span><span></span></header>
+      <div class="corps">
+        <div class="de roule" id="de">${Array.from({length:9},()=>"<i></i>").join("")}</div>
+        <div id="evt-res" hidden>
+          <div class="evt-case case ${evt.classe}">${evt.titre}${evt.montant?`<small>${evt.montant>0?"+":""}${evt.montant}€</small>`:""}</div>
+          <p class="evt-texte" style="margin-top:10px">${evt.texte}</p>
+        </div>
+        <button class="case c-jaune btn-case suivant" id="b-evt" hidden>Continuer</button>
+      </div>
+    </div>`;
+  document.body.appendChild(voile);
+  const valeur = 1 + Math.floor(Math.random()*6);
+  const de = $("#de", voile);
+  let n = 0;
+  const anim = setInterval(()=>{
+    const v = n<7 ? 1+Math.floor(Math.random()*6) : valeur;
+    de.querySelectorAll("i").forEach((p,i)=>p.style.visibility = FACES[v].includes(i)?"visible":"hidden");
+    Son.tic();
+    if(++n>7){
+      clearInterval(anim);
+      $("#evt-res", voile).hidden=false; const b=$("#b-evt", voile); b.hidden=false; b.focus();
+      if(evt.montant){ P.banque = Math.max(0, P.banque + evt.montant); evt.montant>0?Son.ok():Son.ko(); }
+      P.historique.push({special:evt});
+      b.onclick = () => { voile.remove(); lancerManche(); };
+    }
+  }, 80);
+}
+
+/* ---------- Fin de partie ---------- */
+function etoiles(total){ return total>=900?3 : total>=500?2 : total>=200?1 : 0; }
+function ecranFin(){
+  arreterMinuteur();
+  const total = P.banque, nb = etoiles(total);
+  const rec = store.get("records", {defi:0, jour:{}});
+  let record = false;
+  if(P.mode==="defi" && total > (rec.defi||0)){ rec.defi = total; record = true; }
+  if(P.mode==="jour"){ rec.jour = rec.jour||{}; if(rec.jour[aujourdhui()]==null){ rec.jour[aujourdhui()] = total; } }
+  store.set("records", rec);
+  const reussies = P.historique.filter(h=>h.reussi).length, cartes = P.historique.filter(h=>!h.special).length;
+  Son.fin();
+  app.innerHTML = `
+  <section class="ecran">
+    <h1 class="titre-ecran">${P.vies>0 ? "Arrivée !" : "Partie terminée"}</h1>
+    <div class="score-final">${euros(total)}</div>
+    <div class="etoiles" aria-label="${nb} étoile(s) sur 3">${[1,2,3].map(i=>`<span class="${i<=nb?"on":""}">★</span>`).join("")}</div>
+    ${record ? `<div class="nouveau-record">Nouveau record !</div>` : ""}
+    <p class="accroche">${reussies} carte${reussies>1?"s":""} gagnée${reussies>1?"s":""} sur ${cartes}${P.mode==="jour"?" · Défi du jour":""}</p>
+    <div class="recap">${P.historique.map(h=> h.special
+      ? `<div class="recap-l"><span class="pastille case ${h.special.classe}">◆</span><span>Case ${h.special.titre}</span><b class="${h.special.montant<0?"neg":""}">${h.special.montant?(h.special.montant>0?"+":"")+euros(h.special.montant):"—"}</b></div>`
+      : `<div class="recap-l"><span class="pastille case ${NIVEAUX[h.niv].classe}">${h.reussi?"✓":"✕"}</span><span>${esc(norm(h.origine))} → ${h.trouves.length?esc(h.trouves.join(", ")):"<i>non trouvé</i>"}</span><b>${h.gain?"+"+euros(h.gain):"—"}</b></div>`).join("")}</div>
+    <div class="duo">
+      <button class="case c-vert btn-case" id="b-rejouer">${P.mode==="jour"?"Partager":"Rejouer"}</button>
+      <button class="case c-noir btn-case" id="b-menu">Menu</button>
+    </div>
+  </section>`;
+  const mode = P.mode;
+  $("#b-menu").onclick = ecranAccueil;
+  $("#b-rejouer").onclick = mode==="jour" ? partager : () => nouvellePartie(mode);
+}
+function partager(){
+  const d = String(aujourdhui());
+  const ligne = P.historique.filter(h=>!h.special).map(h => h.reussi ? {v:"🟩",b:"🟦",r:"🟥",n:"⬛"}[h.niv] : "⬜").join("");
+  const txt = `Le-QLN · Défi du jour ${d.slice(6)}/${d.slice(4,6)}\n${ligne}\n${euros(P.banque)} ${"★".repeat(etoiles(P.banque))}`;
+  const ok = () => toast("Résultat copié, collez-le où vous voulez.");
+  try{ navigator.clipboard.writeText(txt).then(ok, ()=>toast(txt)); }catch(e){ toast(txt); }
+}
+function ecranFinEntrainement(){
+  const reussies = P.historique.filter(h=>h.reussi).length;
+  app.innerHTML = `
+  <section class="ecran">
+    <h1 class="titre-ecran">Fin de l'entraînement</h1>
+    <div class="score-final">${euros(P.banque)}</div>
+    <p class="accroche">${reussies} carte${reussies>1?"s":""} gagnée${reussies>1?"s":""} sur ${P.historique.length}</p>
+    <div class="duo">
+      <button class="case c-rouge btn-case" id="b-rejouer">Continuer</button>
+      <button class="case c-noir btn-case" id="b-menu">Menu</button>
+    </div>
+  </section>`;
+  $("#b-menu").onclick = ecranAccueil;
+  $("#b-rejouer").onclick = ecranEntrainement;
+}
+
+/* ---------- Quitter / toast ---------- */
+function confirmerQuitter(){
+  const pause = P.chrono && !P.m.fini;
+  if(pause) arreterMinuteur();
+  const voile = document.createElement("div"); voile.className="voile";
+  voile.innerHTML = `<div class="panneau" role="dialog" aria-modal="true" aria-labelledby="t-q">
+    <header class="case c-orange"><span id="t-q">Quitter la partie ?</span></header>
+    <div class="corps"><p class="evt-texte">La partie en cours sera perdue.</p>
+    <div class="duo"><button class="case c-noir btn-case" id="q-non">Continuer</button><button class="case c-rouge btn-case" id="q-oui">Quitter</button></div></div></div>`;
+  document.body.appendChild(voile);
+  const t0 = performance.now();
+  $("#q-non",voile).focus();
+  $("#q-non",voile).onclick = () => { voile.remove(); if(pause){ P.m.debut += performance.now()-t0; demarrerMinuteur(); } };
+  $("#q-oui",voile).onclick = () => { voile.remove(); ecranAccueil(); };
+}
+function toast(t){ const el=document.createElement("div"); el.className="toast"; el.textContent=t; document.body.appendChild(el); setTimeout(()=>el.remove(), 3500); }
+
+/* ---------- Clavier ---------- */
+document.addEventListener("keydown", e => {
+  if(!P || !P.m || P.m.fini || document.querySelector(".voile")) return;
+  if(e.ctrlKey||e.metaKey||e.altKey) return;
+  if(e.key==="Enter"){ e.preventDefault(); return valider(); }
+  if(e.key==="Backspace"){ e.preventDefault(); return effacer(); }
+  if(e.key==="Escape"){ return effacer(true); }
+  if(e.key===" "){ e.preventDefault(); return melangerReserve(); }
+  const l = norm(e.key);
+  if(/^[A-Z]$/.test(l)){
+    const k = P.m.lettres.findIndex((o,i)=>o.l===l && !P.m.saisie.includes(i));
+    if(k>=0) ajouter(k); else { majReponse("erreur"); setTimeout(()=>majReponse(),400); }
+  }
+});
+window.addEventListener("resize", () => { const s=document.querySelector(".ecran[style*='--tw']"); if(s && P && P.carte) s.style.setProperty("--tw", largeurTuile(P.m.lettres.length)+"px"); });
+
+/* ---------- Installation (PWA) ---------- */
+let installEvt = null;
+window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); installEvt = e; const b=$("#b-install"); if(b){ b.hidden=false; b.onclick=()=>{ installEvt.prompt(); installEvt=null; b.hidden=true; }; } });
+if("serviceWorker" in navigator && location.protocol==="https:"){
+  navigator.serviceWorker.register("sw.js").catch(()=>{});
+}
+
+/* ---------- Démarrage ---------- */
+chargerDico().then(ecranAccueil).catch(() => {
+  app.innerHTML = `<p class="chargement">Impossible de charger le dictionnaire. Vérifiez votre connexion puis rechargez la page.</p>`;
+});
+</script>
+</body>
+</html>
