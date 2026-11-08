@@ -1,7 +1,7 @@
 // Le-QLN (EN) — service worker: playable offline after the first visit.
-const VERSION = "qln-en-v4";
+const VERSION = "qln-en-v5";
 const FICHIERS = [
-  "./", "index.html", "plateau.js", "pub.js", "infos.js", "manifest.webmanifest", "data/en.json",
+  "./", "index.html", "plateau.js", "multi.js", "pub.js", "infos.js", "manifest.webmanifest", "data/en.json",
   "../pubs/spot1.jpg", "../pubs/spot2.jpg", "../pubs/spot3.jpg", "../icons/icon-192.png", "../icons/icon-512.png", "../icons/apple-touch-icon.png",
 ];
 

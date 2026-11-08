@@ -600,6 +600,25 @@ button.piece:active, .piece.enfonce{transform:translateY(calc(var(--lip) - 1px))
 
 .quitter-voile{position:absolute; top:max(12px, env(safe-area-inset-top)); left:12px; width:44px; height:44px; border-radius:50%; border:1px solid rgba(255,255,255,.25); background:rgba(10,20,50,.75); color:#fff; display:grid; place-items:center; cursor:pointer; z-index:5; backdrop-filter:blur(4px)}
 .quitter-voile svg{width:20px; height:20px}
+
+/* =====================  DESIGN V7 — finitions  ===================== */
+.barre-haut{display:flex; justify-content:space-between; align-items:center; gap:10px}
+.mode .nom{font-size:clamp(22px, 6.4vw, 31px); hyphens:none; overflow-wrap:normal; word-break:keep-all}
+.mode.large .nom{font-size:clamp(24px, 7vw, 32px)}
+.mode.large .ico{flex:none}
+.mode.large .etiquette{background:linear-gradient(#fff6c8,#ffd84a); color:#1b1a05}
+.mode.c-multi{--a:#ffb347; --b:#d9741a; --o:#7a3d08}
+.stats .stat{position:relative; overflow:hidden}
+.stats .stat::after{content:""; position:absolute; inset:auto -20% -60% -20%; height:80%; background:radial-gradient(closest-side, rgba(255,214,10,.14), transparent); pointer-events:none}
+.ecran > .sous-titre{text-wrap:balance}
+.panneau{animation:apparait .32s cubic-bezier(.2,.9,.3,1.2)}
+@keyframes apparait{from{opacity:0; transform:translateY(18px) scale(.96)}}
+.toast{box-shadow:0 10px 30px rgba(0,0,0,.5), inset 0 0 0 1px rgba(255,255,255,.1)}
+.icone-btn:active{transform:scale(.92)}
+.bouton-plat{transition:color .15s, text-decoration-color .15s} .bouton-plat:hover{color:#fff}
+@media (hover:hover){ .mode:hover{filter:brightness(1.06)} }
+.carte{box-shadow:0 2px 0 #fff inset, 0 8px 0 #d8d0b4, 0 12px 0 #b8ae8c, 0 30px 40px rgba(0,0,0,.5)}
+.credit{opacity:.7}
 </style>
 </head>
 <body>
@@ -1040,7 +1059,7 @@ function ecranAccueil(){
   const d = new Date(), dateCourte = d.toLocaleDateString("en-US", {day:"numeric", month:"short"});
   app.innerHTML = `
   <section class="ecran">
-    <div class="barre-haut">${boutonSon()}<button class="icone-btn" id="b-regles-h" aria-label="How to play">${ICO.livre}</button></div>
+    <div class="barre-haut">${boutonSon()}${typeof Multi !== "undefined" ? Multi.chipProfil() : ""}<button class="icone-btn" id="b-regles-h" aria-label="How to play">${ICO.livre}</button></div>
     <div class="heros">
       <div class="logo flotte"><span>LE - QLN</span></div>
       <div class="vitrine" id="vitrine" aria-hidden="true"></div>
@@ -1052,7 +1071,7 @@ function ecranAccueil(){
       <button class="mode piece c-bleu" id="b-jour"><span class="filigrane" aria-hidden="true">Q</span><span class="etiquette">${dateCourte}</span><span class="ico">${ICO.calendrier}</span><span><span class="nom">Daily challenge</span><span class="desc">${jourFait!=null ? "Done: "+euros(jourFait) : "Same cards for everyone"}</span></span></button>
       <button class="mode piece c-noir" id="b-entr"><span class="filigrane" aria-hidden="true">N</span><span class="ico">${ICO.cible}</span><span><span class="nom">Practice</span><span class="desc">Your colour, no pressure</span></span></button>
     </div>
-    <div class="bientot">${ICO.groupe.replace('<svg','<svg width="20" height="20"')} Multiplayer for 2–6 players: coming soon</div>
+    <button class="mode piece c-multi large" id="b-multi"><span class="filigrane" aria-hidden="true">M</span><span class="ico">${ICO.groupe}</span><span><span class="nom">Multiplayer</span><span class="desc">Create a room, share the code, play with 2–6</span></span><span class="etiquette">New</span></button>
     <div class="stats">
       <div class="stat"><span>Challenge record</span><b>${euros(rec.defi||0)}</b></div>
       <div class="stat"><span>Daily challenge</span><b>${jourFait!=null ? euros(jourFait) : "—"}</b></div>
@@ -1068,6 +1087,7 @@ function ecranAccueil(){
   $("#b-jour").onclick = () => nouvellePartie("jour");
   $("#b-entr").onclick = ecranEntrainement;
   $("#b-ia").onclick = () => PlateauIA.config();
+  if(typeof Multi !== "undefined"){ $("#b-multi").onclick = Multi.ecran; const bp = $("#b-profil"); if(bp) bp.onclick = () => Multi.profil(); }
   $("#b-regles").onclick = $("#b-regles-h").onclick = ecranRegles;
   $("#b-docs").onclick = ecranDocs;
   brancherSon();
@@ -1798,8 +1818,9 @@ if("serviceWorker" in navigator && location.protocol==="https:" && !location.hos
 <script src="pub.js"></script>
 <script src="infos.js"></script>
 <script src="plateau.js"></script>
+<script src="multi.js"></script>
 <script>
-chargerDico().then(ecranAccueil).catch(() => {
+chargerDico().then(() => (typeof Multi !== "undefined" && Multi.lienDirect()) || ecranAccueil()).catch(() => {
   app.innerHTML = `<p class="chargement">Could not load the dictionary. Check your connection and reload the page.</p>`;
 });
 </script>

@@ -182,6 +182,8 @@ const hasard = t => t[Math.floor(Math.random()*t.length)];
 function config(){
   arreterVitrine();
   const cfg = store.get("cfgIA", {nom:"", couleur:0, nb:3, niveau:"joueur", caches:true, rapide:false});
+  const compte = typeof Multi !== "undefined" ? Multi.compte() : null;
+  if(compte && !cfg.nom){ cfg.nom = compte.pseudo; cfg.couleur = compte.couleur; }
   app.classList.remove("large");
   app.innerHTML = `
   <section class="ecran">
