@@ -1,5 +1,5 @@
 // Le-QLN — service worker : jeu jouable hors connexion après la première visite.
-const VERSION = "qln-v15";
+const VERSION = "qln-v16";
 const FICHIERS = [
   "./", "index.html", "plateau.js", "multi.js", "config.js", "pub.js", "infos.js", "manifest.webmanifest", "data/fr.json",
   "pubs/spot1.jpg", "pubs/spot2.jpg", "pubs/spot3.jpg", "icons/icon-192.png", "icons/icon-512.png", "icons/apple-touch-icon.png",
@@ -20,10 +20,11 @@ self.addEventListener("activate", e => {
 self.addEventListener("fetch", e => {
   const req = e.request;
   if (req.method !== "GET") return;
-  if (req.mode === "navigate") {
+  // documents (liste et fichiers) : réseau d'abord, pour voir les nouveautés sans attendre une nouvelle version
+  if (req.mode === "navigate" || req.url.includes("/docs/")) {
     e.respondWith(
       fetch(req).then(r => { const copie = r.clone(); caches.open(VERSION).then(c => c.put(req, copie)); return r; })
-        .catch(() => caches.match(req).then(r => r || caches.match("index.html")))
+        .catch(() => caches.match(req).then(r => r || (req.mode === "navigate" ? caches.match("index.html") : Response.error())))
     );
     return;
   }

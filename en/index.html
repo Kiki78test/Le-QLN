@@ -580,8 +580,7 @@ button.piece:active, .piece.enfonce{transform:translateY(calc(var(--lip) - 1px))
 @media (prefers-reduced-motion:reduce){ .de.roule,.de.roule::after{animation:none} }
 
 /* =====================  DESIGN V6 — plateau en perspective, volumes  ===================== */
-.tapis-cadre{--rx:0; --ry:0; transform-style:preserve-3d; transform-origin:50% 100%; margin:8px 0 26px;
-  transform:perspective(1000px) rotateX(calc(16deg + var(--rx)*1deg)) rotateY(calc(var(--ry)*1deg)); transition:transform .25s ease-out; will-change:transform;
+.tapis-cadre{margin:8px 0 22px;
   box-shadow: inset 0 2px 0 rgba(255,255,255,.55), 0 1px 0 #a87a22, 0 2px 0 #9a6c1a, 0 3px 0 #8a5a12, 0 4px 0 #7c4f0f, 0 5px 0 #6e440c, 0 6px 0 #603a09, 0 7px 0 #523006, 0 8px 0 #452704, 0 9px 0 #3a2003, 0 10px 0 #2f1a02,
   0 24px 30px rgba(0,0,0,.55), 0 50px 60px rgba(0,0,0,.35)!important}
 .tapis-cadre.sans-persp{transform:none}
@@ -596,7 +595,6 @@ button.piece:active, .piece.enfonce{transform:translateY(calc(var(--lip) - 1px))
 .lettre:active{transform:translateY(5px)!important}
 .joueur{transition:transform .25s; transform-style:preserve-3d} .joueur.actif,.joueur[aria-current="true"]{transform:translateZ(0) scale(1.02)}
 .dock{box-shadow:0 2px 0 #fff inset, 0 6px 0 #d8d0b4, 0 10px 0 #b8ae8c, 0 24px 30px rgba(0,0,0,.45)!important}
-@media (prefers-reduced-motion:reduce){ .tapis-cadre{transform:perspective(1000px) rotateX(10deg); transition:none} }
 
 .quitter-voile{position:absolute; top:max(12px, env(safe-area-inset-top)); left:12px; width:44px; height:44px; border-radius:50%; border:1px solid rgba(255,255,255,.25); background:rgba(10,20,50,.75); color:#fff; display:grid; place-items:center; cursor:pointer; z-index:5; backdrop-filter:blur(4px)}
 .quitter-voile svg{width:20px; height:20px}
@@ -619,6 +617,53 @@ button.piece:active, .piece.enfonce{transform:translateY(calc(var(--lip) - 1px))
 @media (hover:hover){ .mode:hover{filter:brightness(1.06)} }
 .carte{box-shadow:0 2px 0 #fff inset, 0 8px 0 #d8d0b4, 0 12px 0 #b8ae8c, 0 30px 40px rgba(0,0,0,.5)}
 .credit{opacity:.7}
+
+/* =====================  DESIGN V8 — passe « sexy » : grain, lueurs, or, verre  ===================== */
+:root{--or-grad-2:linear-gradient(135deg,#fff3b0 0%,#ffd84a 35%,#e0a614 60%,#ffe68f 100%); --verre:rgba(10,22,58,.55); --verre-bord:rgba(255,255,255,.1)}
+/* grain + vignette sur tout le site */
+body::after{content:""; position:fixed; inset:0; pointer-events:none; z-index:1; mix-blend-mode:soft-light; opacity:.55;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E")}
+body::before{content:""; position:fixed; inset:0; pointer-events:none; z-index:1; background:radial-gradient(120% 80% at 50% 0%, transparent 55%, rgba(0,0,0,.45) 100%)}
+/* titres en or brossé */
+.titre-ecran,.entete-ecran h1,.p-hud h1{background:var(--or-grad-2); -webkit-background-clip:text; background-clip:text; color:transparent!important; filter:drop-shadow(0 2px 0 rgba(0,0,0,.6)) drop-shadow(0 8px 18px rgba(255,200,60,.18))}
+.p-hud h1 small{-webkit-text-fill-color:var(--brume); color:var(--brume)}
+/* cartes de verre */
+.stats .stat,.m-carte,.bloc,.docs .doc,.regles-bloc,.journal,.joueurs .joueur,.bareme-regles,.panneau .corps .lignes>*{backdrop-filter:blur(10px) saturate(1.2); -webkit-backdrop-filter:blur(10px) saturate(1.2)}
+.stats .stat,.m-carte,.bloc,.docs .doc{background:linear-gradient(160deg, rgba(255,255,255,.09), rgba(255,255,255,.03) 45%, rgba(0,0,0,.18))!important; box-shadow:inset 0 1px 0 rgba(255,255,255,.18), inset 0 0 0 1px var(--verre-bord), 0 14px 34px rgba(0,0,0,.4)!important}
+.stats .stat b{background:var(--or-grad-2); -webkit-background-clip:text; background-clip:text; color:transparent; font-variant-numeric:tabular-nums}
+/* modes : reflet qui balaie à l'arrivée, puis au survol */
+.mode::after{content:""; position:absolute; inset:-40% -60%; background:linear-gradient(115deg, transparent 42%, rgba(255,255,255,.28) 50%, transparent 58%); transform:translateX(-70%); pointer-events:none; animation:reflet 1.6s .5s ease-out 1}
+@media (hover:hover){ .mode:hover::after{animation:reflet .9s ease-out 1} }
+@keyframes reflet{to{transform:translateX(70%)}}
+.mode .ico{background:radial-gradient(circle at 35% 30%, rgba(255,255,255,.35), rgba(0,0,0,.35) 70%); box-shadow:inset 0 1px 0 rgba(255,255,255,.4), 0 4px 10px rgba(0,0,0,.35)}
+/* boutons principaux : liseré or + reflet */
+.bouton.piece{position:relative; overflow:hidden; text-shadow:0 1px 0 rgba(255,255,255,.25)}
+.bouton.piece::before{content:""; position:absolute; inset:0 0 50% 0; background:linear-gradient(rgba(255,255,255,.28), rgba(255,255,255,0)); pointer-events:none}
+.bouton.piece.c-jaune{box-shadow:0 0 0 1.5px #fff3b0 inset, 0 1px 0 #fff6 inset, 0 3px 0 rgba(0,0,0,.28), 0 6px 0 rgba(0,0,0,.2), 0 14px 26px rgba(255,200,40,.28)!important}
+/* lettres : plus d'épaisseur, reflet */
+.lettre{position:relative; overflow:hidden} .lettre::before{content:""; position:absolute; inset:0 0 55% 0; background:linear-gradient(rgba(255,255,255,.3), rgba(255,255,255,0)); border-radius:inherit; pointer-events:none}
+/* la carte : papier, liseré or, coins */
+.carte{background:linear-gradient(170deg,#fffdf4,#f3ead0 70%,#e8dcb8); box-shadow:0 2px 0 #fff inset, 0 0 0 1px rgba(201,146,26,.35), 0 0 0 5px rgba(255,255,255,.06), 0 8px 0 #d8d0b4, 0 12px 0 #b8ae8c, 0 30px 44px rgba(0,0,0,.55)}
+.carte .carte-bande{position:relative} .carte .carte-bande::after{content:""; position:absolute; left:0; right:0; bottom:-1px; height:2px; background:linear-gradient(90deg, transparent, rgba(255,255,255,.7), transparent)}
+/* panneaux/dialogues : filet or en tête */
+.panneau{box-shadow:0 0 0 1px rgba(255,255,255,.12), 0 0 0 5px rgba(255,214,10,.06), 0 30px 60px rgba(0,0,0,.6)}
+.panneau header{position:relative} .panneau header::after{content:""; position:absolute; left:0; right:0; bottom:0; height:2px; background:linear-gradient(90deg, transparent, #ffe68f, transparent); opacity:.8}
+/* toasts : accent or */
+.toast{border-left:3px solid #ffd84a}
+/* docs */
+.docs .doc .pdf{background:linear-gradient(160deg,#ff6b6b,#b3122b); box-shadow:inset 0 1px 0 rgba(255,255,255,.35), 0 6px 12px rgba(0,0,0,.35)}
+.docs .doc .pdf.xls{background:linear-gradient(160deg,#5fd48a,#157a3b)}
+/* logo : halo pulsant discret */
+.logo{position:relative} .logo::before{content:""; position:absolute; inset:-30% -10%; background:radial-gradient(closest-side, rgba(255,214,10,.22), transparent); filter:blur(14px); z-index:-1; animation:halo 4s ease-in-out infinite}
+@keyframes halo{50%{opacity:.55; transform:scale(1.08)}}
+/* barre de défilement */
+*{scrollbar-width:thin; scrollbar-color:rgba(255,214,10,.45) transparent}
+::-webkit-scrollbar{height:8px; width:8px} ::-webkit-scrollbar-thumb{background:rgba(255,214,10,.45); border-radius:8px}
+/* bandeaux pub : plus intégrés */
+.pub-bandeau{box-shadow:inset 0 0 0 1px rgba(255,255,255,.12), inset 0 1px 0 rgba(255,255,255,.18), 0 10px 22px rgba(0,0,0,.35)!important}
+/* dock */
+.dock{position:relative} .dock::before{content:""; position:absolute; left:14%; right:14%; top:-2px; height:3px; border-radius:3px; background:linear-gradient(90deg, transparent, #ffd84a, transparent)}
+@media (prefers-reduced-motion:reduce){ .mode::after,.logo::before{animation:none} }
 </style>
 </head>
 <body>
@@ -1895,16 +1940,6 @@ chargerDico().then(() => (typeof Multi !== "undefined" && Multi.lienDirect()) ||
       const reduit = matchMedia("(prefers-reduced-motion: reduce)").matches; if(reduit) return;
       p.classList.add("face-b"); const d = document.createElement("div"); d.className = "dos-carte"; d.innerHTML = "<span>LE - QLN</span>"; p.prepend(d); setTimeout(() => d.remove(), 1300); }); }
   new MutationObserver(() => { ameliorerFin(); ameliorerFaceB(); }).observe(document.body, {childList:true, subtree:true});
-})();
-</script>
-<script>
-/* V6 : inclinaison du plateau selon le doigt / le téléphone */
-(function(){
-  const reduit = matchMedia("(prefers-reduced-motion: reduce)").matches; if(reduit) return;
-  const set = (rx,ry) => { const c = document.querySelector(".tapis-cadre"); if(!c) return; c.style.setProperty("--rx", rx.toFixed(2)); c.style.setProperty("--ry", ry.toFixed(2)); };
-  const lim = (v,m) => Math.max(-m, Math.min(m, v));
-  addEventListener("pointermove", e => { if(e.pointerType==="touch") return; set(lim(-(e.clientY/innerHeight-.5)*6,4), lim((e.clientX/innerWidth-.5)*10,6)); }, {passive:true});
-  addEventListener("deviceorientation", e => { if(e.gamma==null) return; set(lim((e.beta-50)*.12,5), lim(e.gamma*.18,7)); }, {passive:true});
 })();
 </script>
 <script>
