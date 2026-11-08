@@ -297,7 +297,7 @@ async function jouerTour(j){
     if(!j.ia && G.dernier && G.dernier.id===j.id && dernierEchu(j)) break;
     const de = await lancer(j);
     const opts = destinations(j.pos, de);
-    const choix = opts.length === 1 ? opts[0] : (j.ia ? choixIA(j, opts) : await ui(choisirCase(j, opts, de)));
+    const choix = !j.ia ? await ui(choisirCase(j, opts, de)) : (opts.length === 1 ? opts[0] : choixIA(j, opts));
     if(j.ia && opts.length > 1) { dock({de, msg:`${esc(j.nom)} choisit sa route…`}); marquerCibles(opts); await attendre(900); marquerCibles([]); }
     await deplacer(j, choix.chemin);
     if(choix.id === "A"){ await arriver(j); break; }
@@ -337,13 +337,23 @@ function descriptionCase(id){
 }
 function choisirCase(j, opts, de){
   return new Promise(res => {
-    dock({de, msg:"Choisissez votre case", sous:"Touchez une case en surbrillance sur le tapis ou un choix ci-dessous."});
+    dock({de, msg: opts.length > 1 ? "Où placez-vous votre pion ?" : "Placez votre pion", sous: opts.length > 1 ? `${opts.length} cases possibles : touchez-en une sur le tapis ou choisissez ci-dessous.` : "Touchez la case en surbrillance sur le tapis, ou le bouton ci-dessous."});
     const zone = $("#dock-actions");
-    zone.innerHTML = opts.map((o,i)=>{ const d = descriptionCase(o.id); return `<button class="choix-case piece ${d.classe}" data-i="${i}"><span>${d.titre}</span><small>${d.detail}</small></button>`; }).join("");
+    zone.innerHTML = opts.map((o,i)=>{ const d = descriptionCase(o.id); return `<button class="choix-case piece ${d.classe}" data-i="${i}"><span>${opts.length===1?"Avancer ici · ":""}${d.titre}</span><small>${d.detail}</small></button>`; }).join("");
     const choisir = i => { marquerCibles([]); zone.innerHTML = ""; res(opts[i]); };
     $$("button", zone).forEach(b => b.onclick = () => choisir(+b.dataset.i));
     marquerCibles(opts, choisir);
+    voirCibles(opts);
   });
+}
+function voirCibles(opts){
+  // petits écrans : fait défiler le tapis pour montrer les cases possibles
+  const sc = $("#tapis-scroll"), svg = $("#tapis"); if(!sc || !svg) return;
+  sc.closest(".tapis-cadre").scrollIntoView({behavior:"smooth", block:"nearest"});
+  if(sc.scrollWidth <= sc.clientWidth) return;
+  const xs = opts.map(o => o.id === "A" ? XA + 38 : centre(o.id)[0]);
+  const ratio = svg.clientWidth / LARG, milieu = (Math.min(...xs) + Math.max(...xs)) / 2;
+  sc.scrollTo({left: milieu*ratio - sc.clientWidth/2, behavior:"smooth"});
 }
 function valeurCase(j, id, depart){
   const prof = PROFILS[j.ia];
@@ -639,7 +649,8 @@ async function faceB(c, {titre, valeur, trouve, texte, auto=0, echec=false}){
   const N = NIVEAUX[c.niv], tn = trouve ? norm(trouve) : null;
   const v = panneau({classe: echec ? "c-noir" : N.classe, titre, valeur, corps:`
     <h3>Face B · ${esc(norm(c.origine))}</h3>
-    <div class="solutions">${c.mots.map(w=>{ const n = norm(w); return `<span class="sol ${n===norm(c.origine)?"origine":(n===tn?"trouve":"")}">${esc(w)}</span>`; }).join("")}</div>
+    <div class="solutions">${c.mots.map(w=>{ const n = norm(w); return `<button class="sol ${n===norm(c.origine)?"origine":(n===tn?"trouve":"")}" data-def="${esc(w)}">${esc(w)}</button>`; }).join("")}</div>
+    <p style="font-size:13.5px; color:var(--gris)">Touchez un mot pour voir sa définition.</p>
     ${texte ? `<p class="texte-centre">${esc(texte)}</p>` : ""}
     <button class="bouton piece c-jaune" id="b-ok">Continuer</button>`});
   await fermeture(v, auto);

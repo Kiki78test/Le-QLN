@@ -236,7 +236,7 @@ button.piece[disabled]{filter:grayscale(.85) brightness(.6); cursor:default; tra
 .panneau p{margin:0}
 .texte-centre{text-align:center; font-family:var(--f-ui); font-weight:600; font-size:19px; line-height:1.25}
 .solutions{display:flex; flex-wrap:wrap; gap:7px}
-.sol{font-family:var(--f-ui); font-weight:800; letter-spacing:.06em; text-transform:uppercase; font-size:18px; padding:5px 12px 4px; border-radius:8px; background:#fff; box-shadow:0 2px 0 var(--ivoire-3), inset 0 0 0 1px rgba(0,0,0,.08)}
+.sol{border:0; cursor:help; color:inherit; font-family:var(--f-ui); font-weight:800; letter-spacing:.06em; text-transform:uppercase; font-size:18px; padding:5px 12px 4px; border-radius:8px; background:#fff; box-shadow:0 2px 0 var(--ivoire-3), inset 0 0 0 1px rgba(0,0,0,.08)}
 .sol.trouve{background:var(--ok); color:#0d2b0f; box-shadow:0 2px 0 #4f7d1b}
 .sol.origine{background:transparent; color:#9a937f; text-decoration:line-through; box-shadow:inset 0 0 0 1px rgba(0,0,0,.12)}
 .lignes{display:grid; gap:5px; font-family:var(--f-ui); font-size:18px; font-weight:600}
@@ -272,6 +272,34 @@ button.piece[disabled]{filter:grayscale(.85) brightness(.6); cursor:default; tra
 .recap-l b{font-variant-numeric:tabular-nums; font-weight:800}
 .recap-l .neg{color:var(--ko)}
 .recap-l i{color:var(--brume-2)}
+
+
+/* ---------- Bulle de définition ---------- */
+[data-def]{cursor:help}
+.sol[data-def], .chip[data-def], .recap-l [data-def]{text-decoration:underline dotted; text-decoration-color:rgba(127,127,127,.6); text-underline-offset:3px}
+.def-btn{display:inline-flex; align-items:center; gap:6px; font-family:var(--f-ui); font-weight:700; font-size:14px; letter-spacing:.04em; color:var(--gris); padding:3px 10px 3px 4px; border-radius:20px; background:rgba(0,0,0,.06)}
+.def-btn:hover{background:rgba(0,0,0,.12); color:var(--sombre)}
+.def-btn i{width:18px; height:18px; border-radius:50%; background:var(--sombre); color:#fff; font-style:normal; font-family:Georgia, serif; font-weight:700; font-size:12px; display:grid; place-items:center}
+.bulle{position:fixed; z-index:90; width:min(340px, calc(100vw - 24px)); background:#fffdf6; color:var(--sombre); border-radius:14px; padding:12px 14px; box-shadow:0 0 0 1px rgba(0,0,0,.08), 0 16px 40px rgba(0,0,0,.5); font-size:15px; line-height:1.45; animation:bulle .18s ease}
+@keyframes bulle{from{opacity:0; transform:translateY(6px)}}
+.bulle::before{content:""; position:absolute; left:var(--fx, 50%); width:14px; height:14px; background:#fffdf6; transform:translateX(-50%) rotate(45deg); top:-7px}
+.bulle.dessus::before{top:auto; bottom:-7px}
+.bulle h4{margin:0 0 6px; font-family:var(--f-titre); font-weight:400; font-size:26px; letter-spacing:.04em; line-height:1; display:flex; justify-content:space-between; align-items:baseline; gap:10px}
+.bulle h4 small{font-family:var(--f-ui); font-weight:700; font-size:13px; color:var(--gris); letter-spacing:.04em}
+.bulle ol{margin:0; padding-left:20px; display:grid; gap:4px}
+.bulle .lemme{font-family:var(--f-ui); font-weight:700; color:var(--gris); font-size:14px; margin:0 0 4px}
+.bulle .source{display:block; margin-top:8px; font-family:var(--f-ui); font-weight:700; font-size:13px; color:#1b47a3}
+.bulle .attente{margin:0; color:var(--gris); font-style:italic}
+
+
+.docs{display:grid; gap:12px}
+.doc{display:grid; grid-template-columns:auto 1fr auto; gap:14px; align-items:center; background:var(--ivoire); color:var(--sombre); border-radius:14px; padding:14px 16px; text-decoration:none; box-shadow:0 2px 0 var(--ivoire-3), 0 10px 24px rgba(0,0,0,.35)}
+.doc:hover{transform:translateY(-2px)}
+.doc .pdf{width:44px; height:54px; border-radius:6px; background:linear-gradient(160deg,var(--rouge-b),var(--rouge-a)); color:#fff; font-family:var(--f-ui); font-weight:800; font-size:13px; display:grid; place-items:end center; padding-bottom:7px; box-shadow:0 3px 0 var(--rouge-o)}
+.doc b{display:block; font-family:var(--f-titre); font-weight:400; font-size:26px; letter-spacing:.03em; line-height:1}
+.doc small{display:block; font-family:var(--f-ui); font-weight:700; font-size:14px; color:var(--gris); letter-spacing:.04em; text-transform:uppercase; margin-top:3px}
+.doc p{margin:4px 0 0; font-size:14.5px; line-height:1.35}
+.doc .ouvrir{font-family:var(--f-titre); font-size:22px; color:#1b47a3}
 
 /* ---------- Écrans secondaires ---------- */
 .entete-ecran{display:grid; grid-template-columns:44px 1fr 44px; align-items:center; gap:8px}
@@ -451,6 +479,115 @@ function tirerCarte(niv, rnd, deja){
 const solutionsDe = c => c.mots.filter(w => norm(w) !== norm(c.origine));
 const chercherMot = (c, prop) => c.mots.find(w => norm(w) === prop && norm(w) !== norm(c.origine));
 
+
+/* ---------- Définitions (Wiktionnaire, à la demande) ---------- */
+const Definitions = (() => {
+  const cache = new Map();
+  const API = "https://fr.wiktionary.org/w/api.php?action=parse&prop=wikitext&format=json&redirects=1&origin=*&page=";
+  const lienWiki = mot => "https://fr.wiktionary.org/wiki/" + encodeURIComponent(mot);
+  const MUETS = /^(fr|m|f|s|p|e|pron|réf|ébauche|ébauche-déf|exemple|source|réf ?nec|refnec|term|recons|cf|siècle|date|nobr|petites capitales|sp|mf|msing|fsing|mplur|fplur|invar|non standard)$/;
+  function nettoyer(t){
+    t = t.replace(/<ref[^>]*\/>/g, "").replace(/<ref[^>]*>[\s\S]*?<\/ref>/g, "").replace(/<[^>]+>/g, "");
+    for(let i = 0; i < 4; i++){
+      t = t.replace(/\{\{(?:lien|l|w|lien web|nom w pc)\|([^|}]+)[^{}]*\}\}/gi, "$1");
+      t = t.replace(/\{\{([a-zéèêàùç\- ]{2,24})(?:\|[^{}]*)?\}\}/gi, (m, nom) => {
+        nom = nom.trim().toLowerCase();
+        return MUETS.test(nom) ? "" : "(" + nom + ") ";
+      });
+      t = t.replace(/\{\{[^{}]*\}\}/g, "");
+    }
+    t = t.replace(/\[\[(?:[^\]|]*\|)?([^\]]+)\]\]/g, "$1");
+    t = t.split("'''").join("").split("''").join("");
+    t = t.replace(/\s+/g, " ").replace(/\(\s*\)/g, "").replace(/\)\s*\(/g, ", ").trim();
+    return t.replace(/^[,;:\s]+/, "");
+  }
+  function extraire(wikitext){
+    const debut = wikitext.search(/==\s*\{\{langue\|fr\}\}\s*==/);
+    if(debut < 0) return {defs:[], renvoi:null};
+    let section = wikitext.slice(debut + 10);
+    const fin = section.search(/\n==\s*\{\{langue\|/); if(fin >= 0) section = section.slice(0, fin);
+    const defs = []; let renvoi = null;
+    for(const ligne of section.split("\n")){
+      const m = ligne.match(/^#(?![*:#])\s*(.+)/); if(!m) continue;
+      const brut = m[1];
+      const r = brut.match(/(?:pluriel|féminin|masculin|singulier|participe (?:passé|présent))[^\[]*?de['\s]+\[\[([^\]|#]+)/i);
+      if(r && !renvoi) renvoi = r[1].trim();
+      const d = nettoyer(brut);
+      if(d && d.length > 2 && !defs.includes(d)) defs.push(d);
+      if(defs.length >= 3) break;
+    }
+    return {defs, renvoi};
+  }
+  async function charger(page){
+    const r = await fetch(API + encodeURIComponent(page));
+    if(!r.ok) throw new Error("HTTP " + r.status);
+    const j = await r.json();
+    if(j.error) return null;
+    return j.parse && j.parse.wikitext ? j.parse.wikitext["*"] : null;
+  }
+  function definir(mot){
+    const cle = mot.toLowerCase();
+    if(cache.has(cle)) return cache.get(cle);
+    const promesse = (async () => {
+      const res = {mot: cle, defs: [], lemme: null, defsLemme: null, url: lienWiki(cle), horsLigne: false};
+      try{
+        const wt = await charger(cle);
+        if(!wt) return res;
+        const {defs, renvoi} = extraire(wt);
+        res.defs = defs;
+        // forme fléchie (pluriel, féminin, participe) : on ajoute la définition du mot de base
+        if(renvoi && renvoi.toLowerCase() !== cle){
+          const wt2 = await charger(renvoi).catch(() => null);
+          if(wt2){ const e = extraire(wt2); if(e.defs.length){ res.lemme = renvoi; res.defsLemme = e.defs; } }
+        }
+      }catch(e){ res.horsLigne = true; cache.delete(cle); }
+      return res;
+    })();
+    cache.set(cle, promesse);
+    return promesse;
+  }
+  let bulle = null;
+  function fermer(){ if(bulle){ bulle.remove(); bulle = null; } }
+  function placer(el, b){
+    const r = el.getBoundingClientRect(), h = b.offsetHeight, w = b.offsetWidth;
+    const left = Math.min(innerWidth - w - 12, Math.max(12, r.left + r.width/2 - w/2));
+    let top = r.bottom + 12, dessus = false;
+    if(top + h > innerHeight - 12 && r.top - h - 12 > 12){ top = r.top - h - 12; dessus = true; }
+    b.style.left = left + "px"; b.style.top = top + "px";
+    b.style.setProperty("--fx", Math.min(w - 16, Math.max(16, r.left + r.width/2 - left)) + "px");
+    b.classList.toggle("dessus", dessus);
+  }
+  async function ouvrir(el, mot){
+    fermer();
+    const b = document.createElement("div"); b.className = "bulle"; b.dataset.pour = mot;
+    b.setAttribute("role", "dialog"); b.setAttribute("aria-label", "Définition de " + mot);
+    b.innerHTML = `<h4>${esc(mot.toUpperCase())}<small>Définition</small></h4><p class="attente">Recherche dans le Wiktionnaire…</p>`;
+    document.body.appendChild(b); bulle = b; placer(el, b);
+    const d = await definir(mot);
+    if(bulle !== b) return;
+    const liste = defs => `<ol>${defs.map(x => `<li>${esc(x)}</li>`).join("")}</ol>`;
+    let corps;
+    if(d.horsLigne) corps = `<p class="attente">Définition indisponible ici : pas d'accès au Wiktionnaire.</p>`;
+    else if(!d.defs.length && !d.defsLemme) corps = `<p class="attente">Pas de définition trouvée pour ce mot.</p>`;
+    else corps = (d.defs.length ? liste(d.defs) : "") + (d.defsLemme ? `<p class="lemme" style="margin-top:8px">${esc(d.lemme.toUpperCase())} :</p>${liste(d.defsLemme)}` : "");
+    b.innerHTML = `<h4>${esc(mot.toUpperCase())}<small>Définition</small></h4>${corps}<a class="source" href="${d.url}" target="_blank" rel="noopener">Voir sur le Wiktionnaire ↗</a>`;
+    placer(el, b);
+  }
+  document.addEventListener("click", e => {
+    const cible = e.target.closest("[data-def]");
+    if(cible){
+      e.preventDefault(); e.stopPropagation();
+      if(bulle && bulle.dataset.pour === cible.dataset.def) return fermer();
+      ouvrir(cible, cible.dataset.def);
+      return;
+    }
+    if(bulle && !e.target.closest(".bulle")) fermer();
+  }, true);
+  document.addEventListener("keydown", e => { if(e.key === "Escape") fermer(); });
+  addEventListener("resize", fermer);
+  return { definir, ouvrir, fermer };
+})();
+
 /* ---------- Composants partagés ---------- */
 function largeurTuile(n, max=56, dispo){
   dispo = dispo || Math.min(window.innerWidth, 600) - 64;
@@ -464,6 +601,7 @@ function carteHTML(c, {consigne="Trouvez une anagramme de", indic="", chrono=fal
       <div class="consigne">${consigne}</div>
       <div class="mot">${norm(c.origine).split("").map(l=>`<span class="t piece ${N.classe}">${l}</span>`).join("")}</div>
       <div class="indic" id="indic">${indic}</div>
+      <button class="def-btn" data-def="${esc(c.origine)}" aria-label="Définition de ${esc(norm(c.origine))}"><i>i</i>Définition du mot</button>
     </div>
   </div>`;
 }
@@ -578,6 +716,7 @@ function demarrerVitrine(){
 }
 
 function ecranAccueil(){
+  Definitions.fermer();
   if(window.PlateauIA) PlateauIA.stop();
   arreterMinuteur(); P = null; composeurActif = null;
   app.classList.remove("large");
@@ -608,7 +747,7 @@ function ecranAccueil(){
     <div class="bareme" aria-label="Gains et temps par couleur">
       ${Object.values(NIVEAUX).map(n=>`<div class="piece ${n.classe}"><b>${n.gain}€</b><small>${n.temps<60?n.temps+" s":(n.temps/60)+" min"}</small></div>`).join("")}
     </div>
-    <div class="pied"><button class="bouton-plat" id="b-regles">Règles du jeu</button><button class="bouton-plat" id="b-install" hidden>Installer l'appli</button></div>
+    <div class="pied"><button class="bouton-plat" id="b-regles">Règles du jeu</button><button class="bouton-plat" id="b-docs">Documentation</button><button class="bouton-plat" id="b-install" hidden>Installer l'appli</button></div>
     <p class="credit">Dictionnaire construit à partir de Lexique 3.83 (licence CC BY-SA 4.0).</p>
   </section>`;
   $("#b-defi").onclick = () => nouvellePartie("defi");
@@ -616,6 +755,7 @@ function ecranAccueil(){
   $("#b-entr").onclick = ecranEntrainement;
   $("#b-ia").onclick = () => PlateauIA.config();
   $("#b-regles").onclick = $("#b-regles-h").onclick = ecranRegles;
+  $("#b-docs").onclick = ecranDocs;
   brancherSon();
   if(installEvt){ const b=$("#b-install"); b.hidden=false; b.onclick=()=>{ installEvt.prompt(); installEvt=null; b.hidden=true; }; }
   demarrerVitrine();
@@ -636,6 +776,24 @@ function ecranEntrainement(){
   $("#b-retour").onclick = ecranAccueil;
   $("#opt-chrono").onchange = e => store.set("chronoEntr", e.target.checked);
   $$("[data-niv]").forEach(b => b.onclick = () => nouvellePartie("entrainement", b.dataset.niv));
+}
+
+async function ecranDocs(){
+  arreterVitrine();
+  app.innerHTML = `
+  <section class="ecran">
+    <div class="entete-ecran"><button class="icone-btn" id="b-retour" aria-label="Retour">${ICO.retour}</button><h1>Documentation</h1><span></span></div>
+    <div class="docs" id="docs"><p class="sous-titre">Chargement…</p></div>
+  </section>`;
+  $("#b-retour").onclick = ecranAccueil;
+  try{
+    const docs = await (await fetch("docs/index.json", {cache:"no-store"})).json();
+    const fmt = d => new Date(d+"T12:00:00").toLocaleDateString("fr-FR", {day:"numeric", month:"long", year:"numeric"});
+    $("#docs").innerHTML = docs.map(d => `<a class="doc" href="docs/${encodeURI(d.fichier)}" target="_blank" rel="noopener">
+      <span class="pdf" aria-hidden="true">PDF</span>
+      <span><b>${esc(d.titre)}</b><small>Mis à jour le ${fmt(d.date)}</small><p>${esc(d.description)}</p></span>
+      <span class="ouvrir" aria-hidden="true">↗</span></a>`).join("") || `<p class="sous-titre">Aucun document pour l'instant.</p>`;
+  }catch(e){ $("#docs").innerHTML = `<p class="sous-titre">Impossible de charger la liste des documents.</p>`; }
 }
 
 function ecranRegles(){
@@ -728,7 +886,7 @@ function ecranJeu(){
   majIndice();
 }
 function majTrouves(){
-  $("#trouves").innerHTML = P.m.trouves.map(w=>`<span class="chip">${esc(w)}</span>`).join("");
+  $("#trouves").innerHTML = P.m.trouves.map(w=>`<button class="chip" data-def="${esc(w.toLowerCase())}">${esc(w)}</button>`).join("");
   const reste = solutionsDe(P.carte).length - P.m.trouves.length;
   $("#indic").innerHTML = reste>0 ? `Gagnée ! Encore <b>${pluriel(reste,"anagramme")}</b> en bonus` : "<b>Toutes les anagrammes trouvées !</b>";
   $("#leg-passer").textContent = "Suivante";
@@ -806,7 +964,8 @@ function finManche(raison){
   const fin = P.parcours && (P.vies<=0 || P.manche+1 >= P.parcours.length);
   const v = panneau({ classe:N.classe, titre, valeur: reussi ? "+"+euros(P.m.gain) : "0 €", corps:`
     <h3>Face B · toutes les solutions de ${esc(norm(c.origine))}</h3>
-    <div class="solutions">${c.mots.map(w=>{ const n=norm(w); const cls = n===norm(c.origine)?"origine":(trouvesN.has(n)?"trouve":""); return `<span class="sol ${cls}">${esc(w)}</span>`; }).join("")}</div>
+    <div class="solutions">${c.mots.map(w=>{ const n=norm(w); const cls = n===norm(c.origine)?"origine":(trouvesN.has(n)?"trouve":""); return `<button class="sol ${cls}" data-def="${esc(w)}">${esc(w)}</button>`; }).join("")}</div>
+    <p style="font-size:13.5px; color:var(--gris)">Touchez un mot pour voir sa définition.</p>
     ${lignes.length ? `<div class="lignes">${lignes.map(([l,val])=>`<div><span>${l}</span><b class="${val<0?"neg":""}">${val>0?"+":""}${euros(val)}</b></div>`).join("")}<div class="total"><span>Banque</span><b>${euros(P.banque)}</b></div></div>` : ""}
     ${!reussi && P.parcours ? `<p class="texte-centre">${P.vies>0 ? `Une vie perdue. Il vous en reste ${P.vies}.` : "Plus de vie : la partie s'arrête."}</p>` : ""}
     <button class="bouton piece c-jaune" id="b-suivant">${fin ? "Voir le résultat" : (P.parcours ? "Carte suivante" : "Nouvelle carte")}</button>
@@ -855,7 +1014,7 @@ function ecranFin(){
     ${record ? `<div class="tampon">Nouveau record</div>` : ""}
     <div class="recap">${P.historique.map(h=> h.special
       ? `<div class="recap-l"><span class="pastille piece ${h.special.classe}">◆</span><span>Case ${h.special.titre}</span><b class="${h.special.montant<0?"neg":""}">${h.special.montant?(h.special.montant>0?"+":"")+euros(h.special.montant):"—"}</b></div>`
-      : `<div class="recap-l"><span class="pastille piece ${NIVEAUX[h.niv].classe}">${h.reussi?"✓":"✕"}</span><span>${esc(norm(h.origine))} → ${h.trouves.length?esc(h.trouves.join(", ")):"<i>non trouvé</i>"}</span><b>${h.gain?"+"+euros(h.gain):"—"}</b></div>`).join("")}</div>
+      : `<div class="recap-l"><span class="pastille piece ${NIVEAUX[h.niv].classe}">${h.reussi?"✓":"✕"}</span><span><span data-def="${esc(h.origine)}">${esc(norm(h.origine))}</span> → ${h.trouves.length?h.trouves.map(w=>`<span data-def="${esc(w.toLowerCase())}">${esc(w)}</span>`).join(", "):"<i>non trouvé</i>"}</span><b>${h.gain?"+"+euros(h.gain):"—"}</b></div>`).join("")}</div>
     <div class="duo">
       <button class="bouton piece c-vert" id="b-rejouer">${P.mode==="jour"?"Partager":"Rejouer"}</button>
       <button class="bouton piece c-noir" id="b-menu">Menu</button>
