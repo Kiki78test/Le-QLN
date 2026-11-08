@@ -28,6 +28,8 @@ body{padding-top:var(--bp-h)}
 .bp-sw{display:flex; background:#000; border-radius:18px; padding:2px; flex:none; box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)}
 .bp-sw button{font-family:var(--f-ui); font-weight:800; font-size:13px; letter-spacing:.06em; text-transform:uppercase; padding:3px 13px 2px; border-radius:16px; color:var(--brume)}
 .bp-sw button[aria-pressed="true"]{background:var(--or-grad); color:#1b1400; box-shadow:0 1px 0 rgba(255,255,255,.4) inset}
+.bp-droite{display:flex; align-items:center; gap:8px; flex:none}
+.bp-lang button{padding:3px 10px 2px}
 .pub-voile{position:fixed; inset:0; z-index:80; background:radial-gradient(80% 70% at 50% 40%, rgba(10,25,70,.9), rgba(2,6,18,.97)); display:grid; place-items:center; padding:16px; animation:apparait .25s ease}
 .pub-cadre{width:min(100%, 640px); display:grid; gap:10px}
 .pub-haut{display:flex; justify-content:space-between; align-items:center; gap:10px; font-family:var(--f-ui); font-weight:700; letter-spacing:.06em; text-transform:uppercase; font-size:14px; color:var(--brume)}
@@ -51,13 +53,26 @@ body{padding-top:var(--bp-h)}
 `;
 document.head.appendChild(css);
 
+/* ----- langue : FR (racine) / EN (dossier en/) ----- */
+const EN = document.documentElement.lang === "en";
+let langPref = null; try{ langPref = localStorage.getItem("qln-lang"); }catch(e){}
+const URLS = window.QLN_URLS || null; // pages de démonstration (artefacts) : adresses des deux versions, ouvertes dans un nouvel onglet
+if(!URLS){ if(langPref === "en" && !EN) location.replace("en/"); else if(langPref === "fr" && EN) location.replace("../"); }
+function changerLangue(l){
+  try{ localStorage.setItem("qln-lang", l); }catch(e){}
+  if(URLS){ if(URLS[l]) window.open(URLS[l], "_blank", "noopener"); return; }
+  location.href = l === "en" ? (EN ? "./" : "en/") : (EN ? "../" : "./");
+}
+
 /* ----- barre du haut ----- */
 const barre = document.createElement("div"); barre.id = "barre-pub";
 document.body.prepend(barre);
 function majBarre(){
   barre.innerHTML = `<span class="bp-info">${actif ? `<span class="long">Simulation · </span>${stats.videos+stats.recompenses} vidéo${stats.videos+stats.recompenses>1?"s":""} · <b>≈ ${revenu().toFixed(2).replace(".",",")} €</b>` : "Version sans publicité"}</span>
-    <div class="bp-sw" role="group" aria-label="Affichage des publicités"><button data-v="1" aria-pressed="${actif}">Pub</button><button data-v="0" aria-pressed="${!actif}">No Pub</button></div>`;
-  $$("button", barre).forEach(b => b.onclick = () => {
+    <div class="bp-droite"><div class="bp-sw bp-lang" role="group" aria-label="Langue"><button data-l="fr" aria-pressed="${!EN}">FR</button><button data-l="en" aria-pressed="${EN}">EN</button></div>
+    <div class="bp-sw" role="group" aria-label="Affichage des publicités"><button data-v="1" aria-pressed="${actif}">Pub</button><button data-v="0" aria-pressed="${!actif}">No Pub</button></div></div>`;
+  $$("[data-l]", barre).forEach(b => b.onclick = () => { if((b.dataset.l === "en") !== EN) changerLangue(b.dataset.l); });
+  $$("[data-v]", barre).forEach(b => b.onclick = () => {
     const v = b.dataset.v === "1"; if(v === actif) return;
     actif = v; store.set("pub", actif); majBarre();
     if(!actif){ $$(".pub-bandeau").forEach(x => x.remove()); toast("Mode No Pub : aucune publicité."); }
