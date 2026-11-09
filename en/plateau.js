@@ -141,6 +141,35 @@ css.textContent = `
 .de-vol-zone.pose .de-vol-val{animation:deVal .6s cubic-bezier(.2,.9,.3,1.4) forwards}
 .de-vol-zone.pose .de-vol{filter:drop-shadow(0 0 22px rgba(255,214,74,.75)) drop-shadow(0 4px 6px rgba(0,0,0,.35))}
 @keyframes deVal{from{opacity:0; transform:translate(-50%,-60%) scale(.5)} to{opacity:1; transform:translate(-50%,-110%) scale(1)}}
+
+/* ===== Plateau sans défilement vertical : tout tient dans l'écran ===== */
+.plateau-ecran{--entete:calc(var(--bp-h, 0px) + var(--ab-h, 58px)); gap:10px}
+.plateau-ecran .p-hud h1{font-size:28px}
+@media (min-width:980px){
+  .plateau-ecran{--hp:calc(100dvh - var(--entete) - 154px)}
+  .plateau-ecran .p-grille{grid-template-columns:minmax(0,1fr) 330px; align-items:start; gap:16px}
+  .plateau-ecran .tapis-cadre{width:min(100%, calc(var(--hp) * 1.79)); margin:0 auto}
+  .plateau-ecran #tapis{min-width:0}
+  .plateau-ecran .tapis-scroll{overflow:hidden}
+  .plateau-ecran .p-cote{position:static; max-height:var(--hp); overflow:auto; scrollbar-width:thin; padding-right:2px}
+  .plateau-ecran .journal ol{max-height:120px}
+  .plateau-ecran .joueurs{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width:699px){
+  /* hauteur du plateau calculée pour que joueurs + plateau + action tiennent sans faire défiler */
+  .plateau-ecran{--hp:clamp(210px, calc(100dvh - var(--entete) - 372px), 520px)}
+  .plateau-ecran .tapis-scroll{height:var(--hp)}
+  .plateau-ecran #tapis{min-width:0; width:auto; height:100%; max-width:none}
+  .plateau-ecran .p-hud{margin-bottom:-2px}
+  .plateau-ecran .dock{padding:10px 12px; gap:8px}
+  .plateau-ecran .dock .de{--d:52px}
+  .plateau-ecran #b-dock{min-height:54px; font-size:26px}
+}
+@media (min-width:700px) and (max-width:979px){
+  .plateau-ecran{--hp:calc(100dvh - var(--entete) - 360px)}
+  .plateau-ecran .tapis-cadre{width:min(100%, calc(var(--hp) * 1.79)); margin:0 auto}
+  .plateau-ecran #tapis{min-width:0}
+}
 `;
 document.head.appendChild(css);
 
