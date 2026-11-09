@@ -697,6 +697,11 @@ body{box-sizing:border-box} .app{min-height:calc(100% - var(--ab-h))}
 .docs .doc small{color:#ffd84a}
 .docs .doc p{color:#d4ddf3}
 .docs .doc .ouvrir{color:#ffd84a}
+
+.message .contester{margin-left:8px; padding:3px 12px; border-radius:999px; font:800 14px var(--f-ui); letter-spacing:.06em; text-transform:uppercase; color:#1b1a05; background:linear-gradient(#fff3b0,#ffd84a); box-shadow:0 2px 0 #9a7210; vertical-align:middle}
+.ct-mot{font:400 40px var(--f-titre); letter-spacing:.08em; color:var(--sombre)}
+#ct-boutons{grid-template-columns:1fr}
+.ct-ok{color:#13703f; font-weight:700} .ct-ko{color:#a3271d; font-weight:700} .ct-ko a{color:#1b47a3}
 </style>
 </head>
 <body>
@@ -875,6 +880,84 @@ function compterVers(el, de, vers, ms=600){
   (function f(t){ const k=Math.min(1,(t-t0)/ms); const v = de + (vers-de)*(1-Math.pow(1-k,3)); el.textContent = euros(v); if(k<1) requestAnimationFrame(f); })(t0);
 }
 function toast(t, ms=3500){ $$(".toast").forEach(x=>x.remove()); const el=document.createElement("div"); el.className="toast"; el.textContent=t; document.body.appendChild(el); setTimeout(()=>el.remove(), ms); }
+
+/* ---------- Contestation d'un mot refusé ----------
+   Le joueur pense que son mot est juste : on l'analyse sur le Wiktionnaire avec les règles du jeu (analyse.js).
+   S'il est valable, il est crédité, ajouté à la carte et mémorisé (et envoyé au serveur pour tous les joueurs si les comptes sont actifs). */
+const Contestation = (() => {
+  const MAX_PAR_CARTE = 3;
+  const LANGUE = "en";
+  function proposer(prop){
+    const m = $("#message"); if(!m) return;
+    const deja = P.m.contestes || (P.m.contestes = []);
+    m.className = "message ko";
+    m.innerHTML = `${esc(prop)} is not in the game dictionary.` + (deja.length < MAX_PAR_CARTE && !deja.includes(prop) ? ` <button class="contester" id="b-contester">Challenge</button>` : "");
+    const b = $("#b-contester"); if(b) b.onclick = () => contester(prop);
+  }
+  async function contester(prop){
+    if(!P || P.m.fini) return;
+    const carte = P.carte, deja = P.m.contestes || (P.m.contestes = []);
+    if(deja.includes(prop)) return; deja.push(prop);
+    const pause = P.chrono && !P.m.fini; if(pause) arreterMinuteur();
+    const t0 = performance.now();
+    const v = panneau({classe:"c-bleu", titre:"Challenge", corps:`<p class="texte-centre"><b class="ct-mot">${esc(prop)}</b></p><p class="texte-centre attente" id="ct-etat">Checking Wiktionary…</p><div class="duo" id="ct-boutons" hidden></div>`});
+    const fin = (credit) => {
+      v.remove();
+      if(pause && P && !P.m.fini){ P.m.debut += performance.now() - t0; demarrerMinuteur(); }
+      if(credit) credit();
+    };
+    let page = null, verdict = null;
+    try{
+      page = await Definitions.trouverPage(prop.toLowerCase());
+      verdict = AnalyseMot.analyserWikitexte(page && page.wt, LANGUE);
+    }catch(e){ verdict = {ok:false, horsLigne:true, raison:"no access to Wiktionary right now"}; }
+    if(!document.body.contains(v)) return;
+    const etat = $("#ct-etat", v), boutons = $("#ct-boutons", v);
+    boutons.hidden = false;
+    if(verdict.ok){
+      const motAffiche = page.titre;
+      etat.className = "texte-centre ct-ok";
+      etat.innerHTML = `Word accepted: <b>${esc(motAffiche.toUpperCase())}</b> (${esc(verdict.nature)}).<br>It has been added to the game dictionary. Thank you!`;
+      boutons.innerHTML = `<button class="bouton piece c-vert" id="ct-ok">Continue</button>`;
+      ajouter(carte, motAffiche);
+      Son.ok();
+      $("#ct-ok", v).onclick = () => fin(() => { if(P && P.carte === carte && !P.m.fini && !P.m.trouves.some(w => norm(w) === prop)) accepterMot(motAffiche, null); });
+      $("#ct-ok", v).focus();
+    } else {
+      etat.className = "texte-centre ct-ko";
+      etat.innerHTML = `Challenge rejected: ${esc(verdict.raison)}.` + (page ? ` <a href="${"https://en.wiktionary.org/wiki/" + encodeURIComponent(page.titre)}" target="_blank" rel="noopener">See the page ↗</a>` : "");
+      boutons.innerHTML = `<button class="bouton piece c-noir" id="ct-ok">Resume</button>`;
+      $("#ct-ok", v).onclick = () => fin();
+      $("#ct-ok", v).focus();
+    }
+  }
+  /* ajoute le mot à la carte (donc au dictionnaire en mémoire), le mémorise et l'envoie au serveur */
+  function ajouter(carte, mot){
+    if(!carte.mots.some(w => norm(w) === norm(mot))) carte.mots.push(mot);
+    const loc = store.get("motsAjoutes", {}); const k = cleTri(mot);
+    loc[k] = [...new Set([...(loc[k] || []), mot])]; store.set("motsAjoutes", loc);
+    if(typeof Compte !== "undefined" && Compte.actif()){
+      const s = Compte.session();
+      fetch(String(window.QLN_API_URL).replace(/\/$/, "") + "/api/mots", {method:"POST", headers:{"Content-Type":"application/json", ...(s && s.jeton ? {Authorization:"Bearer " + s.jeton} : {})}, body:JSON.stringify({mot, langue:LANGUE})}).catch(() => {});
+    }
+  }
+  /* au chargement : on réintègre les mots ajoutés (sur cet appareil + validés par le serveur pour tous) */
+  function integrer(liste){
+    if(!DICO) return 0;
+    const index = new Map();
+    for(const niv of Object.keys(DICO)) for(const g of DICO[niv]) index.set(cleTri(g[0]), g);
+    let n = 0;
+    for(const mot of liste){ const g = index.get(cleTri(mot)); if(g && !g.some(w => norm(w) === norm(mot))){ g.push(mot); n++; } }
+    return n;
+  }
+  async function charger(){
+    const loc = store.get("motsAjoutes", {}); integrer(Object.values(loc).flat());
+    if(typeof Compte !== "undefined" && Compte.actif()){
+      try{ const r = await fetch(String(window.QLN_API_URL).replace(/\/$/, "") + "/api/mots?langue=" + LANGUE); const d = await r.json(); if(d.mots) integrer(d.mots.map(x => x.mot)); }catch(e){}
+    }
+  }
+  return { proposer, contester, charger, integrer };
+})();
 
 /* ---------- Dictionnaire ---------- */
 let DICO = null;
@@ -1094,7 +1177,16 @@ const Definitions = (() => {
   }, true);
   document.addEventListener("keydown", e => { if(e.key === "Escape") fermer(); });
   addEventListener("resize", fermer);
-  return { definir, precharger, ouvrir, fermer };
+  // page Wiktionnaire d'un mot (pour la contestation) : {titre, wt} ou null
+  async function trouverPage(mot){
+    const cle = mot.toLowerCase();
+    const wt = await charger(cle); if(wt) return {titre:cle, wt};
+    const vs = variantes(cle);
+    if(vs.length){ const pages = await chargerPlusieurs(vs); for(const v of vs) if(pages[v]) return {titre:v, wt:pages[v]}; }
+    const t = await rechercher(cle); if(t){ const w = await charger(t); if(w) return {titre:t, wt:w}; }
+    return null;
+  }
+  return { definir, precharger, ouvrir, fermer, trouverPage };
 })();
 
 /* ---------- Composants partagés ---------- */
@@ -1683,8 +1775,17 @@ function valider(){
   const rate = () => unique ? setTimeout(() => { if(P && !P.m.fini) finManche("essai"); }, 700) : raz();
   if(prop === norm(c.origine)){ message("That is the card's own word. Find another one.", "ko"); compo.marquer("erreur"); Son.ko(); return rate(); }
   const mot = chercherMot(c, prop);
-  if(!mot){ message(`${prop} is not in the game dictionary.`, "ko"); compo.marquer("erreur"); Son.ko(); return rate(); }
+  if(!mot){
+    compo.marquer("erreur"); Son.ko();
+    if(unique){ message(`${prop} is not in the game dictionary.`, "ko"); return rate(); }
+    Contestation.proposer(prop); return raz();
+  }
   if(P.m.trouves.some(w=>norm(w)===prop)){ message("Already found.", "ko"); compo.marquer("erreur"); return raz(); }
+  accepterMot(mot, compo, raz);
+}
+/* crédite un mot trouvé (appelé par valider, ou après une contestation acceptée) */
+function accepterMot(mot, compo, raz = () => {}){
+  const c = P.carte;
   if(P.mode==="braquage") return braquageReussi(mot);
   const N = NIVEAUX[c.niv], ecoule = performance.now() - P.m.debut;
   let base;
@@ -1697,7 +1798,7 @@ function valider(){
   const gain = Math.round(base * P.m.mult);
   P.m.base += base; P.m.gain += gain;
   P.m.trouves.push(mot.toUpperCase());
-  Son.ok(); compo.marquer("juste"); envolerGain(gain);
+  Son.ok(); if(compo) compo.marquer("juste"); envolerGain(gain);
   message(P.m.trouves.length===1 ? `Well done! ${mot.toUpperCase()}` : `Bonus! ${mot.toUpperCase()}`, "ok");
   crediter(gain);
   majTrouves(); majJokers();
@@ -2017,12 +2118,13 @@ if("serviceWorker" in navigator && location.protocol==="https:" && !location.hos
 <script src="pub.js"></script>
 <script src="infos.js"></script>
 <script src="plateau.js"></script>
+<script src="../analyse.js"></script>
 <script src="../config.js"></script>
 <script src="multi.js"></script>
 <script src="progres.js"></script>
 <script src="compte.js"></script>
 <script>
-chargerDico().then(() => (typeof Multi !== "undefined" && Multi.lienDirect()) || ecranAccueil()).catch(() => {
+chargerDico().then(() => Contestation.charger()).then(() => (typeof Multi !== "undefined" && Multi.lienDirect()) || ecranAccueil()).catch(() => {
   app.innerHTML = `<p class="chargement">Could not load the dictionary. Check your connection and reload the page.</p>`;
 });
 </script>

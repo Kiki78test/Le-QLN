@@ -47,8 +47,23 @@ create table if not exists qln_scores(
 );
 create unique index if not exists qln_scores_jour_unique on qln_scores(joueur, langue, mode, jour) where jour is not null;
 create index if not exists qln_scores_classement on qln_scores(langue, mode, jour, score desc);
+create table if not exists qln_mots(
+  id bigserial primary key,
+  langue text not null,
+  mot text not null,
+  nature text,
+  joueur uuid references qln_joueurs(id) on delete set null,
+  cree_le timestamptz not null default now(),
+  unique(langue, mot)
+);
 `;
-async function initialiser(){ await pool.query("create extension if not exists pgcrypto"); await pool.query(SCHEMA); console.log("[api] base prête"); }
+async function initialiser(){
+  // la base peut démarrer après le service (Render) : on réessaie jusqu'à ce qu'elle réponde
+  for(let essai = 1; ; essai++){
+    try{ await pool.query("create extension if not exists pgcrypto"); await pool.query(SCHEMA); console.log("[api] base prête"); return; }
+    catch(e){ console.error(`[api] base injoignable (essai ${essai}) : ${e.message}`); await new Promise(r => setTimeout(r, Math.min(30000, 2000*essai))); }
+  }
+}
 
 /* ---------- Jetons de session : charge utile signée HMAC (sans dépendance) ---------- */
 const b64 = s => Buffer.from(s).toString("base64url");
@@ -97,6 +112,36 @@ function fusionner(a = {}, b = {}){
   }
   r.st = st;
   return r;
+}
+
+/* ---------- Mots contestés : vérification côté serveur (mêmes règles que l'appli, analyse.js) ---------- */
+let AnalyseMot = null;
+for(const chemin of ["../analyse.js", "../app/analyse.js"]){ try{ AnalyseMot = require(chemin); break; }catch(e){} }
+const WIKI = {fr:"https://fr.wiktionary.org/w/api.php", en:"https://en.wiktionary.org/w/api.php"};
+const ACCENTS = {e:["é","è","ê"], a:["à","â"], i:["î","ï"], o:["ô"], u:["û","ù"], c:["ç"]};
+const sansAccent = x => x.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+async function wiki(langue, params){
+  const r = await fetch(WIKI[langue] + "?" + new URLSearchParams({format:"json", formatversion:"2", ...params}), {headers:{"User-Agent":"Le-QLN/1.0 (jeu d'anagrammes)"}});
+  if(!r.ok) throw new Error("Wiktionnaire HTTP " + r.status);
+  return r.json();
+}
+async function pages(langue, titres){
+  const j = await wiki(langue, {action:"query", prop:"revisions", rvprop:"content", rvslots:"main", redirects:"1", titles:titres.slice(0, 50).join("|")});
+  const out = {};
+  for(const pg of (j.query && j.query.pages) || []) if(!pg.missing && pg.revisions) out[pg.title] = pg.revisions[0].slots.main.content;
+  return out;
+}
+async function verifierMot(mot, langue){
+  const m = mot.toLowerCase();
+  const essais = [m];
+  if(langue === "fr"){
+    const pos = [...m].map((ch, i) => ACCENTS[ch] ? i : -1).filter(i => i >= 0);
+    for(const i of pos) for(const a of ACCENTS[m[i]]) essais.push(m.slice(0,i) + a + m.slice(i+1));
+    for(const i of pos) for(const k of pos) if(k > i) for(const a of ACCENTS[m[i]].slice(0,2)) for(const b of ACCENTS[m[k]].slice(0,2)) essais.push(m.slice(0,i) + a + m.slice(i+1,k) + b + m.slice(k+1));
+  }
+  const trouves = await pages(langue, [...new Set(essais)]);
+  for(const t of essais) if(trouves[t]){ const v = AnalyseMot.analyserWikitexte(trouves[t], langue); if(v.ok) return {...v, titre:t}; return {...v, titre:t}; }
+  return {ok:false, raison:"introuvable"};
 }
 
 /* ---------- Routeur ---------- */
@@ -215,6 +260,22 @@ const ROUTES = {
     const ligne = r => ({rang:+r.rang, score:r.score, pseudo:r.pseudo, couleur:r.couleur, pays:r.pays, moi:!!moi && r.id === moi.id});
     return {mode, langue, jour, pays, total: rows.length ? +rows[0].total : 0, lignes: rows.filter(r => +r.rang <= limiteN).map(ligne), moi: rows.filter(r => moi && r.id === moi.id).map(ligne)[0] || null};
   },
+  async "POST /api/mots"({corps, ip, moi}){
+    if(!AnalyseMot) throw erreur(501, "Analyse indisponible.");
+    if(limite("mot:"+ip, 30, 3600e3)) throw erreur(429, "Trop de contestations, réessayez plus tard.");
+    const langue = LANGUES.has(corps.langue) ? corps.langue : "fr";
+    const mot = String(corps.mot || "").trim().toLowerCase();
+    if(!/^[a-zà-ÿœæ]{4,16}$/i.test(mot)) throw erreur(400, "Mot invalide.");
+    const v = await verifierMot(mot, langue).catch(() => { throw erreur(503, "Wiktionnaire injoignable pour le moment."); });
+    if(!v.ok) return {accepte:false, raison:v.raison};
+    await pool.query("insert into qln_mots(langue, mot, nature, joueur) values($1,$2,$3,$4) on conflict (langue, mot) do nothing", [langue, v.titre, v.nature, moi ? moi.id : null]);
+    return {accepte:true, mot:v.titre, nature:v.nature};
+  },
+  async "GET /api/mots"({query}){
+    const langue = LANGUES.has(query.langue) ? query.langue : "fr";
+    const {rows} = await pool.query("select mot from qln_mots where langue=$1 order by id", [langue]);
+    return {mots: rows};
+  },
   async "GET /api/sante-api"(){ await pool.query("select 1"); return {ok:true}; },
 };
 
@@ -238,7 +299,7 @@ async function traiter(req, res, origines){
     const id = verifier(String(req.headers.authorization || "").replace(/^Bearer /, ""));
     let moi = null;
     if(id){ ({rows:[moi]} = await pool.query("select * from qln_joueurs where id=$1", [id])); }
-    const publiques = ["POST /api/inscription", "POST /api/connexion", "POST /api/google", "GET /api/classement", "GET /api/sante-api"];
+    const publiques = ["POST /api/inscription", "POST /api/connexion", "POST /api/google", "GET /api/classement", "GET /api/sante-api", "POST /api/mots", "GET /api/mots"];
     if(!moi && !publiques.includes(req.method + " " + url.pathname)) throw erreur(401, "Connexion requise.");
     envoyer(200, await route({corps, query, moi, ip}));
   }catch(e){
