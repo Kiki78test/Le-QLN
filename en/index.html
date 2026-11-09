@@ -17,12 +17,20 @@
 <link rel="apple-touch-icon" href="../icons/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@400;500;600;700&display=swap">
 <style>
+@font-face{font-family:"Barlow"; font-weight:400; font-display:swap; src:url(../fonts/barlow-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:"Barlow"; font-weight:500; font-display:swap; src:url(../fonts/barlow-latin-500-normal.woff2) format("woff2")}
+@font-face{font-family:"Barlow"; font-weight:600; font-display:swap; src:url(../fonts/barlow-latin-600-normal.woff2) format("woff2")}
+@font-face{font-family:"Barlow"; font-weight:700 900; font-display:swap; src:url(../fonts/barlow-latin-700-normal.woff2) format("woff2")}
+@font-face{font-family:"Barlow Condensed"; font-weight:400 500; font-display:swap; src:url(../fonts/barlow-condensed-latin-500-normal.woff2) format("woff2")}
+@font-face{font-family:"Barlow Condensed"; font-weight:600; font-display:swap; src:url(../fonts/barlow-condensed-latin-600-normal.woff2) format("woff2")}
+@font-face{font-family:"Barlow Condensed"; font-weight:700; font-display:swap; src:url(../fonts/barlow-condensed-latin-700-normal.woff2) format("woff2")}
+@font-face{font-family:"Barlow Condensed"; font-weight:800 900; font-display:swap; src:url(../fonts/barlow-condensed-latin-800-normal.woff2) format("woff2")}
+@font-face{font-family:"QLN Titre"; font-weight:100 900; font-display:swap; src:url(../fonts/barlow-condensed-latin-800-normal.woff2) format("woff2")}
+@font-face{font-family:"QLN Logo"; font-weight:100 900; font-style:normal; font-display:swap; src:url(../fonts/barlow-condensed-latin-800-italic.woff2) format("woff2")}
+
 /* Le-QLN — feuille de style consolidée (anciennes couches V1→V8 fusionnées ; rendu identique) */
-:root{color-scheme:dark; --tapis:#0b1d49; --tapis-2:#132f6c; --tapis-3:#1d4594; --tapis-bord:#06122f; --ivoire:#f8f2e4; --ivoire-2:#ece2cb; --ivoire-3:#d9cba9; --sombre:#15171d; --gris:#5b6070; --encre:#f4f7ff; --brume:#a9b8de; --brume-2:#7486b5; --or:#ffcf3a; --or-2:#ffe68f; --or-o:#a87400; --vert-a:#1e6a29; --vert-b:#8fca42; --vert-o:#0e3f16; --bleu-a:#1b47a3; --bleu-b:#62a4ec; --bleu-o:#0f2b67; --rouge-a:#7e0c14; --rouge-b:#ea3039; --rouge-o:#46050a; --noir-a:#0b0b0d; --noir-b:#43454b; --noir-o:#000; --orange-a:#e46d16; --orange-b:#fbad38; --orange-o:#8c3f06; --violet-a:#3b1c70; --violet-b:#7444bd; --violet-o:#200d42; --jaune-a:#e3d51b; --jaune-b:#fff47a; --jaune-o:#8f8607; --ok:#8fca42; --ko:#ff5c63; --f-titre:"Bebas Neue", "Oswald", "Arial Narrow", Impact, sans-serif; --f-ui:"Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif; --f-texte:"Barlow", "Segoe UI", Roboto, Helvetica, Arial, sans-serif; --rayon:12px; --or-grad:linear-gradient(180deg,#fff6c2 0%,#ffd84a 45%,#d99a00 100%); --or-grad-2:linear-gradient(135deg,#fff3b0 0%,#ffd84a 35%,#e0a614 60%,#ffe68f 100%); --verre:rgba(10,22,58,.55); --verre-bord:rgba(255,255,255,.1)}
+:root{color-scheme:dark; --tapis:#0b1d49; --tapis-2:#132f6c; --tapis-3:#1d4594; --tapis-bord:#06122f; --ivoire:#f8f2e4; --ivoire-2:#ece2cb; --ivoire-3:#d9cba9; --sombre:#15171d; --gris:#5b6070; --encre:#f4f7ff; --brume:#a9b8de; --brume-2:#7486b5; --or:#ffcf3a; --or-2:#ffe68f; --or-o:#a87400; --vert-a:#1e6a29; --vert-b:#8fca42; --vert-o:#0e3f16; --bleu-a:#1b47a3; --bleu-b:#62a4ec; --bleu-o:#0f2b67; --rouge-a:#7e0c14; --rouge-b:#ea3039; --rouge-o:#46050a; --noir-a:#0b0b0d; --noir-b:#43454b; --noir-o:#000; --orange-a:#e46d16; --orange-b:#fbad38; --orange-o:#8c3f06; --violet-a:#3b1c70; --violet-b:#7444bd; --violet-o:#200d42; --jaune-a:#e3d51b; --jaune-b:#fff47a; --jaune-o:#8f8607; --ok:#8fca42; --ko:#ff5c63; --f-titre:"QLN Titre", "Barlow Condensed", "Arial Narrow", Impact, sans-serif; --f-ui:"Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif; --f-texte:"Barlow", "Segoe UI", Roboto, Helvetica, Arial, sans-serif; --rayon:12px; --or-grad:linear-gradient(180deg,#fff6c2 0%,#ffd84a 45%,#d99a00 100%); --or-grad-2:linear-gradient(135deg,#fff3b0 0%,#ffd84a 35%,#e0a614 60%,#ffe68f 100%); --verre:rgba(10,22,58,.55); --verre-bord:rgba(255,255,255,.1)}
 *{box-sizing:border-box; scrollbar-width:thin; scrollbar-color:rgba(255,214,10,.45) transparent}
 [hidden]{display:none !important}
 html,body{height:100%}
@@ -511,9 +519,147 @@ h1.logo{margin:0; font-weight:inherit}
 @media (min-width:1400px){
   .app:has(.ecran.accueil){max-width:1280px}
 }
+
+/* =====================  DESIGN V9 — finesse (barre d'appli, typo condensée, pastilles)  ===================== */
+#scene .gh,.banque b,.bareme b,.bouton,.bulle h4,.carte-bande .niv,.carte-bande .val,.case-speciale,.choix-niv .grand,.choix-niv .nom,.chrono b,.doc .ouvrir,.doc b,.dos-carte span,.entete-ecran h1,.gain-vol,.lettre,.lignes .total,.logo span,.manche .num,.manche .txt b,.mode .nom,.mode > .filigrane,.mot .t,.panneau header,.piece-or,.regle h2,.score-final,.slot,.stat b,.tampon,.titre-ecran,.titre-section,.trois b,.vitrine .tuile-v{text-transform:uppercase}
+:root{--ab-h:58px}
+.barre-app{position:sticky; top:var(--bp-h, 0px); z-index:30; height:var(--ab-h); display:grid; grid-template-columns:48px 1fr 48px; align-items:center; gap:8px;
+  padding:0 max(12px, env(safe-area-inset-right,0px)) 0 max(12px, env(safe-area-inset-left,0px));
+  background:linear-gradient(180deg, rgba(8,20,58,.97), rgba(10,26,72,.9)); border-bottom:1px solid rgba(255,214,10,.14);
+  box-shadow:0 10px 24px rgba(0,0,0,.35), inset 0 -1px 0 rgba(255,255,255,.04); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px)}
+.ab-btn{width:44px; height:44px; border-radius:50%; display:grid; place-items:center; color:#fff; background:rgba(255,255,255,.06); box-shadow:inset 0 0 0 1px rgba(255,255,255,.12); transition:background .15s, transform .1s}
+.ab-btn:active{transform:scale(.92)} .ab-btn svg{width:22px; height:22px}
+@media (hover:hover){ .ab-btn:hover{background:rgba(255,255,255,.12)} }
+.ab-logo{justify-self:center; position:relative; height:46px; padding:0 18px; display:grid; place-items:center}
+.ab-logo b{position:relative; font:400 32px/1 "QLN Logo", "Barlow Condensed", sans-serif; letter-spacing:.01em; color:#fff; text-shadow:0 2px 0 rgba(0,0,0,.5), 0 0 18px rgba(255,214,10,.25); transform:skewX(-6deg)}
+.ab-swoosh{position:absolute; inset:-2px -6px; width:calc(100% + 12px); height:calc(100% + 4px); filter:drop-shadow(0 0 6px rgba(255,200,40,.55))}
+/* tiroir */
+.tiroir-voile{position:fixed; inset:0; z-index:90; background:rgba(2,6,20,.55); backdrop-filter:blur(3px); animation:apparaitFondu .2s}
+.tiroir{position:fixed; top:0; bottom:0; left:0; z-index:91; width:min(84vw, 320px); padding:calc(var(--bp-h,0px) + 12px) 12px 16px; display:flex; flex-direction:column; gap:4px;
+  background:linear-gradient(180deg,#0e2463,#081640); box-shadow:12px 0 40px rgba(0,0,0,.55), inset -1px 0 0 rgba(255,214,10,.18); animation:tiroirEntre .28s cubic-bezier(.2,.9,.3,1)}
+.tiroir[hidden],.tiroir-voile[hidden]{display:none}
+@keyframes tiroirEntre{from{transform:translateX(-100%)}} @keyframes apparaitFondu{from{opacity:0}}
+.tiroir-tete{display:flex; align-items:center; justify-content:space-between; padding:4px 4px 12px; margin-bottom:6px; border-bottom:1px solid rgba(255,255,255,.08)}
+.tiroir-tete b{font:400 30px/1 "QLN Logo", sans-serif; background:var(--or-grad-2); -webkit-background-clip:text; background-clip:text; color:transparent}
+.tiroir > button{display:flex; align-items:center; gap:14px; padding:12px 12px; border-radius:12px; color:#fff; font:700 19px var(--f-ui); letter-spacing:.04em; text-transform:uppercase; text-align:left}
+.tiroir > button svg{width:22px; height:22px; color:#ffd84a; flex:none}
+.tiroir > button em{margin-left:auto; font:700 13px var(--f-ui); font-style:normal; color:var(--brume); letter-spacing:.08em}
+.tiroir > button:active,.tiroir > button:focus-visible{background:rgba(255,255,255,.08)}
+@media (hover:hover){ .tiroir > button:hover{background:rgba(255,255,255,.06)} }
+.tiroir-pied{margin-top:auto; font:600 13px var(--f-ui); color:var(--brume-2); letter-spacing:.08em; text-transform:uppercase; text-align:center}
+/* accueil : la barre d'appli remplace son / règles ; le profil est centré */
+.accueil .barre-haut{justify-content:center} .accueil .barre-haut > .icone-btn{display:none}
+.m-profil-chip{height:42px; padding:0 18px 0 12px; font-size:16px; letter-spacing:.03em; background:rgba(10,24,66,.7); box-shadow:inset 0 0 0 1px rgba(255,255,255,.14), 0 6px 16px rgba(0,0,0,.3)}
+.m-profil-chip.vide{border:0; color:#fff}
+/* typographie des cartes de mode */
+.mode .nom{font-weight:400; letter-spacing:.01em; line-height:.95}
+.mode .desc{font-weight:600; opacity:.95}
+.mode.large .chev{position:absolute; right:14px; top:50%; width:26px; height:26px; margin-top:-2px; background:currentColor; -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M9 5l7 7-7 7' fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/contain no-repeat; mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M9 5l7 7-7 7' fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/contain no-repeat; opacity:.9}
+.mode.large .etiquette{right:44px}
+/* records en pastilles avec icônes */
+.stats{gap:8px}
+.stats .stat{display:grid; grid-template-columns:auto 1fr; grid-template-rows:auto auto; column-gap:8px; align-items:center; padding:9px 12px!important; border-radius:999px!important}
+.stats .stat::before{content:""; grid-row:1/3; width:20px; height:20px; background:#ffd84a; -webkit-mask:var(--ico) center/contain no-repeat; mask:var(--ico) center/contain no-repeat}
+.stats .stat:nth-child(1){--ico:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M7 4h10v4a5 5 0 0 1-10 0zM7 6H4a3 3 0 0 0 3 4M17 6h3a3 3 0 0 1-3 4M12 13v4M8 21h8M9 17h6'/%3E%3C/svg%3E")}
+.stats .stat:nth-child(2){--ico:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round'%3E%3Crect x='3' y='5' width='18' height='16' rx='2'/%3E%3Cpath d='M3 10h18M8 3v4M16 3v4M8 15l2.5 2.5L16 13'/%3E%3C/svg%3E")}
+.stats .stat:nth-child(3){--ico:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4l-5.9 3.1 1.2-6.5L2.5 9.4l6.6-.9z' fill='black'/%3E%3C/svg%3E")}
+.stats .stat span{font:800 11.5px var(--f-ui)!important; letter-spacing:.09em; text-transform:uppercase; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.stats .stat b{font-size:20px!important; line-height:1.05}
+/* écran de jeu */
+.hud-titre{font:800 16px var(--f-ui); letter-spacing:.1em; color:#dfe8ff}
+.piste{gap:5px} .piste i{width:20px; height:16px; border-radius:5px; opacity:.28; box-shadow:0 2px 0 var(--o), inset 0 1px 0 rgba(255,255,255,.35)}
+.piste i.encours{outline:2px solid #fff; outline-offset:2px; opacity:1}
+.vies .pion-svg{filter:drop-shadow(0 2px 3px rgba(0,0,0,.5))}
+.serie-info{display:flex; gap:10px; justify-content:center; flex-wrap:wrap}
+.pastille-info{font-size:16px; padding:7px 16px 6px; letter-spacing:.06em; box-shadow:inset 0 0 0 1px rgba(255,255,255,.14), 0 4px 12px rgba(0,0,0,.3)}
+.pastille-info.mult{box-shadow:0 0 0 1.5px #fff3b0 inset, 0 3px 0 var(--or-o), 0 6px 16px rgba(255,200,40,.3)}
+.carte-bande{padding:10px 12px 9px 16px}
+.carte-bande .niv{font-size:30px; letter-spacing:.02em}
+.chrono{width:auto; height:36px; display:flex; align-items:center; gap:6px; padding:0 12px 0 6px; border-radius:999px; background:rgba(0,0,0,.32); box-shadow:inset 0 0 0 1px rgba(255,255,255,.18); margin-right:8px; filter:none}
+.chrono svg{width:24px; height:24px; flex:none}
+.chrono .fond{stroke-width:7; fill:none} .chrono .arc{stroke-width:7}
+.chrono b{position:static; display:block; font-size:21px; padding-top:1px; letter-spacing:.02em}
+.carte-bande .val{font-size:30px; padding:4px 12px 2px}
+#b-valider{display:inline-flex; align-items:center; justify-content:center; gap:6px; letter-spacing:.04em}
+#b-valider::after{content:""; width:20px; height:20px; background:currentColor; -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M9 5l7 7-7 7' fill='none' stroke='black' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/contain no-repeat; mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M9 5l7 7-7 7' fill='none' stroke='black' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/contain no-repeat}
+.rond small{width:22px; height:22px; top:-6px; right:-6px; font-size:13px; background:radial-gradient(circle at 35% 30%, #fff6c8, #ffd84a 50%, #e0a614); box-shadow:0 0 0 2px #0b1d49, 0 2px 4px rgba(0,0,0,.4)}
+.legende-cmd span{font:700 13px var(--f-ui); letter-spacing:.04em}
+/* bouton principal : texte condensé */
+.bouton{font-family:var(--f-titre); letter-spacing:.03em}
+
+/* plateau : titres, dock, journal, bandeau */
+.p-hud h1{font-size:34px; line-height:.95; background:var(--or-grad-2); -webkit-background-clip:text; background-clip:text; color:transparent!important}
+.p-hud h1 small{font:800 15px var(--f-ui); letter-spacing:.14em; margin-top:3px; -webkit-text-fill-color:#dfe8ff}
+#b-dock{display:inline-flex; align-items:center; justify-content:center; gap:12px; min-height:62px; font-size:30px}
+#b-dock svg{width:30px; height:30px; flex:none}
+.journal summary{font:800 15px var(--f-ui); letter-spacing:.1em; text-transform:uppercase; color:#dfe8ff; list-style:none; display:flex; align-items:center; gap:8px; cursor:pointer}
+.journal summary::-webkit-details-marker{display:none}
+.journal summary::before{content:""; width:0; height:0; border:6px solid transparent; border-top:8px solid #ffd84a; border-bottom:0; transition:transform .2s; transform:rotate(-90deg)}
+.journal[open] summary::before{transform:none}
+.pub-bandeau:not(.grand){position:relative; padding-right:38px!important}
+.pub-bandeau:not(.grand)::after{content:""; position:absolute; right:12px; top:50%; width:18px; height:18px; margin-top:-9px; background:currentColor; opacity:.85; -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M9 5l7 7-7 7' fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/contain no-repeat; mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M9 5l7 7-7 7' fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/contain no-repeat}
+.joueurs .joueur.actif{box-shadow:0 0 0 2px #ffd84a, 0 0 18px rgba(255,216,74,.35)!important}
+
+/* =====================  DESIGN V10 — « jeu télévisé premium » : contours fins, ombres discrètes, or réservé à l'important  ===================== */
+:root{--emeraude-a:#0f9f6e; --emeraude-b:#3fd99b; --emeraude-o:#06573c; --filet-or:rgba(255,214,90,.55); --ombre-douce:0 10px 24px rgba(0,0,0,.32)}
+body::after{opacity:.28}
+/* pièces (cartes de mode, boutons, tuiles) : moins épaisses */
+.piece{--lip:3px; box-shadow:inset 0 0 0 1px rgba(255,255,255,.16), inset 0 1px 0 rgba(255,255,255,.45), inset 0 -2px 4px rgba(0,0,0,.18),
+  0 var(--lip) 0 var(--o), 0 calc(var(--lip) + 8px) 18px rgba(0,0,0,.32)}
+.mode{border-radius:18px; padding:16px 16px 16px}
+.mode .ico{width:40px; height:40px; box-shadow:inset 0 1px 0 rgba(255,255,255,.35), 0 2px 6px rgba(0,0,0,.25)}
+.mode .filigrane{opacity:.08}
+.mode .desc{font-family:var(--f-texte); font-weight:500; font-size:14px; line-height:1.25; letter-spacing:0; opacity:.92}
+.mode .etiquette{font-size:12px; padding:3px 9px; box-shadow:none}
+/* tuiles de saisie : vert émeraude, plus fines */
+.lettre{--lip:3px; box-shadow:inset 0 1px 0 rgba(255,255,255,.55), inset 0 -2px 0 rgba(0,0,0,.16), 0 3px 0 var(--o), 0 8px 14px rgba(0,0,0,.3)!important}
+.reserve .lettre,.reponse .lettre{--a:var(--emeraude-a); --b:var(--emeraude-b); --o:var(--emeraude-o)}
+.lettre::before{inset:0 0 58% 0; background:linear-gradient(rgba(255,255,255,.22), rgba(255,255,255,0))}
+.carte .mot .t{box-shadow:inset 0 1px 0 rgba(255,255,255,.5), 0 3px 0 var(--o), 0 6px 10px rgba(0,0,0,.22)!important}
+/* la carte : contour fin, ombre douce */
+.carte{border-radius:20px; box-shadow:0 0 0 1px var(--filet-or), 0 0 0 4px rgba(255,255,255,.04), 0 18px 36px rgba(0,0,0,.42)!important}
+.carte-bande{box-shadow:inset 0 1px 0 rgba(255,255,255,.3)!important; border-bottom:1px solid rgba(0,0,0,.18)}
+/* panneaux, cartes de verre : filets d'1 px */
+.panneau{box-shadow:0 0 0 1px var(--filet-or), 0 24px 50px rgba(0,0,0,.55)!important}
+.stats .stat,.m-carte,.bloc,.docs .doc,.pg-carte,.pg-bloc,.pg-tuile{box-shadow:inset 0 0 0 1px rgba(255,255,255,.09), var(--ombre-douce)!important}
+.pg-carte{box-shadow:inset 0 0 0 1px rgba(255,214,90,.28), var(--ombre-douce)!important}
+/* boutons : la lueur dorée seulement pour l'action principale */
+.bouton.piece{--lip:3px; border-radius:16px}
+.bouton.piece.c-jaune{box-shadow:inset 0 0 0 1px #fff3b0, inset 0 1px 0 rgba(255,255,255,.7), 0 3px 0 var(--o), 0 10px 26px rgba(255,190,30,.35)!important}
+.bouton.piece:not(.c-jaune){box-shadow:inset 0 0 0 1px rgba(255,255,255,.14), inset 0 1px 0 rgba(255,255,255,.3), 0 3px 0 var(--o), 0 8px 16px rgba(0,0,0,.3)!important}
+.rond{--lip:3px}
+/* barre d'appli : plus fine */
+.barre-app{border-bottom-color:rgba(255,214,90,.22); box-shadow:0 6px 18px rgba(0,0,0,.3)}
+.logo{filter:drop-shadow(0 6px 14px rgba(0,0,0,.35))}
+.titre-ecran,.entete-ecran h1{filter:drop-shadow(0 1px 0 rgba(0,0,0,.5))}
+.hud .banque{box-shadow:inset 0 0 0 1px var(--filet-or)}
+.mode.large > .chev{position:absolute!important; left:auto!important; right:14px; top:50%; transform:translateY(-50%); margin:0; z-index:2}
+.mode.large{padding-right:48px}
+.piste{gap:4px; flex-wrap:nowrap} .piste i{width:15px; height:14px; border-radius:4px}
+@media (max-width:380px){ .piste i{width:12px} }
+.stats .stat{border-radius:18px!important; padding:9px 10px!important; column-gap:7px}
+.stats .stat span{white-space:normal!important; line-height:1.1; font-size:11px!important}
 </style>
 </head>
 <body>
+<header class="barre-app" id="barre-app">
+  <button class="ab-btn" id="ab-menu" aria-label="Menu" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+  <button class="ab-logo" id="ab-logo" aria-label="Home"><svg class="ab-swoosh" viewBox="0 0 200 60" aria-hidden="true"><path d="M8 40C40 6 150 -2 192 16" fill="none" stroke="url(#ab-or)" stroke-width="5" stroke-linecap="round"/><path d="M20 50C70 58 160 46 188 26" fill="none" stroke="url(#ab-or)" stroke-width="3" stroke-linecap="round" opacity=".8"/><defs><linearGradient id="ab-or" x1="0" x2="1"><stop offset="0" stop-color="#ffb21a" stop-opacity="0"/><stop offset=".35" stop-color="#ffd84a"/><stop offset=".7" stop-color="#fff3b0"/><stop offset="1" stop-color="#ffb21a" stop-opacity=".2"/></linearGradient></defs></svg><b>LE-QLN</b></button>
+  <button class="ab-btn" id="ab-profil" aria-label="My profile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg></button>
+</header>
+<div class="tiroir-voile" id="tiroir-voile" hidden></div>
+<nav class="tiroir" id="tiroir" aria-label="Menu" hidden>
+  <div class="tiroir-tete"><b>LE-QLN</b><button class="ab-btn" id="ti-fermer" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <button data-nav="accueil"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg><span>Home</span></button>
+  <button data-nav="stats"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 20V10M12 20V4M19 20v-7"/></svg><span>My stats</span></button>
+  <button data-nav="profil"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg><span>My profile</span></button>
+  <button data-nav="tuto"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6V14M12 17.5v.01"/></svg><span>Guided game</span></button>
+  <button data-nav="regles"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19V5"/></svg><span>Game rules</span></button>
+  <button data-nav="docs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/></svg><span>Documentation</span></button>
+  <button data-nav="son"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5L6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg><span>Sound</span><em id="ti-son"></em></button>
+  <button data-nav="installer" id="ti-installer" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg><span>Install the app</span></button>
+  <p class="tiroir-pied">The anagram game that pays</p>
+</nav>
 <div class="app" id="app"><div class="chargement"><div class="logo" style="--taille:64px"><span>LE - QLN</span></div>Loading the dictionary…</div></div>
 <canvas id="confettis" aria-hidden="true"></canvas>
 
@@ -964,7 +1110,7 @@ function ecranAccueil(){
       <button class="mode piece c-bleu" id="b-jour"><span class="filigrane" aria-hidden="true">Q</span><span class="etiquette">${dateCourte}</span><span class="ico">${ICO.calendrier}</span><span><span class="nom">Daily challenge</span><span class="desc">${jourFait!=null ? "Done: "+euros(jourFait) : "Same cards for everyone"}</span></span></button>
       <button class="mode piece c-noir" id="b-entr"><span class="filigrane" aria-hidden="true">N</span><span class="ico">${ICO.cible}</span><span><span class="nom">Practice</span><span class="desc">Your colour, no pressure</span></span></button>
     </div>
-    <button class="mode piece c-multi large" id="b-multi"><span class="filigrane" aria-hidden="true">M</span><span class="ico">${ICO.groupe}</span><span><span class="nom">Multiplayer</span><span class="desc">Create a room, share the code, play with 2–6</span></span><span class="etiquette">New</span></button>
+    <button class="mode piece c-multi large" id="b-multi"><span class="chev" aria-hidden="true"></span><span class="filigrane" aria-hidden="true">M</span><span class="ico">${ICO.groupe}</span><span><span class="nom">Multiplayer</span><span class="desc">Create a room, share the code, play with 2–6</span></span><span class="etiquette">New</span></button>
     </div>
     <div class="acc-d">
     <div id="progression"></div>
@@ -1855,6 +2001,35 @@ chargerDico().then(() => (typeof Multi !== "undefined" && Multi.lienDirect()) ||
   };
   new MutationObserver(majVerrou).observe(document.getElementById("app"), {childList:true});
   document.addEventListener("visibilitychange", majVerrou);
+})();
+</script>
+<script>
+/* Barre d'appli : menu (tiroir), logo → accueil, profil */
+(function(){
+  const t = $("#tiroir"), v = $("#tiroir-voile"), bm = $("#ab-menu");
+  const ouvrir = () => { majSon(); const bi = $("#ti-installer"); if(bi) bi.hidden = !installEvt; t.hidden = v.hidden = false; bm.setAttribute("aria-expanded","true"); Son.tap(); setTimeout(() => $("#tiroir button[data-nav]")?.focus({preventScroll:true}), 50); };
+  const fermer = () => { t.hidden = v.hidden = true; bm.setAttribute("aria-expanded","false"); };
+  const majSon = () => { const e = $("#ti-son"); if(e) e.textContent = Son.actif ? "On" : "Off"; };
+  const enPartie = () => !!document.getElementById("b-quitter");
+  const aller = f => { fermer(); if(enPartie()){ document.getElementById("b-quitter").click(); return; } if(typeof Definitions !== "undefined") Definitions.fermer(); f(); };
+  bm.onclick = () => t.hidden ? ouvrir() : fermer();
+  v.onclick = fermer; $("#ti-fermer").onclick = fermer;
+  document.addEventListener("keydown", e => { if(e.key === "Escape" && !t.hidden) fermer(); });
+  $("#ab-logo").onclick = () => aller(ecranAccueil);
+  $("#ab-profil").onclick = () => aller(() => typeof Multi !== "undefined" ? Multi.profil() : ecranAccueil());
+  const NAV = {
+    accueil: () => aller(ecranAccueil),
+    stats: () => aller(() => typeof Progres !== "undefined" ? Progres.ecranStats() : ecranAccueil()),
+    profil: () => aller(() => typeof Multi !== "undefined" ? Multi.profil() : ecranAccueil()),
+    tuto: () => aller(() => typeof Progres !== "undefined" ? Progres.lancerTuto() : ecranAccueil()),
+    regles: () => aller(ecranRegles),
+    docs: () => aller(ecranDocs),
+    son: () => { Son.actif = !Son.actif; store.set("son", Son.actif); majSon(); const b = $("#b-son"); if(b) b.outerHTML = boutonSon(); brancherSon(); },
+    installer: () => { fermer(); if(installEvt){ installEvt.prompt(); installEvt = null; } },
+  };
+  $$("#tiroir button[data-nav]").forEach(b => b.onclick = NAV[b.dataset.nav]);
+  // le bouton retour du téléphone ferme d'abord le menu
+  addEventListener("popstate", e => { if(!t.hidden){ fermer(); e.stopImmediatePropagation(); try{ history.pushState({qln:1}, ""); }catch(x){} } }, true);
 })();
 </script>
 </body>

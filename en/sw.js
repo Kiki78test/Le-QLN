@@ -1,8 +1,8 @@
 // Le-QLN (EN) — service worker: playable offline after the first visit.
-const VERSION = "qln-en-v10";
+const VERSION = "qln-en-v11";
 const FICHIERS = [
   "./", "index.html", "plateau.js", "multi.js", "progres.js", "../config.js", "pub.js", "infos.js", "manifest.webmanifest", "data/en.json",
-  "../pubs/spot1.jpg", "../pubs/spot2.jpg", "../pubs/spot3.jpg", "../icons/icon-192.png", "../icons/icon-512.png", "../icons/apple-touch-icon.png",
+  "pubs/spot1.jpg", "pubs/spot2.jpg", "pubs/spot3.jpg", "../fonts/barlow-condensed-latin-500-normal.woff2", "../fonts/barlow-condensed-latin-600-normal.woff2", "../fonts/barlow-condensed-latin-700-normal.woff2", "../fonts/barlow-condensed-latin-800-italic.woff2", "../fonts/barlow-condensed-latin-800-normal.woff2", "../fonts/barlow-latin-400-normal.woff2", "../fonts/barlow-latin-500-normal.woff2", "../fonts/barlow-latin-600-normal.woff2", "../fonts/barlow-latin-700-normal.woff2", "icons/icon-192.png", "icons/icon-512.png", "icons/apple-touch-icon.png",
 ];
 
 self.addEventListener("install", e => {

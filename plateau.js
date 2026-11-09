@@ -97,6 +97,39 @@ css.textContent = `
 .podium-l .pion-svg{width:22px; height:32px}
 .podium-l b{font-family:var(--f-titre); font-weight:400; font-size:30px; color:var(--or); font-variant-numeric:tabular-nums}
 .podium-l small{display:block; color:var(--brume); font-weight:600; font-size:14px}
+
+/* ===== V10 plateau : cadre doré fin, cases plus grandes sur mobile, fiches joueurs, bouton dé premium ===== */
+.tapis-cadre{padding:4px; border-radius:18px; background:linear-gradient(145deg,#ffe9a8,#c8922a 40%,#f2cf6a 70%,#a8741e); box-shadow:0 0 0 1px rgba(0,0,0,.35), 0 0 30px rgba(255,200,60,.12), 0 18px 40px rgba(0,0,0,.5)!important}
+.tapis-cadre::before{inset:4px; border-radius:14px; box-shadow:inset 0 0 0 1px rgba(0,0,0,.4), inset 0 6px 18px rgba(0,0,0,.45)}
+.tapis-cadre::after{display:none}
+@media (max-width:699px){
+  #tapis{min-width:880px}
+  .p-grille{display:flex; flex-direction:column; gap:12px}
+  .p-cote{display:contents}
+  .joueurs{order:-1; display:flex; gap:8px; overflow-x:auto; scrollbar-width:none; padding:2px 2px 4px; margin:0 -2px; scroll-snap-type:x proximity}
+  .joueurs::-webkit-scrollbar{display:none}
+  .joueurs .joueur{flex:0 0 auto; min-width:128px; scroll-snap-align:start}
+  .tapis-cadre{order:0} .dock{order:1} .journal{order:2} .p-grille > .pub-bandeau,.p-cote > .pub-bandeau{order:3}
+}
+/* fiches joueurs */
+.joueur{padding:8px 12px 8px 10px; border-radius:14px; gap:1px 10px; background:linear-gradient(160deg, rgba(255,255,255,.08), rgba(10,22,60,.75)); box-shadow:inset 0 0 0 1px rgba(255,255,255,.08), 0 6px 14px rgba(0,0,0,.25)}
+.joueur::before{width:auto; inset:auto 10px 0 10px; height:2px; border-radius:2px; box-shadow:0 0 8px var(--cj,#888); opacity:.85}
+.joueur .pion-svg{width:34px; height:34px; padding:4px 7px; border-radius:50%; background:radial-gradient(circle at 35% 30%, rgba(255,255,255,.18), rgba(0,0,0,.35)); box-shadow:inset 0 0 0 1.5px var(--cj,#888)}
+.joueur .nom{font-size:16px} .joueur .argent{font-size:21px}
+.joueur.actif{box-shadow:inset 0 0 0 1.5px #ffd84a, 0 0 18px rgba(255,216,74,.28), 0 8px 16px rgba(0,0,0,.3); transform:none}
+/* dock */
+.dock{border-radius:18px; box-shadow:0 0 0 1px rgba(201,146,26,.45), 0 14px 30px rgba(0,0,0,.4)!important}
+.dock::before{display:none}
+#b-dock{position:relative; overflow:hidden; border-radius:16px; min-height:64px; font-size:31px; letter-spacing:.04em; color:#2a1800;
+  background:linear-gradient(180deg,#fff2b0 0%,#ffd84a 38%,#f2b318 72%,#d99a0c 100%)!important;
+  box-shadow:inset 0 0 0 1px #fff6c8, inset 0 2px 0 rgba(255,255,255,.9), inset 0 -3px 0 rgba(150,90,0,.35), 0 3px 0 #a86f00, 0 0 0 4px rgba(255,216,74,.14), 0 12px 30px rgba(255,180,20,.45)!important;
+  animation:deAppel 2.4s ease-in-out infinite}
+#b-dock::after{content:""; position:absolute; top:-30%; bottom:-30%; left:-40%; width:30%; transform:skewX(-20deg); background:linear-gradient(90deg,transparent,rgba(255,255,255,.65),transparent); animation:deReflet 2.4s ease-in-out infinite; pointer-events:none}
+#b-dock svg{width:32px; height:32px; filter:drop-shadow(0 1px 0 rgba(255,255,255,.6))}
+@keyframes deAppel{50%{box-shadow:inset 0 0 0 1px #fff6c8, inset 0 2px 0 rgba(255,255,255,.9), inset 0 -3px 0 rgba(150,90,0,.35), 0 3px 0 #a86f00, 0 0 0 7px rgba(255,216,74,.10), 0 14px 38px rgba(255,180,20,.6)}}
+@keyframes deReflet{0%,55%{left:-40%} 100%{left:130%}}
+@media (prefers-reduced-motion:reduce){ #b-dock,#b-dock::after{animation:none} }
+.journal{border-radius:14px; box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
 `;
 document.head.appendChild(css);
 
@@ -325,7 +358,7 @@ async function lancer(j){
     await attendre(500);
   } else {
     dock({de:true, msg:"À vous de jouer", sous: G.dernier && G.dernier.id===j.id ? `Temps restant pour arriver : ${fmtTemps(G.dernier.fin-Date.now())}` : "Lancez le dé pour avancer."});
-    await ui(boutonDock("Lancer le dé", "c-jaune"));
+    await ui(boutonDock(`<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="4" fill="#1b1400"/><g fill="#ffd84a"><circle cx="8" cy="8" r="1.7"/><circle cx="16" cy="8" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="8" cy="16" r="1.7"/><circle cx="16" cy="16" r="1.7"/></g></svg>` + "Lancer le dé", "c-jaune"));
   }
   await ui(lancerDeAnime($("#dock .de"), valeur, j.ia && G.rapide ? 320 : 640));
   dock({de:valeur, msg:`${esc(j.nom)} fait ${valeur}`});
