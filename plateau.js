@@ -1014,9 +1014,11 @@ function dock({de, msg, sous}){
 function deSurPlateau(valeur, ms){
   const cadre = $(".tapis-cadre");
   if(!cadre || matchMedia("(prefers-reduced-motion: reduce)").matches || !Element.prototype.animate) return Promise.resolve();
-  const r = cadre.getBoundingClientRect();
-  const haut = Math.max(r.top, (parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--bp-h")) || 0) + 60), bas = Math.min(r.bottom, innerHeight);
-  if(bas - haut < 140) return Promise.resolve();                   // plateau hors de l'écran : seul le dé du dock roule
+  // zone de lancer : la partie visible du plateau ; s'il est trop peu visible (page défilée), tout l'écran
+  const barre = $("#barre-app"), plafond = barre ? barre.getBoundingClientRect().bottom : 0;
+  let r = cadre.getBoundingClientRect();
+  let haut = Math.max(r.top, plafond), bas = Math.min(r.bottom, innerHeight);
+  if(bas - haut < 260) r = {left:0, width:innerWidth}, haut = plafond, bas = innerHeight;
   const zone = document.createElement("div"); zone.className = "de-vol-zone";
   const d = Math.round(Math.min(110, Math.max(70, r.width*.2)));
   zone.style.cssText = `left:${r.left}px; top:${haut}px; width:${r.width}px; height:${bas-haut}px; --d:${d}px`;
