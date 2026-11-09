@@ -1,10 +1,18 @@
 {
   "name": "le-qln-relais",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
-  "description": "Serveur relais multijoueur Le-QLN (annuaire des salons + relais WebSocket)",
+  "description": "Serveur Le-QLN : relais multijoueur + API comptes, progression et classements",
   "main": "index.js",
-  "scripts": { "start": "node index.js" },
-  "engines": { "node": ">=18" },
-  "dependencies": { "ws": "^8.18.0" }
+  "scripts": {
+    "start": "node index.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "ws": "^8.18.0",
+    "pg": "^8.13.0",
+    "bcryptjs": "^2.4.3"
+  }
 }

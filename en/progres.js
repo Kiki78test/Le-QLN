@@ -129,6 +129,7 @@ function finPartie({mode, total=0, viesPerdues=null, medaille=-2, victoire=false
   if(mode === "braquage" && braquageOk){ ajouterXp(60); debloquer("braquage"); }
   if(mode === "ia"){ D.st.partiesIA++; if(victoire){ D.st.victoiresIA++; ajouterXp(80); debloquer("ia"); } }
   sauver();
+  try{ document.dispatchEvent(new CustomEvent("qln:fin-partie", {detail:{mode, total, viesPerdues, medaille, victoire, braquageOk}})); }catch(e){}
   const gagne = xpPartie; xpPartie = 0;
   if(gagne > 0) afficherGain(gagne, avant);
 }
@@ -396,5 +397,5 @@ css.textContent = `
 `;
 document.head.appendChild(css);
 
-return { carte, finPartie, brancherAccueil, ecranStats, lancerTuto, enregistrerJour, partagerTexte, niveau:() => niveauDe(D.xp), TXT, enTuto:() => !!coach };
+return { donnees:() => D, remplacer:d => { D = Object.assign(VIDE(), d); D.st = Object.assign(VIDE().st, d.st || {}); sauver(); }, carte, finPartie, brancherAccueil, ecranStats, lancerTuto, enregistrerJour, partagerTexte, niveau:() => niveauDe(D.xp), TXT, enTuto:() => !!coach };
 })();

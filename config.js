@@ -1,3 +1,7 @@
-/* Le-QLN — configuration locale (fichier à adapter après déploiement du serveur, voir server/README.md)
-   Adresse WebSocket du serveur relais multijoueur. Vide = mode test local (onglets du même navigateur). */
-window.QLN_WS_URL = "";
+/* Le-QLN — configuration (à adapter après le déploiement du serveur, voir server/README.md) */
+// Adresse du serveur Le-QLN (Render). Vide = mode local : multijoueur entre onglets, pas de comptes ni de classements.
+window.QLN_API_URL = "";                                   // ex. "https://le-qln.onrender.com"
+// WebSocket du multijoueur : par défaut, le même serveur que l'API.
+window.QLN_WS_URL = window.QLN_API_URL ? window.QLN_API_URL.replace(/^http/, "ws") + "/ws" : "";
+// Connexion Google (facultatif) : identifiant client OAuth « Application Web ».
+window.QLN_GOOGLE_CLIENT_ID = "";

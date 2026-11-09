@@ -9,12 +9,17 @@ const { WebSocketServer } = require("ws");
 const PORT = process.env.PORT || 8080;
 const ORIGINES = (process.env.ORIGINES || "").split(",").map(s => s.trim()).filter(Boolean); // vide = toutes
 
+// API comptes / classements (si une base PostgreSQL est configurée)
+const api = process.env.DATABASE_URL ? require("./api") : null;
+if(api) api.initialiser().catch(e => console.error("[api] initialisation impossible :", e.message));
+
 const salons = new Map();   // code -> {resume, hote:ws, membres:Set<ws>, vu}
 const annuaire = new Set(); // sockets abonnées à la liste
 
-const server = http.createServer((req, res) => {
+const server = http.createServer(async (req, res) => {
+  if(api && await api.traiter(req, res, ORIGINES)) return;
   res.setHeader("Access-Control-Allow-Origin", "*");
-  if(req.url === "/sante"){ res.writeHead(200, {"Content-Type":"application/json"}); return res.end(JSON.stringify({ok:true, salons:salons.size, clients:wss.clients.size})); }
+  if(req.url === "/sante"){ res.writeHead(200, {"Content-Type":"application/json"}); return res.end(JSON.stringify({ok:true, salons:salons.size, clients:wss.clients.size, api:!!api})); }
   res.writeHead(200, {"Content-Type":"text/plain; charset=utf-8"}); res.end("Le-QLN relais multijoueur\n");
 });
 const wss = new WebSocketServer({ server, path:"/ws", verifyClient: ({origin}) => !ORIGINES.length || !origin || ORIGINES.includes(origin) });

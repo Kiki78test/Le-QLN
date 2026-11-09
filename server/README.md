@@ -1,25 +1,58 @@
-# Le-QLN — serveur relais multijoueur
+# Le-QLN — serveur (multijoueur + comptes + classements)
 
-Petit serveur Node (`ws`) : annuaire des salons ouverts + relais des messages entre les joueurs d'un salon.
-Rien n'est stocké : un salon vit tant que son hôte est connecté.
+Un seul service Node :
+- **Relais multijoueur** (WebSocket `/ws`) : annuaire des salons ouverts et relais des messages d'un salon.
+- **API** (`/api/…`, activée si `DATABASE_URL` est définie) : comptes (e-mail + mot de passe, Google en option), progression synchronisée entre appareils, scores et classements (monde / pays, défi du jour, Défi, Braquage).
 
-## Déployer sur Render (recommandé pour commencer)
-1. Render → **New → Web Service** → dépôt `Kiki78test/Le-QLN`.
-2. Root Directory : `server` · Build : `npm install` · Start : `npm start` · plan Free.
-   (ou **New → Blueprint** : le fichier `server/render.yaml` fait tout.)
-3. Variable d'environnement `ORIGINES` = `https://kiki78test.github.io` (ajouter `http://localhost:8765` pour tester en local, séparés par des virgules). Vide = toutes les origines acceptées.
-4. Une fois l'URL obtenue (ex. `https://le-qln-relais.onrender.com`), ouvrir `config.js` à la racine de l'appli et renseigner :
-   `window.QLN_WS_URL = "wss://le-qln-relais.onrender.com/ws";`
-5. Vérification : `https://le-qln-relais.onrender.com/sante` doit répondre `{"ok":true,…}`.
+Les tables sont créées automatiquement au démarrage (préfixe `qln_`), y compris dans une base déjà utilisée par une autre appli.
 
-Note : sur le plan Free, Render endort le service après 15 min sans trafic ; la première connexion prend alors 20 à 40 s. Un plan Starter (7 $/mois) supprime cette latence.
+## Déployer sur Render (≈ 10 min)
 
-## Cloudflare (alternative)
-Les WebSockets avec état demandent un **Durable Object** (plan Workers payant, 5 $/mois). Le protocole est le même ; `index.js` est à adapter (handlers `fetch` + `webSocketMessage`). Je peux fournir cette version si vous préférez tout centraliser chez Cloudflare.
+1. **Base de données** : utilisez votre PostgreSQL Render existante (les tables `qln_*` ne touchent à rien d'autre) ou créez-en une.
+   Copiez son **Internal Database URL**.
+2. **Service web** : Render → *New → Web Service* → dépôt `Kiki78test/Le-QLN`.
+   - Root Directory : `server`
+   - Build Command : `npm install` · Start Command : `npm start`
+   - Instance : Starter (pas de mise en veille) ou Free pour tester
+   - Health Check Path : `/sante`
+3. **Variables d'environnement** du service :
 
-## Protocole (JSON)
-- `{t:"annuaire"}` → reçoit `{t:"salons", liste:[…]}` à chaque changement · `{t:"annuaire-stop"}`
-- `{t:"entrer", code, hote:true|false}` : rejoint le canal du salon (l'hôte le crée)
-- `{t:"publier", resume:{…}}` (hôte) : met à jour la fiche visible dans l'annuaire
-- `{t:"sortir"}` · tout autre message est relayé aux autres membres du salon
-- Le serveur envoie `{t:"ferme"}` si l'hôte part, `{t:"quitter", de}` à l'hôte si un joueur part, `{t:"refus", raison:"introuvable"}` si le code n'existe pas.
+   | Variable | Valeur |
+   |---|---|
+   | `DATABASE_URL` | l'Internal Database URL de l'étape 1 |
+   | `SECRET` | une longue chaîne aléatoire (bouton *Generate* de Render) |
+   | `ORIGINES` | `https://kiki78test.github.io` |
+   | `GOOGLE_CLIENT_ID` | (facultatif) identifiant OAuth « Application Web » de Google Cloud |
+
+4. Une fois en ligne, vérifiez `https://<votre-service>.onrender.com/sante` → `{"ok":true, … "api":true}`.
+5. Dans l'appli, ouvrez **`config.js`** (racine du dépôt) et renseignez :
+   ```js
+   window.QLN_API_URL = "https://<votre-service>.onrender.com";
+   ```
+   (le WebSocket du multijoueur en est déduit automatiquement). Poussez : comptes, classements et multijoueur en ligne s'activent.
+
+### Connexion Google (facultatif)
+Google Cloud Console → *API et services → Identifiants → Créer un ID client OAuth → Application Web*,
+origine JavaScript autorisée : `https://kiki78test.github.io`. Mettez l'identifiant dans `GOOGLE_CLIENT_ID` (Render)
+**et** dans `window.QLN_GOOGLE_CLIENT_ID` (`config.js`).
+
+## API
+
+| Méthode | Route | Rôle |
+|---|---|---|
+| POST | `/api/inscription` | `{email, mdp, pseudo, pays?, couleur?}` → `{jeton, joueur}` |
+| POST | `/api/connexion` | `{email, mdp}` → `{jeton, joueur}` |
+| POST | `/api/google` | `{credential}` (jeton Google) → `{jeton, joueur}` |
+| GET / PATCH / DELETE | `/api/moi` | profil (pseudo, pion, pays) ; DELETE efface le compte et ses scores |
+| GET / PUT | `/api/progression?langue=fr` | progression (fusion : meilleur des deux appareils) |
+| POST | `/api/scores` | `{mode: jour|defi|braquage, langue, score, jour?}` — au défi du jour, seul le 1er essai compte |
+| GET | `/api/classement?mode=jour&langue=fr&pays=FR&periode=semaine` | top 50 + rang du joueur connecté |
+
+Authentification : en-tête `Authorization: Bearer <jeton>` (jeton signé HMAC, valable 90 jours).
+Protections : mots de passe hachés (bcrypt), limitation du nombre de tentatives par IP, CORS limité à `ORIGINES`,
+scores bornés et défi du jour accepté seulement pour la date en cours (± 36 h).
+
+## Limites connues
+- Les scores sont calculés par l'appli : un joueur très motivé pourrait en envoyer de faux. Parade prévue : recalcul côté serveur du défi du jour (cartes identiques pour tous) à partir des mots trouvés.
+- Pas encore de « mot de passe oublié » (nécessite un service d'e-mail, par ex. Resend).
+- Comptes de mineurs : l'appli demande l'accord d'un parent sous 15 ans ; à faire valider juridiquement (RGPD).
