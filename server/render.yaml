@@ -1,12 +1,18 @@
 services:
   - type: web
-    name: le-qln-relais
+    name: le-qln
     runtime: node
     rootDir: server
-    plan: free
+    plan: starter
     buildCommand: npm install
     startCommand: npm start
     healthCheckPath: /sante
     envVars:
       - key: ORIGINES
         value: https://kiki78test.github.io
+      - key: SECRET
+        generateValue: true
+      - key: DATABASE_URL
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
