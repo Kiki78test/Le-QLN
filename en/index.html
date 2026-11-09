@@ -7,6 +7,11 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <meta name="description" content="Le-QLN, the anagram board game: find the anagram before the timer runs out.">
 <meta name="theme-color" content="#0c1f4d">
+<meta property="og:title" content="Le-QLN — the anagram game that pays">
+<meta property="og:description" content="Find the anagram before the timer runs out: solo, against the AI or with friends.">
+<meta property="og:image" content="icons/icon-512.png">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="../icons/icon-192.png">
 <link rel="apple-touch-icon" href="../icons/apple-touch-icon.png">
@@ -664,6 +669,11 @@ body::before{content:""; position:fixed; inset:0; pointer-events:none; z-index:1
 /* dock */
 .dock{position:relative} .dock::before{content:""; position:absolute; left:14%; right:14%; top:-2px; height:3px; border-radius:3px; background:linear-gradient(90deg, transparent, #ffd84a, transparent)}
 @media (prefers-reduced-motion:reduce){ .mode::after,.logo::before{animation:none} }
+
+/* =====================  Ergonomie : cibles tactiles, h1 du logo  ===================== */
+h1.logo{margin:0; font-weight:inherit}
+.mode.large{justify-content:flex-start; gap:16px} .mode.large .etiquette{position:absolute; top:10px; right:12px}
+.bp-sw button{position:relative} .bp-sw button::after{content:""; position:absolute; inset:-6px -1px}
 </style>
 </head>
 <body>
@@ -1106,7 +1116,7 @@ function ecranAccueil(){
   <section class="ecran">
     <div class="barre-haut">${boutonSon()}${typeof Multi !== "undefined" ? Multi.chipProfil() : ""}<button class="icone-btn" id="b-regles-h" aria-label="How to play">${ICO.livre}</button></div>
     <div class="heros">
-      <div class="logo flotte"><span>LE - QLN</span></div>
+      <h1 class="logo flotte"><span>LE - QLN</span></h1>
       <div class="vitrine" id="vitrine" aria-hidden="true"></div>
       <div class="vitrine-legende" id="vitrine-legende" aria-hidden="true"></div>
     </div>
@@ -1952,6 +1962,44 @@ chargerDico().then(() => (typeof Multi !== "undefined" && Multi.lienDirect()) ||
     b.onclick = e => { e.stopPropagation(); q.click(); }; n.appendChild(b);
   })); }).observe(document.body, {childList:true});
   document.addEventListener("click", e => { if(e.target && e.target.id === "q-oui") setTimeout(() => document.querySelectorAll(".voile").forEach(v => v.remove()), 0); }, true);
+})();
+</script>
+<script>
+/* =====================  Ergonomie appli : bouton retour Android, mise en veille, écran allumé  ===================== */
+(function(){
+  /* 1. Bouton « retour » du téléphone : au lieu de fermer l'appli, il agit comme le bouton retour / quitter de l'écran */
+  const armer = () => { try{ history.pushState({qln:1}, ""); }catch(e){} };
+  armer();
+  addEventListener("popstate", () => {
+    const q = document.querySelector(".voile #q-non");                 // dialogue « Quitter ? » ouvert → Continuer
+    const voile = [...document.querySelectorAll(".voile")].pop();
+    const retour = document.getElementById("b-retour"), quitter = document.getElementById("b-quitter");
+    if(q){ q.click(); armer(); return; }
+    if(voile && !quitter && !voile.classList.contains("pub-voile")){ voile.remove(); armer(); return; }   // panneau d'information hors partie → fermé
+    if(quitter){ quitter.click(); armer(); return; }
+    if(retour){ retour.click(); armer(); return; }
+    // accueil : on laisse le retour fermer l'appli (comportement attendu)
+  });
+
+  /* 2. Appli mise en arrière-plan pendant un sablier : pause automatique (dialogue Continuer / Quitter) */
+  document.addEventListener("visibilitychange", () => {
+    if(document.visibilityState !== "hidden") return;
+    if(document.querySelector(".voile #q-oui")) return;                 // déjà en pause
+    const enJeu = document.querySelector(".reserve") && document.getElementById("b-quitter");
+    if(enJeu && typeof P !== "undefined" && P && P.chrono && P.m && !P.m.fini) document.getElementById("b-quitter").click();
+  });
+
+  /* 3. Écran maintenu allumé pendant une partie (sabliers jusqu'à 3 min) */
+  let verrou = null;
+  const majVerrou = async () => {
+    const enPartie = !!document.getElementById("b-quitter") && document.visibilityState === "visible";
+    try{
+      if(enPartie && !verrou && navigator.wakeLock){ verrou = await navigator.wakeLock.request("screen"); verrou.addEventListener("release", () => { verrou = null; }); }
+      else if(!enPartie && verrou){ await verrou.release(); verrou = null; }
+    }catch(e){ verrou = null; }
+  };
+  new MutationObserver(majVerrou).observe(document.getElementById("app"), {childList:true});
+  document.addEventListener("visibilitychange", majVerrou);
 })();
 </script>
 </body>
