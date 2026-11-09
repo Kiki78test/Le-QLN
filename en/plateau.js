@@ -170,6 +170,9 @@ css.textContent = `
   .plateau-ecran .tapis-cadre{width:min(100%, calc(var(--hp) * 1.79)); margin:0 auto}
   .plateau-ecran #tapis{min-width:0}
 }
+
+.de-vol .noyau{position:absolute; inset:2%; background:#d9d0b5; backface-visibility:hidden}
+.de-vol .face{border-radius:calc(var(--d)*.14)}
 `;
 document.head.appendChild(css);
 
@@ -1042,7 +1045,8 @@ function dock({de, msg, sous}){
 /* ---------- Dé 3D lancé sur le plateau : il entre par un coin, rebondit et s'immobilise au centre ---------- */
 function deSurPlateau(valeur, ms){
   const cadre = $(".tapis-cadre");
-  if(!cadre || matchMedia("(prefers-reduced-motion: reduce)").matches || !Element.prototype.animate) return Promise.resolve();
+  // le lancer du dé fait partie du jeu : on le montre même si Windows / le téléphone demande moins d'animations
+  if(!cadre || !Element.prototype.animate) return Promise.resolve();
   // zone de lancer : la partie visible du plateau ; s'il est trop peu visible (page défilée), tout l'écran
   const barre = $("#barre-app"), plafond = barre ? barre.getBoundingClientRect().bottom : 0;
   let r = cadre.getBoundingClientRect();
@@ -1058,6 +1062,8 @@ function deSurPlateau(valeur, ms){
   const xs = sens > 0 ? [x0, W*.18, W*.36, cx] : [W + d*.2, W*.82 - d, W*.62 - d, cx];
   const ys = [y0, cy + H*.12, cy - H*.04, cy];
   const vol = $(".de-vol", zone), cube = $(".cube", zone), sol = $(".de-vol-sol", zone);
+  // noyau : un cube intérieur aux arêtes vives comble les coins arrondis des faces (sinon on voit « à travers » le dé)
+  cube.insertAdjacentHTML("afterbegin", ["rotateY(0deg)","rotateY(180deg)","rotateY(90deg)","rotateY(-90deg)","rotateX(90deg)","rotateX(-90deg)"].map(r => `<i class="noyau" style="transform:${r} translateZ(calc(var(--d)*.47))"></i>`).join(""));
   const [fx, fy] = ROT_DE[valeur];
   cube.style.transform = `rotateX(${fx}deg) rotateY(${fy}deg)`;
   // trajectoire : 3 arcs de plus en plus bas (rebonds), puis petit tassement

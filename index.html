@@ -1044,7 +1044,7 @@ function lancerDeAnime(el, valeur, ms=640){
     const c = $(".cube", el), [x,y] = ROT_DE[valeur];
     el.classList.remove("vide","roule"); void el.offsetWidth; el.classList.add("roule");
     c.style.transform = `rotateX(${x}deg) rotateY(${y}deg)`;
-    if(c.animate && !matchMedia("(prefers-reduced-motion: reduce)").matches)
+    if(c.animate)
       c.animate([{transform:`rotateX(${x+1080}deg) rotateY(${y-720}deg)`},{transform:`rotateX(${x}deg) rotateY(${y}deg)`}], {duration:ms, easing:"cubic-bezier(.12,.7,.25,1)"});
     [.18,.38,.58,.78,.95].forEach((f,i) => setTimeout(() => { if(Son.clac) Son.clac(i === 4 ? 1 : .55); else Son.de(); }, ms*f));
     setTimeout(() => res(valeur), ms);
