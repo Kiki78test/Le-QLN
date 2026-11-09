@@ -202,6 +202,7 @@ button.piece[disabled]{filter:grayscale(.85) brightness(.6); cursor:default; tra
 .bulle h4 small{font-family:var(--f-ui); font-weight:700; font-size:13px; color:var(--gris); letter-spacing:.04em}
 .bulle ol{margin:0; padding-left:20px; display:grid; gap:4px}
 .bulle .lemme{font-family:var(--f-ui); font-weight:700; color:var(--gris); font-size:14px; margin:0 0 4px}
+.bulle .autres-sources{margin:6px 0 0; font:600 13px var(--f-ui); color:#5a5444} .bulle .autres-sources a{color:#1b47a3}
 .bulle .source{display:block; margin-top:8px; font-family:var(--f-ui); font-weight:700; font-size:13px; color:#1b47a3}
 .bulle .attente{margin:0; color:var(--gris); font-style:italic}
 .docs{display:grid; gap:12px}
@@ -906,6 +907,7 @@ const Definitions = (() => {
   const cache = new Map();
   const API = "https://en.wiktionary.org/w/api.php?action=parse&prop=wikitext&format=json&redirects=1&origin=*&page=";
   const lienWiki = mot => "https://en.wiktionary.org/wiki/" + encodeURIComponent(mot);
+  const AUTRE_DICO = mot => "https://www.merriam-webster.com/dictionary/" + encodeURIComponent(mot.toLowerCase()), AUTRE_NOM = "Merriam-Webster";
   const MUETS = /^(en|ux|uxi|usex|quote|quote-book|quote-journal|quote-web|quote-text|syn|ant|rfdef|rfv|rfc|rfe|senseid|wikipedia|pedia|attention|sense|c|cat|catlangname|enum|ngd|vern)$/;
   function nettoyer(t){
     t = t.replace(/<ref[^>]*\/>/g, "").replace(/<ref[^>]*>[\s\S]*?<\/ref>/g, "").replace(/<[^>]+>/g, "");
@@ -942,33 +944,115 @@ const Definitions = (() => {
     }
     return {defs, renvoi};
   }
-  async function charger(page){
-    const r = await fetch(API + encodeURIComponent(page));
-    if(!r.ok) throw new Error("HTTP " + r.status);
-    const j = await r.json();
-    if(j.error) return null;
-    return j.parse && j.parse.wikitext ? j.parse.wikitext["*"] : null;
+  /* ---- Accès au Wiktionnaire, optimisé :
+     - plusieurs mots en UNE requête (toutes les solutions d'une carte, préchargées dès la face B) ;
+     - cache mémoire + cache persistant (localStorage, 30 jours, 400 mots) : une définition déjà vue s'affiche instantanément ;
+     - si le mot n'existe pas tel quel (accents absents du dictionnaire du jeu : EPISSURE → épissure),
+       on essaie d'un coup toutes les variantes accentuées plausibles, puis la recherche du Wiktionnaire. ---- */
+  const BASE = API.split("?")[0];
+  const sansAccent = x => x.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+  const CACHE_CLE = "defs", DUREE = 30*864e5, MAX = 400;
+  let disque = (() => { try{ return store.get(CACHE_CLE, {}) || {}; }catch(e){ return {}; } })();
+  function memoriser(cle, res){
+    if(res.horsLigne) return;
+    disque[cle] = {t:Date.now(), r:{defs:res.defs, lemme:res.lemme, defsLemme:res.defsLemme, titre:res.titre}};
+    const cles = Object.keys(disque);
+    if(cles.length > MAX) cles.sort((x,y) => disque[x].t - disque[y].t).slice(0, cles.length - MAX).forEach(k => delete disque[k]);
+    try{ store.set(CACHE_CLE, disque); }catch(e){}
   }
-  function definir(mot){
+  async function appel(params){
+    const r = await fetch(BASE + "?" + new URLSearchParams({format:"json", formatversion:"2", origin:"*", ...params}));
+    if(!r.ok) throw new Error("HTTP " + r.status);
+    return r.json();
+  }
+  // contenu wikitexte de plusieurs pages (≤ 50) : {titreDemandé: wikitexte|null}
+  async function chargerPlusieurs(titres){
+    const out = {}; titres.forEach(t => out[t] = null);
+    for(let i = 0; i < titres.length; i += 50){
+      const lot = titres.slice(i, i + 50);
+      const j = await appel({action:"query", prop:"revisions", rvprop:"content", rvslots:"main", redirects:"1", titles:lot.join("|")});
+      const q = j.query || {}, alias = {};
+      (q.normalized || []).forEach(n => alias[n.to] = n.from);
+      (q.redirects || []).forEach(n => alias[n.to] = alias[n.from] || n.from);
+      for(const pg of q.pages || []){
+        if(pg.missing || !pg.revisions) continue;
+        const demande = alias[pg.title] || pg.title, wt = pg.revisions[0].slots ? pg.revisions[0].slots.main.content : pg.revisions[0].content;
+        out[demande] = wt; out[pg.title] = out[pg.title] || wt;
+      }
+    }
+    return out;
+  }
+  const charger = async page => (await chargerPlusieurs([page]))[page];
+  // variantes accentuées plausibles d'un mot écrit sans accents (limitées à 50 : une seule requête)
+  const ACCENTS = {};
+  function variantes(mot){
+    const pos = [...mot].map((ch, i) => ACCENTS[ch] ? i : -1).filter(i => i >= 0);
+    const res = new Set();
+    const essai = (m) => { if(m !== mot && res.size < 50) res.add(m); };
+    // 1 accent, puis 2 accents (é le plus fréquent en premier)
+    for(const i of pos) for(const a of ACCENTS[mot[i]]) essai(mot.slice(0,i) + a + mot.slice(i+1));
+    for(const i of pos) for(const k of pos) if(k > i) for(const a of ACCENTS[mot[i]].slice(0,2)) for(const b of ACCENTS[mot[k]].slice(0,2)) essai(mot.slice(0,i) + a + mot.slice(i+1,k) + b + mot.slice(k+1));
+    return [...res];
+  }
+  // dernier recours : recherche du Wiktionnaire (insensible aux accents), en ne gardant qu'un titre identique sans accents
+  async function rechercher(mot){
+    try{
+      const j = await appel({action:"opensearch", search:mot, limit:"10", namespace:"0"});
+      const t = (j[1] || []).find(x => sansAccent(x) === sansAccent(mot));
+      if(t) return t;
+    }catch(e){}
+    try{
+      const j = await appel({action:"query", list:"search", srsearch:"intitle:" + mot, srlimit:"10", srnamespace:"0"});
+      const t = ((j.query && j.query.search) || []).map(x => x.title).find(x => sansAccent(x) === sansAccent(mot));
+      if(t) return t;
+    }catch(e){}
+    return null;
+  }
+  async function analyser(res, cle, wt, titre){
+    const {defs, renvoi} = extraire(wt);
+    if(!defs.length) return false;
+    res.defs = defs; res.titre = titre;
+    if(titre !== cle) res.url = lienWiki(titre);
+    // forme fléchie (pluriel, féminin, participe) : on ajoute la définition du mot de base
+    if(renvoi && renvoi.toLowerCase() !== titre.toLowerCase()){
+      const wt2 = await charger(renvoi).catch(() => null);
+      if(wt2){ const e = extraire(wt2); if(e.defs.length){ res.lemme = renvoi; res.defsLemme = e.defs; } }
+    }
+    return true;
+  }
+  function definir(mot, wtConnu){
     const cle = mot.toLowerCase();
     if(cache.has(cle)) return cache.get(cle);
+    const d = disque[cle];
+    if(d && Date.now() - d.t < DUREE){ const p = Promise.resolve({mot:cle, url:lienWiki(d.r.titre || cle), horsLigne:false, ...d.r}); cache.set(cle, p); return p; }
     const promesse = (async () => {
-      const res = {mot: cle, defs: [], lemme: null, defsLemme: null, url: lienWiki(cle), horsLigne: false};
+      const res = {mot: cle, defs: [], lemme: null, defsLemme: null, titre: null, url: lienWiki(cle), horsLigne: false};
       try{
-        const wt = await charger(cle);
-        if(!wt) return res;
-        const {defs, renvoi} = extraire(wt);
-        res.defs = defs;
-        // forme fléchie (pluriel, féminin, participe) : on ajoute la définition du mot de base
-        if(renvoi && renvoi.toLowerCase() !== cle){
-          const wt2 = await charger(renvoi).catch(() => null);
-          if(wt2){ const e = extraire(wt2); if(e.defs.length){ res.lemme = renvoi; res.defsLemme = e.defs; } }
+        const wt = wtConnu !== undefined ? wtConnu : await charger(cle);
+        let ok = wt ? await analyser(res, cle, wt, cle) : false;
+        if(!ok){
+          const vs = variantes(cle);
+          if(vs.length){
+            const pages = await chargerPlusieurs(vs);
+            for(const v of vs) if(pages[v] && await analyser(res, cle, pages[v], v)){ ok = true; break; }
+          }
         }
+        if(!ok){ const t = await rechercher(cle); if(t){ const w = await charger(t); if(w) ok = await analyser(res, cle, w, t); } }
+        memoriser(cle, res);
       }catch(e){ res.horsLigne = true; cache.delete(cle); }
       return res;
     })();
     cache.set(cle, promesse);
     return promesse;
+  }
+  // préchargement groupé (une requête pour tous les mots encore inconnus)
+  async function precharger(mots){
+    const cles = [...new Set(mots.map(m => String(m).toLowerCase()))].filter(c => !cache.has(c) && !(disque[c] && Date.now() - disque[c].t < DUREE));
+    if(!cles.length || !navigator.onLine) return;
+    try{
+      const pages = await chargerPlusieurs(cles);
+      cles.forEach(c => definir(c, pages[c] || null));
+    }catch(e){}
   }
   let bulle = null;
   function fermer(){ if(bulle){ bulle.remove(); bulle = null; } }
@@ -992,9 +1076,10 @@ const Definitions = (() => {
     const liste = defs => `<ol>${defs.map(x => `<li>${esc(x)}</li>`).join("")}</ol>`;
     let corps;
     if(d.horsLigne) corps = `<p class="attente">Definition unavailable here: no access to Wiktionary.</p>`;
-    else if(!d.defs.length && !d.defsLemme) corps = `<p class="attente">No definition found for this word.</p>`;
+    else if(!d.defs.length && !d.defsLemme) corps = `<p class="attente">No definition found for this word.</p><p class="autres-sources">Look elsewhere: <a href="${AUTRE_DICO(mot)}" target="_blank" rel="noopener">${AUTRE_NOM}</a></p>`;
     else corps = (d.defs.length ? liste(d.defs) : "") + (d.defsLemme ? `<p class="lemme" style="margin-top:8px">${esc(d.lemme.toUpperCase())} :</p>${liste(d.defsLemme)}` : "");
-    b.innerHTML = `<h4>${esc(mot.toUpperCase())}<small>Definition</small></h4>${corps}<a class="source" href="${d.url}" target="_blank" rel="noopener">View on Wiktionary ↗</a>`;
+    const titre = d.titre && d.titre.toLowerCase() !== mot.toLowerCase() ? d.titre : mot;
+    b.innerHTML = `<h4>${esc(titre.toUpperCase())}<small>Definition</small></h4>${corps}<a class="source" href="${d.url}" target="_blank" rel="noopener">View on Wiktionary ↗</a>`;
     placer(el, b);
   }
   document.addEventListener("click", e => {
@@ -1009,7 +1094,7 @@ const Definitions = (() => {
   }, true);
   document.addEventListener("keydown", e => { if(e.key === "Escape") fermer(); });
   addEventListener("resize", fermer);
-  return { definir, ouvrir, fermer };
+  return { definir, precharger, ouvrir, fermer };
 })();
 
 /* ---------- Composants partagés ---------- */
@@ -1471,6 +1556,7 @@ function lancerManche(){
   const niv = P.parcours ? P.parcours[P.manche] : P.nivEntrainement;
   P.carte = P.parcours ? P.cartes[P.manche] : tirerCarte(niv, P.rnd, P.deja);
   if(window.QLN_CARTE_FORCEE){ P.carte = window.QLN_CARTE_FORCEE; window.QLN_CARTE_FORCEE = null; P.chrono = false; }
+  Definitions.precharger(P.carte.mots);   // toutes les définitions de la carte en une requête, prêtes pour la face B
   const evt = P.evtCourant || null; P.evtCourant = null;
   const leg = !!P.legAccepte; P.legAccepte = false;
   const tf = (P.cfg && P.cfg.tf) || 1, gm = (P.cfg && P.cfg.gm) || 1;
