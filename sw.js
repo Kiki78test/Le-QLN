@@ -1,12 +1,13 @@
 // Le-QLN — service worker : jeu jouable hors connexion après la première visite.
-const VERSION = "qln-v23";
+const VERSION = "qln-v24";
 const FICHIERS = [
   "./", "index.html", "plateau.js", "multi.js", "progres.js", "config.js", "pub.js", "infos.js", "manifest.webmanifest", "data/fr.json",
   "pubs/spot1.jpg", "pubs/spot2.jpg", "pubs/spot3.jpg", "fonts/barlow-condensed-latin-500-normal.woff2", "fonts/barlow-condensed-latin-600-normal.woff2", "fonts/barlow-condensed-latin-700-normal.woff2", "fonts/barlow-condensed-latin-800-italic.woff2", "fonts/barlow-condensed-latin-800-normal.woff2", "fonts/barlow-latin-400-normal.woff2", "fonts/barlow-latin-500-normal.woff2", "fonts/barlow-latin-600-normal.woff2", "fonts/barlow-latin-700-normal.woff2", "icons/icon-192.png", "icons/icon-512.png", "icons/apple-touch-icon.png",
 ];
 
 self.addEventListener("install", e => {
-  e.waitUntil(caches.open(VERSION).then(c => c.addAll(FICHIERS)).then(() => self.skipWaiting()));
+  // cache:"reload" : on contourne le cache HTTP du navigateur (GitHub Pages garde les fichiers 10 min)
+  e.waitUntil(caches.open(VERSION).then(c => c.addAll(FICHIERS.map(f => new Request(f, {cache:"reload"})))).then(() => self.skipWaiting()));
 });
 
 self.addEventListener("activate", e => {
@@ -16,14 +17,16 @@ self.addEventListener("activate", e => {
   );
 });
 
-// Réseau d'abord pour les pages (mises à jour rapides), cache d'abord pour le reste.
+// Réseau d'abord pour les pages, le code et les données (toujours la dernière version en ligne) ;
+// cache d'abord pour les polices, images et vidéos. Hors ligne, tout vient du cache.
 self.addEventListener("fetch", e => {
   const req = e.request;
   if (req.method !== "GET") return;
   // documents (liste et fichiers) : réseau d'abord, pour voir les nouveautés sans attendre une nouvelle version
-  if (req.mode === "navigate" || req.url.includes("/docs/")) {
+  const code = /\.(js|json|html|webmanifest)(\?|$)/.test(new URL(req.url).pathname) && new URL(req.url).origin === location.origin;
+  if (req.mode === "navigate" || req.url.includes("/docs/") || code) {
     e.respondWith(
-      fetch(req).then(r => { const copie = r.clone(); caches.open(VERSION).then(c => c.put(req, copie)); return r; })
+      fetch(req, {cache:"no-cache"}).then(r => { const copie = r.clone(); caches.open(VERSION).then(c => c.put(req, copie)); return r; })
         .catch(() => caches.match(req).then(r => r || (req.mode === "navigate" ? caches.match("index.html") : Response.error())))
     );
     return;
