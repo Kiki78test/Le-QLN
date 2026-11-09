@@ -1,7 +1,7 @@
 // Le-QLN — service worker : jeu jouable hors connexion après la première visite.
-const VERSION = "qln-v17";
+const VERSION = "qln-v18";
 const FICHIERS = [
-  "./", "index.html", "plateau.js", "multi.js", "config.js", "pub.js", "infos.js", "manifest.webmanifest", "data/fr.json",
+  "./", "index.html", "plateau.js", "multi.js", "progres.js", "config.js", "pub.js", "infos.js", "manifest.webmanifest", "data/fr.json",
   "pubs/spot1.jpg", "pubs/spot2.jpg", "pubs/spot3.jpg", "icons/icon-192.png", "icons/icon-512.png", "icons/apple-touch-icon.png",
 ];
 

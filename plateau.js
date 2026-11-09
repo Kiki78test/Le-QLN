@@ -474,6 +474,7 @@ async function jouerCarte(j, niv){
   let resultat;
   if(j.ia) resultat = await ui(carteIA(j, c));
   else resultat = await ui(carteHumaine(j, c));
+  if(!j.ia && typeof Progres !== "undefined") Progres.carte({niv, reussi:!!resultat.mot, nbTrouves:resultat.mot ? 1 : 0, nbSol:2});
 
   if(resultat.mot){
     j.reussies++;
@@ -764,6 +765,7 @@ async function finPartie(){
   if(victoire) store.set("victoiresIA", store.get("victoiresIA", 0) + 1);
   const g = G; G = null;
   app.classList.remove("large");
+  setTimeout(() => { if(typeof Progres !== "undefined") Progres.finPartie({mode:"ia", victoire}); }, 0);
   app.innerHTML = `
   <section class="ecran">
     <h1 class="titre-ecran">${victoire ? "Victoire !" : `${esc(gagnant ? gagnant.nom : "Personne")} l'emporte`}</h1>
