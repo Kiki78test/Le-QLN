@@ -130,6 +130,17 @@ css.textContent = `
 @keyframes deReflet{0%,55%{left:-40%} 100%{left:130%}}
 @media (prefers-reduced-motion:reduce){ #b-dock,#b-dock::after{animation:none} }
 .journal{border-radius:14px; box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
+
+/* dé lancé sur le plateau */
+.de-vol-zone{position:fixed; z-index:40; pointer-events:none; overflow:hidden; border-radius:16px}
+.de-vol{position:absolute; left:0; top:0; width:var(--d); height:var(--d); will-change:transform; filter:drop-shadow(0 4px 6px rgba(0,0,0,.35))}
+.de-vol .de{--d:inherit; width:var(--d); height:var(--d); perspective:600px}
+.de-vol .de::after{display:none}
+.de-vol-sol{position:absolute; left:0; top:0; width:var(--d); height:calc(var(--d)*.42); margin-top:calc(var(--d)*.8); background:radial-gradient(closest-side, rgba(0,0,0,.6), transparent 72%); transform-origin:center}
+.de-vol-val{position:absolute; transform:translate(-50%,-100%); font:400 54px/1 var(--f-titre); color:#fff6c8; text-shadow:0 0 18px rgba(255,214,74,.9), 0 3px 0 rgba(0,0,0,.6); opacity:0}
+.de-vol-zone.pose .de-vol-val{animation:deVal .6s cubic-bezier(.2,.9,.3,1.4) forwards}
+.de-vol-zone.pose .de-vol{filter:drop-shadow(0 0 22px rgba(255,214,74,.75)) drop-shadow(0 4px 6px rgba(0,0,0,.35))}
+@keyframes deVal{from{opacity:0; transform:translate(-50%,-60%) scale(.5)} to{opacity:1; transform:translate(-50%,-110%) scale(1)}}
 `;
 document.head.appendChild(css);
 
@@ -360,7 +371,10 @@ async function lancer(j){
     dock({de:true, msg:"À vous de jouer", sous: G.dernier && G.dernier.id===j.id ? `Temps restant pour arriver : ${fmtTemps(G.dernier.fin-Date.now())}` : "Lancez le dé pour avancer."});
     await ui(boutonDock(`<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="4" fill="#1b1400"/><g fill="#ffd84a"><circle cx="8" cy="8" r="1.7"/><circle cx="16" cy="8" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="8" cy="16" r="1.7"/><circle cx="16" cy="16" r="1.7"/></g></svg>` + "Lancer le dé", "c-jaune"));
   }
-  await ui(lancerDeAnime($("#dock .de"), valeur, j.ia && G.rapide ? 320 : 640));
+  { const ms = j.ia && G.rapide ? 520 : 1050;
+    const vol = deSurPlateau(valeur, ms);
+    await ui(lancerDeAnime($("#dock .de"), valeur, ms));
+    await ui(vol); }
   dock({de:valeur, msg:`${esc(j.nom)} fait ${valeur}`});
   journal(j, `${j.nom} lance le dé : ${valeur}.`);
   await attendre(350);
@@ -994,6 +1008,59 @@ function dock({de, msg, sous}){
   const nouveau = $(".de", d);
   if(nouveau){ afficherDe(nouveau, typeof de === "number" ? de : 1); if(typeof de !== "number") nouveau.classList.add("vide"); }
   $("#dock-actions").innerHTML = "";
+}
+
+/* ---------- Dé 3D lancé sur le plateau : il entre par un coin, rebondit et s'immobilise au centre ---------- */
+function deSurPlateau(valeur, ms){
+  const cadre = $(".tapis-cadre");
+  if(!cadre || matchMedia("(prefers-reduced-motion: reduce)").matches || !Element.prototype.animate) return Promise.resolve();
+  const r = cadre.getBoundingClientRect();
+  const haut = Math.max(r.top, (parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--bp-h")) || 0) + 60), bas = Math.min(r.bottom, innerHeight);
+  if(bas - haut < 140) return Promise.resolve();                   // plateau hors de l'écran : seul le dé du dock roule
+  const zone = document.createElement("div"); zone.className = "de-vol-zone";
+  const d = Math.round(Math.min(110, Math.max(70, r.width*.2)));
+  zone.style.cssText = `left:${r.left}px; top:${haut}px; width:${r.width}px; height:${bas-haut}px; --d:${d}px`;
+  zone.innerHTML = `<div class="de-vol-sol"></div><div class="de-vol">${deHTML("de-vol")}</div><div class="de-vol-val"></div>`;
+  document.body.appendChild(zone);
+  const W = r.width, H = bas - haut, cx = W/2 - d/2, cy = H/2 - d/2;
+  const x0 = -d*1.2, y0 = H*.85, sens = Math.random() < .5 ? 1 : -1;
+  const xs = sens > 0 ? [x0, W*.18, W*.36, cx] : [W + d*.2, W*.82 - d, W*.62 - d, cx];
+  const ys = [y0, cy + H*.12, cy - H*.04, cy];
+  const vol = $(".de-vol", zone), cube = $(".cube", zone), sol = $(".de-vol-sol", zone);
+  const [fx, fy] = ROT_DE[valeur];
+  cube.style.transform = `rotateX(${fx}deg) rotateY(${fy}deg)`;
+  // trajectoire : 3 arcs de plus en plus bas (rebonds), puis petit tassement
+  const k = [], ks = [], arcs = [.34, .28, .18], hauteurs = [H*.38, H*.18, H*.07];
+  let t = 0;
+  k.push({transform:`translate(${xs[0]}px,${ys[0]-H*.3}px) scale(1.25)`, offset:0}); ks.push({transform:`translate(${xs[0]}px,${ys[0]}px) scale(.5)`, opacity:.15, offset:0});
+  for(let i=0;i<3;i++){
+    const a = arcs[i], xa = xs[i], xb = xs[i+1], ya = ys[i], yb = ys[i+1];
+    const tm = t + a/2, tb = t + a;
+    k.push({transform:`translate(${(xa+xb)/2}px,${(ya+yb)/2 - hauteurs[i]}px) scale(${1 + hauteurs[i]/H*.6})`, offset:tm, easing:"cubic-bezier(.3,0,.7,1)"});
+    k.push({transform:`translate(${xb}px,${yb}px) scale(1.06,.92)`, offset:tb, easing:"cubic-bezier(.3,0,.7,1)"});
+    ks.push({transform:`translate(${(xa+xb)/2}px,${(ya+yb)/2}px) scale(${.6 - hauteurs[i]/H*.4})`, opacity:.25, offset:tm});
+    ks.push({transform:`translate(${xb}px,${yb}px) scale(1)`, opacity:.55, offset:tb});
+    t = tb;
+  }
+  k[k.length-1].easing = "ease-out";
+  k.push({transform:`translate(${cx}px,${cy}px) scale(1)`, offset:1});
+  ks.push({transform:`translate(${cx}px,${cy}px) scale(1)`, opacity:.55, offset:1});
+  vol.animate(k, {duration:ms, fill:"forwards"});
+  sol.animate(ks, {duration:ms, fill:"forwards"});
+  cube.animate([{transform:`rotateX(${fx+1440}deg) rotateY(${fy-1080}deg) rotateZ(${sens*180}deg)`},{transform:`rotateX(${fx+360}deg) rotateY(${fy-180}deg) rotateZ(${sens*30}deg)`, offset:.62},{transform:`rotateX(${fx}deg) rotateY(${fy}deg) rotateZ(0deg)`}], {duration:ms, easing:"cubic-bezier(.2,.6,.3,1)", fill:"forwards"});
+  // rebonds : petites secousses du plateau (désactivées si l'on évite les animations)
+  [.34,.62].forEach(f => setTimeout(() => cadre.animate([{transform:"translateY(0)"},{transform:"translateY(2px)"},{transform:"translateY(0)"}], {duration:140}), ms*f));
+  return new Promise(res => {
+    setTimeout(() => {
+      zone.classList.add("pose");
+      const v = $(".de-vol-val", zone); v.textContent = valeur;
+      v.style.cssText = `left:${W/2}px; top:${cy - 18}px`;
+      setTimeout(() => {
+        zone.animate([{opacity:1},{opacity:0}], {duration:260, fill:"forwards"}).onfinish = () => zone.remove();
+        res();
+      }, ms > 600 ? 650 : 320);
+    }, ms);
+  });
 }
 function boutonDock(texte, classe){
   return new Promise(res => {
