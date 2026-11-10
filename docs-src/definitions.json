@@ -1,0 +1,615 @@
+{
+ "ordalie": {
+  "page": "ordalie",
+  "definition": "(lexique) Épreuve, allant jusqu’à la torture, usitée au Moyen Âge comme preuve en justice."
+ },
+ "dariole": {
+  "page": "dariole",
+  "definition": "Petite pièce de pâtisserie, contenant de la crème."
+ },
+ "cloutage": {
+  "page": "cloutage",
+  "definition": "Action de clouter."
+ },
+ "culotage": {
+  "page": "culotage",
+  "definition": "(forme fléchie ou définition non trouvée dans la section française)"
+ },
+ "dioptres": {
+  "page": "dioptres",
+  "definition": "Pluriel de dioptre."
+ },
+ "protides": {
+  "page": "protides",
+  "definition": "Pluriel de protide."
+ },
+ "tripodes": {
+  "page": "tripodes",
+  "definition": "Pluriel de tripode."
+ },
+ "torpides": {
+  "page": "torpides",
+  "definition": "Pluriel de torpide."
+ },
+ "peridots": {
+  "page": "péridots",
+  "definition": "Pluriel de péridot."
+ },
+ "epissure": {
+  "page": "épissure",
+  "definition": "(lexique) Jonction, assemblage de deux bouts de corde ou de câble métallique par l’entrelacement de leurs torons."
+ },
+ "priseuse": {
+  "page": "priseuse",
+  "definition": "Celle qui a l’habitude de priser du tabac."
+ },
+ "uperises": null,
+ "goitreuse": {
+  "page": "goitreuse",
+  "definition": "Personne qui a un goitre."
+ },
+ "egoutiers": {
+  "page": "égoutiers",
+  "definition": "Pluriel de égoutier."
+ },
+ "acetamides": null,
+ "academiste": null,
+ "acrodynies": {
+  "page": "acrodynies",
+  "definition": "Pluriel de acrodynie."
+ },
+ "ancyroides": null,
+ "sacrodynie": null,
+ "acroleines": null,
+ "arenicoles": null,
+ "censoriale": {
+  "page": "censoriale",
+  "definition": "Féminin singulier de censorial."
+ },
+ "cleronaise": null,
+ "actantiels": {
+  "page": "actantiels",
+  "definition": "Masculin pluriel de actantiel."
+ },
+ "antilacets": null,
+ "adamantine": {
+  "page": "adamantine",
+  "definition": "Féminin singulier dadamantin."
+ },
+ "antamanide": {
+  "page": "antamanide",
+  "definition": "Une des substances actives de l’amanite phalloïde."
+ },
+ "asperseurs": {
+  "page": "asperseurs",
+  "definition": "Pluriel de asperseur."
+ },
+ "repasseurs": {
+  "page": "repasseurs",
+  "definition": "Pluriel de repasseur."
+ },
+ "aumuroises": {
+  "page": "aumuroises",
+  "definition": "Féminin pluriel de aumurois."
+ },
+ "saumuroise": {
+  "page": "saumuroise",
+  "definition": "Féminin singulier de saumurois."
+ },
+ "boyaudiere": null,
+ "boyauderie": {
+  "page": "boyauderie",
+  "definition": "Lieu où l’on nettoie et où l’on prépare les boyaux de certains animaux destinés à différents usages."
+ },
+ "cabinotier": {
+  "page": "cabinotier",
+  "definition": "(Suisse) Atelier d’horlogerie visible des passants."
+ },
+ "abricotine": {
+  "page": "abricotine",
+  "definition": "(Suisse) Eau-de-vie à base d’abricot du Valais."
+ },
+ "depliement": {
+  "page": "dépliement",
+  "definition": "Action de déplier."
+ },
+ "depilement": null,
+ "ebavurages": null,
+ "abreuvages": {
+  "page": "abreuvages",
+  "definition": "Pluriel de abreuvage."
+ },
+ "laudateurs": {
+  "page": "laudateurs",
+  "definition": "Pluriel de laudateur."
+ },
+ "adulateurs": {
+  "page": "adulateurs",
+  "definition": "Masculin pluriel de adulateur."
+ },
+ "laudatrice": {
+  "page": "laudatrice",
+  "definition": "Celle qui fait des louanges."
+ },
+ "adulatrice": {
+  "page": "adulatrice",
+  "definition": "Celle qui adule."
+ },
+ "metaphorisees": null,
+ "mesotherapies": null,
+ "microlites": {
+  "page": "microlites",
+  "definition": "Pluriel de microlite."
+ },
+ "clitorisme": {
+  "page": "clitorisme",
+  "definition": "(lexique) Maladie chronique entrainant l’érection permanente du clitoris."
+ },
+ "planimetre": {
+  "page": "planimètre",
+  "definition": "(didactique) Instrument qui sert à mesurer les surfaces planes sur des cartes, des plans, des graphiques, etc."
+ },
+ "reimplante": {
+  "page": "réimplanté",
+  "definition": "Participe passé masculin singulier de réimplanter."
+ },
+ "ratiboiser": {
+  "page": "ratiboiser",
+  "definition": "(populaire) Prendre à quelqu’un ; escroquer."
+ },
+ "orbitaires": {
+  "page": "orbitaires",
+  "definition": "Pluriel de orbitaire."
+ },
+ "redressage": {
+  "page": "redressage",
+  "definition": "Action de redresser, redressement."
+ },
+ "desserrage": {
+  "page": "desserrage",
+  "definition": "Action de desserrer."
+ },
+ "tangerines": {
+  "page": "tangerines",
+  "definition": "Pluriel de tangerine."
+ },
+ "energisant": {
+  "page": "énergisant",
+  "definition": "Qui énergise."
+ },
+ "transvidee": null,
+ "derivantes": {
+  "page": "dérivantes",
+  "definition": "Féminin pluriel de dérivant."
+ },
+ "troupiales": null,
+ "spoliateur": {
+  "page": "spoliateur",
+  "definition": "Celui qui spolie."
+ },
+ "ultradiens": {
+  "page": "ultradiens",
+  "definition": "Masculin pluriel de ultradien."
+ },
+ "adulterins": {
+  "page": "adultérins",
+  "definition": "Masculin pluriel de adultérin."
+ },
+ "toril": {
+  "page": "toril",
+  "definition": "(lexique) Lieu où l’on tient enfermés les taureaux avant le combat."
+ },
+ "lotir": {
+  "page": "lotir",
+  "definition": "Diviser un domaine en lotissements."
+ },
+ "bouteur": {
+  "page": "bouteur",
+  "definition": "Engin à moteur, à roues ou à chenilles, pourvu d’une lame sur la partie avant, qui sert à pousser les matériaux excavés."
+ },
+ "bouture": {
+  "page": "bouture",
+  "definition": "(lexique) Branche d’un arbre ou d’une plante vivace que l’on sépare de la tige et qui, étant plantée en terre, y prend racine."
+ },
+ "bradage": {
+  "page": "bradage",
+  "definition": "(lexique) Vente à bas prix ou même à perte."
+ },
+ "gabarde": null,
+ "bardage": {
+  "page": "bardage",
+  "definition": "(lexique) Revêtement de façade composé de bardeaux fixés sur une ossature, elle-même accrochée directement au mur."
+ },
+ "cachous": {
+  "page": "cachous",
+  "definition": "Pluriel de cachou."
+ },
+ "choucas": {
+  "page": "choucas",
+  "definition": "(oiseaux) Petit corvidé, sociable, vif, bruyant, et facile à domestiquer."
+ },
+ "croton": {
+  "page": "croton",
+  "definition": "(plantes) Vaste genre de la famille des Euphorbiacées (Croton spp.) comprenant près de 1,300 espèces, dont plusieurs contiennent des alcaloïdes d’usage pharmacologique important."
+ },
+ "corton": {
+  "page": "corton",
+  "definition": "En Flandre française, valet de ferme. (source)"
+ },
+ "dioptre": {
+  "page": "dioptre",
+  "definition": "Surface séparant deux milieux transparents ayant chacun un indice de réfraction différent."
+ },
+ "protide": {
+  "page": "protide",
+  "definition": "(lexique) Terme générique désignant un acide aminé ou toute molécule constituée d'acides aminés (c'est-à-dire un peptide ou une protéine)."
+ },
+ "tripode": {
+  "page": "tripode",
+  "definition": "Se dit d’un objet ou organisme qui a trois pieds ou pattes."
+ },
+ "torpide": {
+  "page": "torpide",
+  "definition": "Qui a le caractère de la torpeur."
+ },
+ "peridot": {
+  "page": "péridot",
+  "definition": "(minéraux) Variété gemme de forstérite."
+ },
+ "eubage": {
+  "page": "eubage",
+  "definition": "(lexique) (religieux) Chez les Gaulois, prêtre dʼune classe intermédiaire entre celle des druides et celle des bardes, et qui s’occupait principalement d’astronomie, de sciences naturelles et de divination."
+ },
+ "baguée": {
+  "page": "baguée",
+  "definition": "Féminin singulier de bagué."
+ },
+ "gêneurs": {
+  "page": "gêneurs",
+  "definition": "Pluriel de gêneur."
+ },
+ "grenues": {
+  "page": "grenues",
+  "definition": "Féminin pluriel de grenu."
+ },
+ "hostos": {
+  "page": "hostos",
+  "definition": "Pluriel de hosto."
+ },
+ "shoots": {
+  "page": "shoots",
+  "definition": "Pluriel de shoot."
+ },
+ "laudes": {
+  "page": "laudes",
+  "definition": "(lexique) Seconde partie de l’office religieux, celle qui se dit immédiatement après matines."
+ },
+ "adulés": {
+  "page": "adulés",
+  "definition": "Pluriel de adulé."
+ },
+ "aludes": {
+  "page": "aludes",
+  "definition": "Pluriel de alude."
+ },
+ "ramiers": {
+  "page": "ramiers",
+  "definition": "Masculin pluriel de ramier."
+ },
+ "arrimés": {
+  "page": "arrimés",
+  "definition": "Participe passé masculin pluriel du verbe arrimer."
+ },
+ "simarre": {
+  "page": "simarre",
+  "definition": "(vêtements) Sorte de soutane que certains magistrats, ou certains professeurs d’université, portent sous leur robe. Vêtement religieux."
+ },
+ "rosées": {
+  "page": "rosées",
+  "definition": "Féminin pluriel de rosé."
+ },
+ "rossée": {
+  "page": "rossée",
+  "definition": "(familier) Correction vigoureuse ; grand nombre de coups."
+ },
+ "essoré": {
+  "page": "essoré",
+  "definition": "(lexique) Se dit des toits des maisons, châteaux, tours, moulins, etc., présents sur les blasons quand leur émail est différent du reste du bâtiment."
+ },
+ "râblés": {
+  "page": "râblés",
+  "definition": "Masculin pluriel de râblé."
+ },
+ "sabler": {
+  "page": "sabler",
+  "definition": "Couvrir de sable."
+ },
+ "blaser": {
+  "page": "blaser",
+  "definition": "Émousser le sens du goût par l’abus que l’on fait de tel ou tel mets ou de telle ou telle boisson."
+ },
+ "labres": {
+  "page": "labres",
+  "definition": "Pluriel de labre."
+ },
+ "véniels": {
+  "page": "véniels",
+  "definition": "Masculin pluriel de véniel."
+ },
+ "nivelés": {
+  "page": "nivelés",
+  "definition": "Participe passé masculin pluriel de niveler."
+ },
+ "émoulu": {
+  "page": "émoulu",
+  "definition": "Jeune homme qui a terminé son temps de formation professionnelle."
+ },
+ "moulue": {
+  "page": "moulue",
+  "definition": "(poissons)(désuet) sauf en (région) Morue."
+ },
+ "affermis": {
+  "page": "affermis",
+  "definition": "Première personne du singulier de l’indicatif présent de affermir."
+ },
+ "affirmés": {
+  "page": "affirmés",
+  "definition": "Participe passé masculin pluriel du verbe affirmer."
+ },
+ "atemporel": {
+  "page": "atemporel",
+  "definition": "(didactique) Qui ne s’inscrit pas dans le temps."
+ },
+ "temporale": {
+  "page": "temporale",
+  "definition": "Féminin singulier de temporal."
+ },
+ "camelotes": {
+  "page": "camelotes",
+  "definition": "Pluriel de camelote."
+ },
+ "colmatées": {
+  "page": "colmatées",
+  "definition": "Participe passé féminin pluriel de colmater."
+ },
+ "charmeuse": {
+  "page": "charmeuse",
+  "definition": "Celle qui use de charmes ou qui fascine."
+ },
+ "marcheuse": {
+  "page": "marcheuse",
+  "definition": "Celle qui marche."
+ },
+ "cidriere": null,
+ "cidrerie": {
+  "page": "cidrerie",
+  "definition": "(usines) Industrie de la fabrication du cidre ou établissement où se fait cette fabrication."
+ },
+ "embrumer": {
+  "page": "embrumer",
+  "definition": "Remplir de brume."
+ },
+ "membrure": {
+  "page": "membrure",
+  "definition": "Ensemble des membres d’un individu."
+ },
+ "gratinée": {
+  "page": "gratinée",
+  "definition": "(lexique) (Lyon) soupe à l'oignon."
+ },
+ "érigeant": {
+  "page": "érigeant",
+  "definition": "Participe présent de ériger."
+ },
+ "ganterie": {
+  "page": "ganterie",
+  "definition": "Industrie, commerce ou marchandises du gantier."
+ },
+ "granitée": {
+  "page": "granitée",
+  "definition": "Participe passé féminin singulier de graniter."
+ },
+ "loquaces": {
+  "page": "loquaces",
+  "definition": "Pluriel de loquace."
+ },
+ "cloaques": {
+  "page": "cloaques",
+  "definition": "Pluriel de cloaque."
+ },
+ "oribates": null,
+ "sabotier": {
+  "page": "sabotier",
+  "definition": "Celui qui fabrique, qui vend des sabots."
+ },
+ "baisoter": {
+  "page": "baisoter",
+  "definition": "(familier) Donner beaucoup de petits baisers."
+ },
+ "rabiotes": {
+  "page": "rabiotes",
+  "definition": "Deuxième personne du singulier de l’indicatif présent du verbe rabioter."
+ },
+ "poularde": {
+  "page": "poularde",
+  "definition": "(poules) (lexique) Jeune poule engraissée."
+ },
+ "palourde": {
+  "page": "palourde",
+  "definition": "Coquillage marin, bivalve, comestible."
+ },
+ "rainette": {
+  "page": "rainette",
+  "definition": "(info lex) Une des espèces de petites grenouilles vertes (ou d'autres couleurs), souvent arboricoles, de la famille des Hylidés."
+ },
+ "tartinée": {
+  "page": "tartinée",
+  "definition": "Participe passé féminin singulier de tartiner."
+ },
+ "ralliant": {
+  "page": "ralliant",
+  "definition": "Participe présent de rallier."
+ },
+ "raillant": {
+  "page": "raillant",
+  "definition": "Participe présent de railler."
+ },
+ "reformage": {
+  "page": "reformage",
+  "definition": "(lexique) Procédé catalytique qui permet, à partir de composés hydrocarbonés mélangés à de l’air ou à de la vapeur d’eau, de produire un gaz riche en hydrogène."
+ },
+ "fromagere": {
+  "page": "fromagère",
+  "definition": "(lexique) Artisane ayant pour activité la fabrication de fromage."
+ },
+ "rentière": {
+  "page": "rentière",
+  "definition": "Personne qui a des rentes constituées sur l’État ou sur des particuliers."
+ },
+ "éreinter": {
+  "page": "éreinter",
+  "definition": "(désuet) Déformer, blesser en rompant les reins."
+ },
+ "roulures": {
+  "page": "roulures",
+  "definition": "Pluriel de roulure."
+ },
+ "rouleurs": {
+  "page": "rouleurs",
+  "definition": "Pluriel de rouleur."
+ },
+ "sagoutier": {
+  "page": "sagoutier",
+  "definition": "(arécacées) Nom usuel de Metroxylon sagu, de la famille des Arécacées (Arecaceae), palmier à stipe unique qui accumule en son centre des réserves en vue d’une floraison unique qui entraîne la mort de l’arbre. Avec cette moelle riche en amidon on fabrique le sagou. Cet arbre originaire de Nouvelle-Gu"
+ },
+ "autogires": {
+  "page": "autogires",
+  "definition": "Pluriel de autogire."
+ },
+ "soutirage": {
+  "page": "soutirage",
+  "definition": "Action de soutirer."
+ },
+ "agioteurs": {
+  "page": "agioteurs",
+  "definition": "Masculin pluriel de agioteur."
+ },
+ "preserie": {
+  "page": "présérie",
+  "definition": "(lexique) Série produite en petite quantité pour tester l'ensemble d'un processus de fabrication."
+ },
+ "pierrees": null,
+ "respiree": {
+  "page": "respirée",
+  "definition": "Participe passé féminin singulier de respirer."
+ },
+ "reprisee": {
+  "page": "reprisée",
+  "definition": "Participe passé féminin singulier de repriser."
+ },
+ "epierres": null,
+ "violâtres": {
+  "page": "violâtres",
+  "definition": "Pluriel de violâtre."
+ },
+ "olivâtres": {
+  "page": "olivâtres",
+  "definition": "Pluriel de olivâtre."
+ },
+ "voltaires": {
+  "page": "voltaires",
+  "definition": "Pluriel de voltaire."
+ },
+ "acharismes": {
+  "page": "acharismes",
+  "definition": "Pluriel de acharisme."
+ },
+ "archaismes": {
+  "page": "archaïsmes",
+  "definition": "Pluriel de archaïsme."
+ },
+ "admonestes": {
+  "page": "admonestés",
+  "definition": "Participe passé masculin pluriel du verbe admonester."
+ },
+ "adossement": {
+  "page": "adossement",
+  "definition": "État de ce qui est adossé."
+ },
+ "causalites": {
+  "page": "causalités",
+  "definition": "Pluriel de causalité."
+ },
+ "actualises": {
+  "page": "actualisés",
+  "definition": "Participe passé masculin pluriel du verbe actualiser."
+ },
+ "centralisme": {
+  "page": "centralisme",
+  "definition": "Doctrine qui prône la prééminence du centre sur la périphérie."
+ },
+ "mercantiles": {
+  "page": "mercantiles",
+  "definition": "Pluriel de mercantile."
+ },
+ "cesariennes": {
+  "page": "césariennes",
+  "definition": "Féminin pluriel de césarien."
+ },
+ "scannerisee": null,
+ "clarinettes": {
+  "page": "clarinettes",
+  "definition": "Pluriel de clarinette."
+ },
+ "électrisant": {
+  "page": "électrisant",
+  "definition": "Qui électrise."
+ },
+ "décharnées": {
+  "page": "décharnées",
+  "definition": "Féminin pluriel de décharné."
+ },
+ "adhérences": {
+  "page": "adhérences",
+  "definition": "Pluriel de adhérence."
+ },
+ "embrasements": {
+  "page": "embrasements",
+  "definition": "Pluriel de embrasement."
+ },
+ "embrassement": {
+  "page": "embrassement",
+  "definition": "Action d’embrasser ou de s’embrasser."
+ },
+ "matriciels": {
+  "page": "matriciels",
+  "definition": "Masculin pluriel de matriciel."
+ },
+ "climatiser": {
+  "page": "climatiser",
+  "definition": "Maintenir l’atmosphère d’un local ou d’un véhicule à une température agréable, en le refroidissant quand il fait trop chaud à l’extérieur."
+ },
+ "onagrariee": null,
+ "orangeraie": {
+  "page": "orangeraie",
+  "definition": "Verger d’orangers."
+ },
+ "scaldeenne": null,
+ "decennales": {
+  "page": "décennales",
+  "definition": "(au pluriel) (lexique) Fête romaine célébrée dans tout l’empire tous les dix ans."
+ },
+ "surrenalites": null,
+ "ralentisseur": {
+  "page": "ralentisseur",
+  "definition": "Qui ralentit."
+ },
+ "tictaquant": {
+  "page": "tictaquant",
+  "definition": "Participe présent du verbe tictaquer."
+ },
+ "acquittant": {
+  "page": "acquittant",
+  "definition": "Participe présent du verbe acquitter."
+ }
+}
