@@ -1,0 +1,21 @@
+# Contrôle de sécurité des dépendances du serveur (ws, pg, bcryptjs) : chaque lundi et à chaque changement de server/package.json.
+# En cas de faille connue de gravité haute ou critique, l'exécution échoue (onglet Actions, e-mail de GitHub).
+name: Sécurité des dépendances
+on:
+  schedule:
+    - cron: '41 6 * * 1'
+  push:
+    branches: [main]
+    paths: ['server/package.json', '.github/workflows/securite.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: cd server && npm install --package-lock-only --ignore-scripts --omit=dev && npm audit --omit=dev --audit-level=high

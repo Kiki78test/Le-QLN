@@ -6,30 +6,23 @@ Un seul service Node :
 
 Les tables sont créées automatiquement au démarrage (préfixe `qln_`), y compris dans une base déjà utilisée par une autre appli.
 
-## Déployer sur Render (≈ 10 min)
+## Déployer sur Render (une seule fois, ≈ 5 min)
 
-1. **Base de données** : utilisez votre PostgreSQL Render existante (les tables `qln_*` ne touchent à rien d'autre) ou créez-en une.
-   Copiez son **Internal Database URL**.
-2. **Service web** : Render → *New → Web Service* → dépôt `Kiki78test/Le-QLN`.
-   - Root Directory : `server`
-   - Build Command : `npm install` · Start Command : `npm start`
-   - Instance : Starter (pas de mise en veille) ou Free pour tester
-   - Health Check Path : `/sante`
-3. **Variables d'environnement** du service :
+Le fichier **`render.yaml`** à la racine du dépôt décrit tout le service (Blueprint).
 
-   | Variable | Valeur |
-   |---|---|
-   | `DATABASE_URL` | l'Internal Database URL de l'étape 1 |
-   | `SECRET` | une longue chaîne aléatoire (bouton *Generate* de Render) |
-   | `ORIGINES` | `https://kiki78test.github.io` |
-   | `GOOGLE_CLIENT_ID` | (facultatif) identifiant OAuth « Application Web » de Google Cloud |
+1. Render → **New → Blueprint** → dépôt `Kiki78test/Le-QLN` → Render lit `render.yaml`.
+2. Il ne demande qu'une valeur : **`DATABASE_URL`** = l'**External Database URL** de votre PostgreSQL Render
+   (celle d'Airmony convient : les tables `qln_*` ne touchent à rien d'autre). `SECRET` est générée automatiquement.
+3. **Apply**. Une fois « Live », vérifiez `https://le-qln.onrender.com/sante` → `{"ok":true, … "api":true}`.
+4. Dans `config.js` (racine du dépôt) : `window.QLN_API_URL = "https://le-qln.onrender.com";` puis poussez.
 
-4. Une fois en ligne, vérifiez `https://<votre-service>.onrender.com/sante` → `{"ok":true, … "api":true}`.
-5. Dans l'appli, ouvrez **`config.js`** (racine du dépôt) et renseignez :
-   ```js
-   window.QLN_API_URL = "https://<votre-service>.onrender.com";
-   ```
-   (le WebSocket du multijoueur en est déduit automatiquement). Poussez : comptes, classements et multijoueur en ligne s'activent.
+Ensuite tout est automatique :
+- chaque envoi sur GitHub lance les **tests** (onglet Actions → « Tests ») ;
+- Render ne **redéploie** le serveur que si `server/` (ou `analyse.js`) a changé **et** que les tests sont passés ;
+- après chaque mise en ligne du site, l'appli publiée est testée, et toutes les 6 h le site et le serveur sont vérifiés (« Version en ligne ») ;
+- en cas d'échec, GitHub vous envoie un e-mail.
+
+Instance : `free` pour les essais (s'endort après 15 min sans visite), à passer en `starter` (7 $/mois) dans `render.yaml` à l'ouverture au public.
 
 ### Connexion Google (facultatif)
 Google Cloud Console → *API et services → Identifiants → Créer un ID client OAuth → Application Web*,

@@ -1,0 +1,52 @@
+# Fabrique l'appli Android de test de Le-QLN (dossier mobile/, enveloppe Capacitor autour du site en ligne)
+# à chaque modification de ce dossier, ou à la demande (onglet Actions → « Appli Android » → Run workflow).
+# Le jeu lui-même n'est pas dans l'APK : l'appli ouvre le site, donc chaque mise à jour du jeu arrive sans réinstaller.
+# Le fichier à installer est publié dans « Releases » → « Appli Android (test) » (lien stable : /releases/tag/appli-android).
+# Version de test (clé de développement) : pour les essais sur téléphone, pas pour Google Play.
+name: Appli Android
+on:
+  push:
+    branches: [main]
+    paths: ['mobile/**', 'icons/**', '.github/workflows/android.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: appli-android
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 21
+      - run: npm install --no-audit --no-fund
+      - run: npx cap add android
+      - run: python3 native/android/patch_android.py android
+      - run: npx cap sync android
+      - name: Compiler
+        working-directory: mobile/android
+        run: chmod +x gradlew && ./gradlew assembleDebug --no-daemon
+      - run: cp android/app/build/outputs/apk/debug/app-debug.apk Le-QLN-Android-test.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Le-QLN-Android
+          path: mobile/Le-QLN-Android-test.apk
+          retention-days: 30
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: appli-android
+          name: Appli Android (test)
+          body: Version de test de l'appli Android de Le-QLN. Sur le téléphone, télécharger le fichier .apk ci-dessous, l'ouvrir et autoriser l'installation depuis cette source. Elle remplace la version déjà installée. Le jeu se met à jour tout seul (il est chargé depuis le site) ; ce fichier ne change que si l'enveloppe Android change.
+          files: mobile/Le-QLN-Android-test.apk
+          overwrite_files: true
+          make_latest: false

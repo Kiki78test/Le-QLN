@@ -1,0 +1,32 @@
+# Le-QLN — serveur (multijoueur + comptes + classements) sur Render.
+# Mise en place unique : Render → New → Blueprint → dépôt Kiki78test/Le-QLN → coller DATABASE_URL → Apply.
+# Ensuite, chaque modification poussée dans server/ (ou analyse.js) est redéployée automatiquement,
+# et seulement si les tests GitHub sont passés (autoDeployTrigger: checksPass).
+services:
+  - type: web
+    name: le-qln
+    runtime: node
+    region: frankfurt          # proche des joueurs français
+    plan: free                 # passer en "starter" (7 $/mois) à l'ouverture au public : pas de mise en veille
+    # pas de rootDir : le serveur lit aussi ../analyse.js (mêmes règles que l'appli pour les mots contestés)
+    buildCommand: cd server && npm install --omit=dev
+    startCommand: cd server && npm start
+    healthCheckPath: /sante
+    autoDeployTrigger: checksPass
+    buildFilter:
+      paths:
+        - server/**
+        - analyse.js
+    envVars:
+      - key: DATABASE_URL        # External Database URL de la base PostgreSQL (celle d'Airmony convient : tables qln_*)
+        sync: false
+      - key: SECRET              # générée une fois, ne jamais la changer (sinon tous les joueurs sont déconnectés)
+        generateValue: true
+      - key: ORIGINES
+        value: https://kiki78test.github.io
+      - key: GOOGLE_CLIENT_ID    # facultatif
+        sync: false
+      - key: RESEND_API_KEY      # facultatif (mot de passe oublié, après l'achat du domaine)
+        sync: false
+      - key: MAIL_FROM
+        sync: false

@@ -1,0 +1,13 @@
+{
+  "name": "le-qln-tests",
+  "private": true,
+  "description": "Tests automatiques de Le-QLN (lancés par GitHub Actions à chaque envoi)",
+  "scripts": {
+    "serveur": "node --test serveur.test.js",
+    "appli": "node --test --test-concurrency=1 appli.test.js"
+  },
+  "devDependencies": {
+    "playwright": "1.48.2",
+    "ws": "^8.18.0"
+  }
+}

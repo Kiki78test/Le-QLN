@@ -1,0 +1,47 @@
+# Vérifie la version en ligne de Le-QLN :
+#  - après chaque mise en ligne du site (GitHub Pages) : l'appli publiée est testée dans Chromium (FR/EN, téléphone/ordinateur) ;
+#  - toutes les 6 heures : le site et le serveur Render répondent (et la base de données).
+# Adresse du serveur lue dans config.js (QLN_API_URL). En cas de panne : croix rouge dans l'onglet Actions et e-mail de GitHub.
+name: Version en ligne
+on:
+  workflow_run:
+    workflows: ["pages-build-deployment", "pages build and deployment"]
+    types: [completed]
+  schedule:
+    - cron: '23 */6 * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verifier:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      QLN_SITE: https://kiki78test.github.io/Le-QLN
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Site et serveur répondent
+        run: |
+          API=$(sed -n 's/^window.QLN_API_URL = "\([^"]*\)".*/\1/p' config.js)
+          echo "QLN_API_URL=$API" >> $GITHUB_ENV
+          for u in "$QLN_SITE/" "$QLN_SITE/en/" "$QLN_SITE/docs/index.json"; do
+            curl -sSf -o /dev/null -w "%{http_code} $u\n" "$u"
+          done
+          if [ -n "$API" ]; then
+            # le service gratuit de Render s'endort : on le réveille (jusqu'à 2 min)
+            for i in $(seq 1 24); do curl -sf "$API/sante" && break; sleep 5; done
+            echo; curl -sSf "$API/sante" | grep -q '"api":true'
+            curl -sSf "$API/api/sante-api"; echo
+          else
+            echo "Pas encore de serveur (config.js) : seul le site est vérifié."
+          fi
+      - name: Tester l'appli publiée
+        if: github.event_name != 'schedule'
+        run: |
+          cd tests && npm install --no-audit --no-fund && npx playwright install --with-deps chromium
+          # l'appli publiée attend parfois quelques secondes la mise à jour du cache de GitHub Pages
+          sleep 20
+          QLN_TEST_URL="$QLN_API_URL" node --test --test-concurrency=1 appli.test.js

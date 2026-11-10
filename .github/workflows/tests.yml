@@ -1,0 +1,60 @@
+# Tests automatiques de Le-QLN, à chaque envoi sur GitHub (et à la demande : onglet Actions → « Tests » → Run workflow).
+#  1. Serveur : API (comptes, progression, scores, classements, mots) + relais multijoueur, sur une base PostgreSQL de test.
+#  2. Appli : Chromium, français et anglais, téléphone et ordinateur (carte jouée au clavier, plateau, multijoueur, menu),
+#     puis création de compte et classement de bout en bout avec le serveur de test.
+# Render ne redéploie le serveur que si ces tests passent (render.yaml : autoDeployTrigger: checksPass).
+# En cas d'échec : croix rouge dans l'onglet Actions et e-mail de GitHub.
+name: Tests
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+permissions:
+  contents: read
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: qln
+          POSTGRES_PASSWORD: qln
+          POSTGRES_DB: qln
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U qln" --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      QLN_TEST_URL: http://localhost:8790
+      QLN_SITE: http://localhost:8765
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Installer
+        run: |
+          (cd server && npm install --omit=dev --no-audit --no-fund)
+          (cd tests && npm install --no-audit --no-fund && npx playwright install --with-deps chromium)
+      - name: Démarrer le serveur et le site
+        env:
+          DATABASE_URL: postgresql://qln:qln@localhost:5432/qln
+          SECRET: test-ci
+          PORT: 8790
+        run: |
+          (cd server && nohup node index.js > ../serveur.log 2>&1 &)
+          nohup python3 -m http.server 8765 > /dev/null 2>&1 &
+          for i in $(seq 1 30); do curl -sf http://localhost:8790/sante | grep -q '"api":true' && break; sleep 1; done
+          curl -sf http://localhost:8790/sante
+      - name: Tests du serveur
+        run: cd tests && node --test serveur.test.js
+      - name: Tests de l'appli
+        run: cd tests && node --test --test-concurrency=1 appli.test.js
+      - name: Journal du serveur
+        if: always()
+        run: cat serveur.log || true

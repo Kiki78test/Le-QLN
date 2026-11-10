@@ -1,0 +1,9 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Le-QLN</title><style>html,body{margin:0;height:100%;background:#0b1a3a;color:#fff;font:16px system-ui,sans-serif}
+main{min-height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px;box-sizing:border-box;text-align:center}
+b{font:800 italic 44px/1 system-ui,sans-serif;color:#ffd60a;letter-spacing:.02em}p{margin:0;opacity:.85;max-width:300px}
+button{margin-top:10px;padding:12px 26px;border:0;border-radius:999px;background:linear-gradient(#ffe066,#e0a800);color:#1a1200;font:700 16px system-ui,sans-serif}</style></head>
+<body><main><b>LE-QLN</b><p id="t">Pas de connexion internet. Le jeu se charge dès que le réseau revient.</p>
+<button id="r">Réessayer</button></main>
+<script>if(!/^fr/i.test(navigator.language||"")){document.documentElement.lang="en";t.textContent="No internet connection. The game will load as soon as you are back online.";r.textContent="Try again";}
+r.onclick=()=>location.href="https://kiki78test.github.io/Le-QLN/?app=native";addEventListener("online",()=>r.onclick());</script></body></html>
