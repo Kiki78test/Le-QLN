@@ -2,3 +2,4 @@ node_modules/
 *.log
 mobile/android/
 mobile/ios/
+__pycache__/
