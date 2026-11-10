@@ -46,7 +46,7 @@ css.textContent = `
   #barre-bas button + button{box-shadow:inset 1px 0 0 rgba(255,255,255,.12)}
   #barre-bas button:hover,#barre-bas button:focus-visible{color:#ffd966; outline:none}
   #barre-bas svg{width:21px; height:21px}
-  :root{--bb-h:46px} body{padding-bottom:46px}
+  :root{--bb-h:46px} .app::after{content:""; flex:none; height:46px}   /* réserve la place de la barre en bas de chaque écran */
 }
 .bb-voile{position:fixed; inset:0; z-index:95; display:grid; place-items:start center; overflow:auto; padding:70px 16px 70px; background:rgba(2,6,20,.72); backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px); animation:apparaitFondu .2s}
 .bb-volet{position:relative; width:min(100%, 620px); display:grid; gap:12px}

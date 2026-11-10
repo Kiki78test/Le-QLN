@@ -88,6 +88,7 @@ st+=ul(["<b>Installable</b> (PWA) et <b>hors ligne</b> : après une première vi
  "<b>Applis mobiles</b> : Android (enveloppe autour du site, appli de test publiée automatiquement) et iPhone / iPad (jeu embarqué dans l'appli, fabriqué sur un Mac de GitHub, testé au simulateur ; TestFlight dès que le compte Apple existe). Voir « Version Apple ».",
  "<b>Confidentialité et mentions légales</b> : liens en bas de l'accueil et à la création de compte ; aussi en pages web publiques (adresse exigée par le Play Store), en français et en anglais.",
  "<b>Barre du bas (ordinateur)</b> : Règles, Classement, Paramètres (son, vibrations) et Aide s'ouvrent dans un volet, sans quitter la partie ; en cours de partie, « Classement » montre le classement de la partie.",
+ "<b>Tout sur un écran (ordinateur)</b> : un écran un peu trop haut (réglages d'une partie, mode solo, multijoueur) est réduit automatiquement pour tenir sans défilement ; les écrans longs (règles, documentation, classements) défilent normalement.",
  "<b>Jetons des joueurs</b> : silhouette dans un anneau lumineux de leur couleur (panneaux, salons, podium) ; sur le plateau, jeton rond à l'initiale du joueur.",
  "<b>Barre du haut et menu ☰</b> : accueil, statistiques, compte, classements, partie guidée, règles, documentation, son, installation.",
  "<b>Français / anglais</b> : bouton FR / EN en haut, dictionnaire propre à chaque langue.",
