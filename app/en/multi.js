@@ -385,7 +385,10 @@ function recevoir(m){
       case "info": if(m.pour === S.moi.id) toast(TXT[m.texte] || m.texte, 3500); break;
       case "chat": bulle(m.auteur, m.emoji); break;
       case "demarrer": S.phase = "jeu"; S.graine = m.graine; S.partie = m.partie; ecranDepart(); break;
-      case "dec": if(typeof PlateauIA !== "undefined") PlateauIA.recevoirMulti(m); break;   // décision validée par l'hôte
+      case "dec":   // décision validée par l'hôte (gardée de côté si le plateau n'est pas encore lancé chez moi)
+        if(typeof PlateauIA !== "undefined" && PlateauIA.enCours()) PlateauIA.recevoirMulti(m);
+        else if(S.phase === "jeu"){ (S.decsAttente = S.decsAttente || []).push([m.cle, m.val]); }
+        break;
       case "journal": if(m.pour === S.moi.id && typeof PlateauIA !== "undefined") PlateauIA.appliquerJournal(m.decs); break;
       case "reprise": if(m.pour === S.moi.id){
         S.phase = "jeu"; S.graine = m.graine; S.partie = m.partie; S.dernierEtat = Date.now();
@@ -641,7 +644,7 @@ function ecranDepart(){
     PlateauIA.demarrerMulti({graine, joueurs:S.partie, moi:S.moi.id, hote:estHote(), hoteId,
       envoyer, present:id => !!S && S.joueurs.some(j => j.id === id),
       quitter:() => { if(!S) return; oublierPartie(); if(estHote()) passerLaMain(); else envoyer({t:"quitter"}); fermerSalon(); },
-      decs:S.decsReprise || null,
+      decs:[...(S.decsReprise || []), ...(S.decsAttente || [])], resync:() => envoyer({t:"resync"}),
       retour:() => { if(!S) return ecranMulti(); S.phase = "attente"; S.joueurs.forEach(j => j.pret = false); S.rendu = null; if(estHote()){ diffuserEtat(); publierSalon(); } ecranSalon(); }});
   }, 1800 * (window.QLN_TEST_VITE || 1));
 }

@@ -404,6 +404,12 @@ async function demarrerMulti(opt){
     document.body.appendChild(v);
   }
   surveillerPresence();
+  // filet de sécurité : si j'attends une décision depuis plus de 6 s (message perdu, retour en cours…), je redemande le journal à l'hôte
+  if(!opt.hote && opt.resync){ const g = G; let t = 0; const iv = setInterval(() => {
+    if(G !== g){ clearInterval(iv); return; }
+    t = G.multi.attentes.size ? t + 1 : 0;
+    if(t >= 6 && !G.multi.hote){ t = 0; opt.resync(); }
+  }, 1000); }
   try{
     await tirerOrdre();
     await boucle();
