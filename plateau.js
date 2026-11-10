@@ -38,6 +38,7 @@ css.textContent = `
 .joueur::before{content:""; position:absolute; left:0; top:0; bottom:0; width:5px; background:var(--cj,#888); box-shadow:2px 0 8px var(--cj,#888)}
 .joueur.actif{box-shadow:inset 0 0 0 2px var(--or), 0 0 22px rgba(255,207,58,.35), 0 8px 16px rgba(0,0,0,.35); transform:translateY(-3px) scale(1.02)}
 .joueur .pion-svg{grid-row:span 2; width:22px; height:32px}
+.joueur .pion-svg.jeton{width:38px; height:38px; padding:0; background:none; box-shadow:none; border-radius:0}
 .joueur .nom{font-family:var(--f-ui); font-weight:800; font-size:17px; letter-spacing:.03em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
 .joueur .nom small{font-weight:600; color:var(--brume); font-size:13px; margin-left:4px}
 .joueur .argent{font-family:var(--f-titre); font-size:22px; color:var(--or); letter-spacing:.04em; line-height:1; font-variant-numeric:tabular-nums; display:flex; gap:6px; align-items:center; flex-wrap:wrap}
@@ -81,7 +82,7 @@ css.textContent = `
 .couleurs{display:flex; gap:10px; flex-wrap:wrap}
 .couleurs button{width:50px; height:56px; border-radius:12px; background:#21305a; display:grid; place-items:center; box-shadow:0 3px 0 #0b1430}
 .couleurs button[aria-pressed="true"]{background:var(--ivoire); box-shadow:0 3px 0 var(--ivoire-3), 0 0 0 3px var(--or)}
-.couleurs .pion-svg{width:24px; height:35px}
+.couleurs .pion-svg{width:24px; height:35px} .couleurs .pion-svg.jeton{height:30px}
 .adversaires{display:flex; gap:8px; flex-wrap:wrap; font-family:var(--f-ui); font-weight:700; color:var(--brume)}
 .adversaires span{display:flex; align-items:center; gap:4px; background:rgba(0,0,0,.3); padding:3px 9px 3px 5px; border-radius:20px}
 .adversaires .pion-svg{width:14px; height:20px}
@@ -152,7 +153,7 @@ css.textContent = `
 .plateau-ecran{--entete:calc(var(--bp-h, 0px) + var(--ab-h, 58px)); gap:10px}
 .plateau-ecran .p-hud h1{font-size:28px}
 @media (min-width:980px){
-  .plateau-ecran{--hp:calc(100dvh - var(--entete) - 154px)}
+  .plateau-ecran{--hp:calc(100dvh - var(--bb-h, 0px) - var(--entete) - 154px)}
   .plateau-ecran .p-grille{grid-template-columns:minmax(0,1fr) 330px; align-items:start; gap:16px}
   .plateau-ecran .tapis-cadre{width:min(100%, calc(var(--hp) * 1.79)); margin:0 auto}
   .plateau-ecran #tapis{min-width:0}
@@ -163,7 +164,7 @@ css.textContent = `
 }
 @media (max-width:699px){
   /* hauteur du plateau calculée pour que joueurs + plateau + action tiennent sans faire défiler */
-  .plateau-ecran{--hp:clamp(210px, calc(100dvh - var(--entete) - 372px), 520px)}
+  .plateau-ecran{--hp:clamp(210px, calc(100dvh - var(--bb-h, 0px) - var(--entete) - 372px), 520px)}
   .plateau-ecran .tapis-scroll{height:var(--hp)}
   .plateau-ecran #tapis{min-width:0; width:auto; height:100%; max-width:none}
   .plateau-ecran .p-hud{margin-bottom:-2px}
@@ -172,7 +173,7 @@ css.textContent = `
   .plateau-ecran #b-dock{min-height:54px; font-size:26px}
 }
 @media (min-width:700px) and (max-width:979px){
-  .plateau-ecran{--hp:calc(100dvh - var(--entete) - 360px)}
+  .plateau-ecran{--hp:calc(100dvh - var(--bb-h, 0px) - var(--entete) - 360px)}
   .plateau-ecran .tapis-cadre{width:min(100%, calc(var(--hp) * 1.79)); margin:0 auto}
   .plateau-ecran #tapis{min-width:0}
 }
@@ -288,7 +289,7 @@ function config(){
     <p class="sous-titre">Le tapis complet, de 2 à 6 joueurs. L'appli tient le rôle du Maître du Jeu.</p>
     <div class="config">
       <div class="bloc"><label for="cfg-nom">Votre prénom</label><input class="champ" id="cfg-nom" maxlength="14" placeholder="Vous" value="${esc(cfg.nom)}" autocomplete="given-name"></div>
-      <div class="bloc"><span class="lbl">Votre pion</span><div class="couleurs" id="cfg-couleurs">${PIONS.map((p,i)=>`<button aria-pressed="${i===cfg.couleur}" data-i="${i}" aria-label="Pion ${p.nom}">${pionSVG(p.c)}</button>`).join("")}</div></div>
+      <div class="bloc"><span class="lbl">Votre pion</span><div class="couleurs" id="cfg-couleurs">${PIONS.map((p,i)=>`<button aria-pressed="${i===cfg.couleur}" data-i="${i}" aria-label="Pion ${p.nom}">${jetonSVG(p.c)}</button>`).join("")}</div></div>
       <div class="bloc"><span class="lbl">Nombre d'adversaires</span><div class="segment" id="cfg-nb">${[1,2,3,4,5].map(n=>`<button aria-pressed="${n===cfg.nb}" data-n="${n}">${n}</button>`).join("")}</div><div class="adversaires" id="cfg-adv"></div></div>
       <div class="bloc"><span class="lbl">Niveau des adversaires</span><div class="segment" id="cfg-niv">${Object.entries(PROFILS).map(([k,p])=>`<button aria-pressed="${k===cfg.niveau}" data-k="${k}">${p.nom}<small>${k==="debutant"?"Pour découvrir":k==="joueur"?"Équilibré":"Redoutable"}</small></button>`).join("")}</div></div>
       <label class="interrupteur" for="cfg-caches"><span>Gains des adversaires cachés<small>Comme sur le tapis : on découvre tout à l'arrivée</small></span><input type="checkbox" id="cfg-caches" ${cfg.caches?"checked":""}></label>
@@ -298,7 +299,7 @@ function config(){
   </section>`;
   const maj = () => {
     const advC = PIONS.map((p,i)=>i).filter(i=>i!==cfg.couleur).slice(0, cfg.nb);
-    $("#cfg-adv").innerHTML = advC.map((ci,k)=>`<span>${pionSVG(PIONS[ci].c)}${NOMS_IA[k]}</span>`).join("");
+    $("#cfg-adv").innerHTML = advC.map((ci,k)=>`<span>${jetonSVG(PIONS[ci].c)}${NOMS_IA[k]}</span>`).join("");
   };
   $$("#cfg-couleurs button").forEach(b => b.onclick = () => { cfg.couleur = +b.dataset.i; $$("#cfg-couleurs button").forEach(x=>x.setAttribute("aria-pressed", x===b)); maj(); });
   $$("#cfg-nb button").forEach(b => b.onclick = () => { cfg.nb = +b.dataset.n; $$("#cfg-nb button").forEach(x=>x.setAttribute("aria-pressed", x===b)); maj(); });
@@ -345,7 +346,7 @@ async function tirerOrdre(){
   dessinerPions(); majJoueurs();
   const v = panneau({classe:"c-jaune", titre:"Ordre de départ", corps:`
     <p class="texte-centre" style="font-size:17px">Chaque joueur lance le dé. Le plus fort commence ; les égalités sont relancées.</p>
-    <div class="ordre">${classement.map((j,i)=>`<div class="ordre-l"><span class="rang">${i+1}</span>${pionSVG(j.couleur)}<span>${esc(j.nom)}${j.ia?"":" (vous)"}</span><span class="dee" aria-label="dé ${lancers[j.id].join(" puis ")}">${lancers[j.id].map(x=>DES[x]).join(" ")}</span></div>`).join("")}</div>
+    <div class="ordre">${classement.map((j,i)=>`<div class="ordre-l"><span class="rang">${i+1}</span>${jetonSVG(j.couleur)}<span>${esc(j.nom)}${j.ia?"":" (vous)"}</span><span class="dee" aria-label="dé ${lancers[j.id].join(" puis ")}">${lancers[j.id].map(x=>DES[x]).join(" ")}</span></div>`).join("")}</div>
     <p class="regle-or"><b>Le plus riche gagne !</b> Arriver 1er ne rapporte que +100 € : gagnez des cartes, misez aux enchères.</p>
     <button class="bouton piece c-rouge" id="b-parti">C'est parti</button>`});
   $("#b-parti", v).focus();
@@ -688,7 +689,7 @@ function carteIA(j, c){
     const reussit = Math.random() < prof.p[c.niv];
     const v = document.createElement("div"); v.className = "voile";
     v.innerHTML = `<div class="panneau-jeu" role="dialog" aria-modal="true" aria-label="Carte de ${esc(j.nom)}" style="--tw:${largeurTuile(n, 52, Math.min(innerWidth,560)-72)}px">
-      <div class="bandeau-ia">${pionSVG(j.couleur)}<span id="ia-etat">${esc(j.nom)} réfléchit…</span></div>
+      <div class="bandeau-ia">${jetonSVG(j.couleur)}<span id="ia-etat">${esc(j.nom)} réfléchit…</span></div>
       ${carteHTML(c, {chrono:true, consigne:`Carte de ${esc(j.nom)}`, indic: peutEncherir ? "Préparez une réponse : si l'IA sèche, vous pourrez enchérir." : ""})}
       ${peutEncherir ? `<div id="compo-p"><div class="reponse" id="reponse"></div><div class="message" id="msg-p" role="status"></div><div class="reserve"></div></div>
       <div class="cmd-p" id="cmd-ia"><button class="rond piece c-noir" id="p-eff" aria-label="Effacer">${ICO.effacer}</button><button class="rond piece c-noir" id="p-mel" aria-label="Mélanger">${ICO.melanger}</button><span></span><span></span></div>
@@ -773,7 +774,7 @@ function choisirOffre(j, c, offres){
     const max = offres[0].montant;
     const v = panneau({classe:N.classe, titre:"Des enchères !", valeur:`${N.gain} €`, corps:`
       <p class="texte-centre">Vous n'avez pas trouvé. D'autres joueurs vous proposent de racheter la carte. Si vous acceptez, vous encaissez l'offre et vous rejouez.</p>
-      <div class="offres">${offres.map((o,i)=>`<div class="offre"><span style="display:flex;gap:8px;align-items:center">${pionSVG(o.joueur.couleur)}${esc(o.joueur.nom)}</span><b>${o.montant} €</b></div>`).join("")}</div>
+      <div class="offres">${offres.map((o,i)=>`<div class="offre"><span style="display:flex;gap:8px;align-items:center">${jetonSVG(o.joueur.couleur)}${esc(o.joueur.nom)}</span><b>${o.montant} €</b></div>`).join("")}</div>
       <div class="duo">${offres.filter(o=>o.montant===max).map((o,i)=>`<button class="bouton piece c-vert" data-i="${offres.indexOf(o)}">Accepter ${esc(o.joueur.nom)}</button>`).join("")}<button class="bouton piece c-noir" id="o-non">Refuser</button></div>`});
     $$("[data-i]", v).forEach(b => b.onclick = () => { v.remove(); res(offres[+b.dataset.i]); });
     $("#o-non", v).onclick = () => { v.remove(); res(null); };
@@ -879,7 +880,7 @@ async function finPartie(){
     <h1 class="titre-ecran">${victoire ? "Victoire !" : `${esc(gagnant ? gagnant.nom : "Personne")} l'emporte`}</h1>
     <p class="sous-titre">Le plus riche gagne, pas le premier arrivé. Voici les gains révélés.</p>
     <div class="podium">${classes.map((x,i)=>`<div class="podium-l ${i===0&&!x.horsJeu?"premier":""} ${x.horsJeu?"hors":""}" style="animation-delay:${i*120}ms">
-      <span class="rang">${x.horsJeu ? "—" : i+1}</span>${pionSVG(x.couleur)}
+      <span class="rang">${x.horsJeu ? "—" : i+1}</span>${jetonSVG(x.couleur)}
       <span>${esc(x.nom)}${x.ia?` <small>IA ${PROFILS[x.ia].nom.toLowerCase()}</small>`:" <small>vous</small>"}<small>${x.horsJeu ? "Hors jeu" : `Arrivé${x.arrive?" "+x.arrive+(x.arrive===1?"er":"e"):""}`} · ${x.reussies}/${x.cartes} cartes</small></span>
       <b>${x.horsJeu ? "—" : euros(x.argent)}</b>${x.horsJeu ? "" : detailPodium(x)}</div>`).join("")}</div>
     <div class="duo"><button class="bouton piece c-rouge" id="b-rejouer">Rejouer</button><button class="bouton piece c-noir" id="b-menu">Menu</button></div>
@@ -991,18 +992,23 @@ function ecranPlateau(){
   dessinerPions(); majJoueurs();
   Pub.animerBandeau();
 }
+/* jeton du plateau : rond, de la couleur du joueur, avec son initiale (on reconnaît chacun d'un coup d'œil) */
+function initialeDe(j){
+  let n = j.nom;
+  if(!j.ia){ try{ const c = typeof Multi !== "undefined" && Multi.compte(); if(c && c.pseudo) n = c.pseudo; }catch(e){} }
+  return (norm(String(n || "?")).match(/[A-Z0-9]/) || ["?"])[0];
+}
 function pionG(j, x, y, s){
   const id = j.couleur.slice(1);
   return `<g class="pion ${G.courant===j.id?"actif":""}" data-id="${j.id}" style="transform:translate(${x}px, ${y}px) scale(${s})">
-    <circle class="aura" cx="0" cy="2" r="27"/>
-    <ellipse class="ombre-pion" cx="7" cy="22" rx="19" ry="6" fill="#000" opacity=".5"/>
-    <ellipse cx="0" cy="21" rx="15" ry="4.5" fill="#000" opacity=".35"/>
-    <g class="corps-pion"><path d="M-12 20C-12 9-6 5-5-1H5C6 5 12 9 12 20Z" fill="url(#gp-${id})" stroke="#000" stroke-width="2.6"/>
-    <path d="M-12 20C-12 9-6 5-5-1H-1C-3 6-4 12-3 20Z" fill="#fff" opacity=".16"/><path d="M12 20C12 9 6 5 5-1H1C3 6 5 12 6 20Z" fill="#000" opacity=".28"/>
-    <ellipse cx="0" cy="19.5" rx="12" ry="3.4" fill="#000" opacity=".3"/><ellipse cx="0" cy="18" rx="12" ry="3.2" fill="url(#gp-${id})" stroke="#000" stroke-width="1.6"/>
-    <circle cx="0" cy="-11" r="11" fill="url(#gp-${id})" stroke="#000" stroke-width="2.6"/>
-    <circle cx="0" cy="-11" r="10" fill="url(#sphere)"/>
-    <ellipse cx="-4" cy="-15" rx="3.6" ry="2.4" fill="#fff" opacity=".85"/><path d="M-8 18C-8 12-5 9-3 6" stroke="#fff" stroke-width="2" fill="none" opacity=".45" stroke-linecap="round"/></g>
+    <circle class="aura" cx="0" cy="0" r="30"/>
+    <ellipse class="ombre-pion" cx="4" cy="19" rx="19" ry="6" fill="#000" opacity=".5"/>
+    <g class="corps-pion">
+      <circle cx="0" cy="0" r="23" fill="${j.couleur}" stroke="#06122f" stroke-width="2"/>
+      <circle cx="0" cy="0" r="18.8" fill="url(#gp-${id})" stroke="#0b1d49" stroke-width="2.6"/>
+      <ellipse cx="-5" cy="-8" rx="6.5" ry="3.6" fill="#fff" opacity=".6"/>
+      <text x="0" y="9.4" text-anchor="middle" font-family="Barlow Condensed, Arial Narrow, sans-serif" font-weight="800" font-size="27" fill="#10204a" stroke="#fff" stroke-opacity=".55" stroke-width=".9" paint-order="stroke">${initialeDe(j)}</text>
+    </g>
   </g>`;
 }
 function positionPion(j){
@@ -1051,7 +1057,7 @@ function majJoueurs(){
     else if(j.arrive) etat = `<span class="etat ok">Arrivé ${j.arrive}${j.arrive===1?"er":"e"}</span>`;
     else if(j.prison) etat = `<span class="etat">Prison ${j.prison}</span>`;
     else if(j.dette) etat = `<span class="etat">Doit ${J(j.dette.vers).nom}</span>`;
-    return `<div class="joueur ${G.courant===j.id?"actif":""}" data-id="${j.id}" style="--cj:${j.couleur}">${pionSVG(j.couleur)}
+    return `<div class="joueur ${G.courant===j.id?"actif":""}" data-id="${j.id}" style="--cj:${j.couleur}">${jetonSVG(j.couleur)}
       <span class="nom">${esc(j.nom)}${j.ia?`<small>IA</small>`:""}</span>
       <span class="argent ${cache?"cache":""}">${cache ? "•••" : euros(j.argent)} ${etat}</span></div>`;
   }).join("");

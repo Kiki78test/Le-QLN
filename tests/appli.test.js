@@ -46,7 +46,7 @@ for(const lang of ["fr", "en"]) for(const vue of Object.keys(VUES)){
     await p.waitForFunction(() => P && P.m && P.m.trouves.length === 1, null, {timeout:4000});
     // plateau contre l'IA (page rechargée : l'entraînement enchaîne sinon une nouvelle carte)
     await p.reload(); await p.waitForSelector("#b-defi");
-    await p.evaluate(() => { document.querySelector("#b-ia").click(); }); await p.click("#b-go", {force:true});
+    await p.evaluate(() => { document.querySelector("#b-ia").click(); }); await p.evaluate(() => document.querySelector("#b-go").click());
     await p.waitForSelector("#tapis", {state:"attached"}); await p.waitForSelector("#joueurs", {state:"attached"});
     // écran multijoueur
     await p.evaluate(() => { ecranAccueil(); document.querySelector("#b-multi").click(); }); await p.waitForTimeout(400);
@@ -222,7 +222,7 @@ for(const lang of ["fr", "en"]) test(`${lang} : séries à thème et par langue`
 
 test("plateau : rappel « le plus riche gagne » et podium détaillé", async () => {
   const {p, ctx, erreurs} = await ouvrir("fr", "telephone");
-  await p.evaluate(() => document.querySelector("#b-ia").click()); await p.click("#b-go", {force:true});
+  await p.evaluate(() => document.querySelector("#b-ia").click()); await p.evaluate(() => document.querySelector("#b-go").click());
   await p.waitForSelector("#b-parti");
   assert.match(await p.textContent(".regle-or"), /Le plus riche gagne/);
   await p.evaluate(() => document.querySelector("#b-parti").click()); await p.waitForTimeout(300);
@@ -232,4 +232,21 @@ test("plateau : rappel « le plus riche gagne » et podium détaillé", async ()
   const txt = await p.textContent(".podium-l.premier .podium-detail");
   assert.match(txt, /Cartes/); assert.match(txt, /Arrivée/);
   sansErreur(erreurs); await ctx.close();
+});
+
+test("ordinateur : barre du bas (règles, classement de la partie, paramètres, aide) sans quitter la partie", async () => {
+  const {p, ctx, erreurs} = await ouvrir("fr", "ordinateur");
+  assert.ok(await p.isVisible("#barre-bas"), "barre visible sur ordinateur");
+  await p.evaluate(() => document.querySelector("#b-ia").click()); await p.evaluate(() => document.querySelector("#b-go").click());
+  await p.waitForSelector("#b-parti"); await p.evaluate(() => document.querySelector("#b-parti").click()); await p.waitForTimeout(300);
+  for(const [b, attendu] of [["regles", /Le principe/], ["classement", /Partie en cours/], ["parametres", /Vibrations/], ["aide", /mêmes lettres/]]){
+    await p.evaluate(b => document.querySelector(`#barre-bas [data-b="${b}"]`).click(), b);
+    await p.waitForSelector(".bb-voile");
+    assert.match(await p.textContent(".bb-voile"), attendu, b);
+    await p.keyboard.press("Escape"); await p.waitForSelector(".bb-voile", {state:"detached"});
+  }
+  assert.ok(await p.evaluate(() => !!PlateauIA._etat()), "la partie continue");
+  sansErreur(erreurs); await ctx.close();
+  const tel = await ouvrir("fr", "telephone");
+  assert.equal(await tel.p.isVisible("#barre-bas"), false, "pas de barre sur téléphone"); await tel.ctx.close();
 });

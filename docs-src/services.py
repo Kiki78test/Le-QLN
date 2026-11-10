@@ -35,7 +35,7 @@ h += B("Règles d'or", "", [
 h += "<h2>1. GitHub — code, site et automatismes</h2>"
 h += B("Dépôt et site", "Dépôt <b>Kiki78test/Le-QLN</b> (public), branche <code>main</code>. GitHub Pages publie la racine du dépôt : <code>https://kiki78test.github.io/Le-QLN/</code> (anglais : <code>/en/</code>).", [
     "Séries à thème : listes dans <code>tools/themes_listes.py</code>, construites par <code>python3 tools/build_themes.py</code> en <code>data/themes-fr.json</code> et <code>en/data/themes-en.json</code> (+ tableur de relecture dans docs/).",
-    "Fichiers du jeu à la racine : <code>index.html</code>, <code>plateau.js</code>, <code>multi.js</code>, <code>series.js</code>, <code>compte.js</code>, <code>progres.js</code>, <code>pub.js</code>, <code>infos.js</code>, <code>legal.js</code>, <code>analyse.js</code>, <code>config.js</code>, <code>sw.js</code> ; dictionnaires <code>data/fr.json</code> et <code>en/data/en.json</code>.",
+    "Fichiers du jeu à la racine : <code>index.html</code>, <code>plateau.js</code>, <code>multi.js</code>, <code>series.js</code>, <code>barre.js</code>, <code>compte.js</code>, <code>progres.js</code>, <code>pub.js</code>, <code>infos.js</code>, <code>legal.js</code>, <code>analyse.js</code>, <code>config.js</code>, <code>sw.js</code> ; dictionnaires <code>data/fr.json</code> et <code>en/data/en.json</code>.",
     "Version anglaise <b>générée</b> : <code>python3 tools/build_en.py</code> (tables FR→EN dans <code>tools/en_*.py</code>). Ne pas modifier <code>en/*.js</code> à la main.",
     "Pages juridiques <b>générées</b> : <code>python3 tools/build_legal.py</code> depuis <code>tools/legal_texte.py</code> et <code>marque.json</code>.",
     "Service worker : à chaque version, incrémenter <code>VERSION</code> dans <code>sw.js</code> et la paire correspondante dans <code>tools/build_en.py</code>."])
@@ -114,7 +114,7 @@ h += "<h3>Stockage sur l'appareil (localStorage, préfixe <code>qln:</code> en f
     ["scoresEnAttente", "scores obtenus hors ligne, envoyés au retour du réseau"],
     ["motsAjoutes", "mots acceptés après contestation"],
     ["serie, serieVus, seriesVues", "série choisie, cartes déjà vues par thème, nombre de séries débloquées (annonce des nouvelles)"],
-    ["pub, pubStats, son, reglesDefi, chronoEntr, cfgIA", "réglages (pub, son, règles, IA)"]],
+    ["pub, pubStats, son, vibrations, reglesDefi, chronoEntr, cfgIA", "réglages (pub, son, vibrations, règles, IA)"]],
     ["Clés", "Contenu"])
 h += B("Hors ligne", "Service worker (<code>sw.js</code>) : tout le jeu est en cache après la première visite, vidéos de pub comprises. Réseau d'abord pour le code et les documents, mais 3 s au plus quand une copie existe.")
 

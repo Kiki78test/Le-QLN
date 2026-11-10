@@ -118,7 +118,7 @@ const uid = () => (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString
 const codeAleatoire = () => Array.from({length:5}, () => ALPHA[Math.floor(Math.random()*ALPHA.length)]).join("");
 const normCode = s => (s||"").toUpperCase().replace(/[^A-Z]/g,"").slice(0,5);
 const pions = () => typeof PIONS !== "undefined" ? PIONS : [{nom:"Jaune",c:"#ffd60a"},{nom:"Rose",c:"#ff4fa3"},{nom:"Cyan",c:"#35e0ff"},{nom:"Blanc",c:"#f2f2f2"},{nom:"Lilas",c:"#c59bff"},{nom:"Orange",c:"#ff8a1f"}];
-const vibre = ms => { try{ if(navigator.vibrate) navigator.vibrate(Array.isArray(ms) ? ms.map((x, i) => i % 2 ? x : Math.max(4, Math.round(x*.4))) : Math.max(4, Math.round(ms*.4))); }catch(e){} };   // vibrations douces
+const vibre = ms => { try{ if(navigator.vibrate && store.get("vibrations", true)) navigator.vibrate(Array.isArray(ms) ? ms.map((x, i) => i % 2 ? x : Math.max(4, Math.round(x*.4))) : Math.max(4, Math.round(ms*.4))); }catch(e){} };   // vibrations douces
 const MAX = 6;
 
 /* =========================================================================
@@ -144,7 +144,7 @@ function ecranProfil(apres){
     </div>
     <div class="m-carte">
       <span class="lbl">${TXT.pion}</span>
-      <div class="m-couleurs" id="m-couleurs">${pions().map((p,i)=>`<button aria-pressed="${i===couleur}" data-i="${i}" aria-label="${esc(p.nom)}">${pionSVG(p.c)}</button>`).join("")}</div>
+      <div class="m-couleurs" id="m-couleurs">${pions().map((p,i)=>`<button aria-pressed="${i===couleur}" data-i="${i}" aria-label="${esc(p.nom)}">${jetonSVG(p.c)}</button>`).join("")}</div>
     </div>
     <div class="m-note">${ICO.groupe.replace('<svg','<svg width="22" height="22"')}<span>${TXT.compteLocal}</span></div>
     <button class="bouton piece c-jaune" id="m-ok">${TXT.enregistrer}</button>
@@ -167,7 +167,7 @@ function ecranProfil(apres){
 function chipProfil(){
   const c = Compte.get();
   if(!c) return `<button class="m-profil-chip vide" id="b-profil">${ICO.groupe.replace('<svg','<svg width="18" height="18"')}<span>${TXT.creerProfil}</span></button>`;
-  return `<button class="m-profil-chip" id="b-profil" aria-label="${TXT.profil}">${pionSVG(pions()[c.couleur % pions().length].c)}<span>${esc(c.pseudo)}</span></button>`;
+  return `<button class="m-profil-chip" id="b-profil" aria-label="${TXT.profil}">${jetonSVG(pions()[c.couleur % pions().length].c)}<span>${esc(c.pseudo)}</span></button>`;
 }
 const avecProfil = suite => { if(Compte.get()) suite(); else ecranProfil(ok => ok ? suite() : ecranMulti()); };
 
@@ -434,7 +434,7 @@ function ecranMulti(){
     <div class="entete-ecran"><button class="icone-btn" id="b-retour" aria-label="Retour">${ICO.retour}</button><h1>${TXT.multi}</h1><span></span></div>
     <p class="sous-titre">${TXT.sousTitre}</p>
     <div class="m-carte" style="grid-template-columns:1fr auto; align-items:center">
-      <div style="display:flex; align-items:center; gap:12px; min-width:0">${c ? pionSVG(pions()[c.couleur % pions().length].c, "") : ""}<div style="min-width:0"><span class="lbl">${TXT.profil}</span><div style="font:700 20px var(--f-ui); color:#fff; overflow:hidden; text-overflow:ellipsis; white-space:nowrap">${c ? esc(c.pseudo) : "—"}</div></div></div>
+      <div style="display:flex; align-items:center; gap:12px; min-width:0">${c ? jetonSVG(pions()[c.couleur % pions().length].c, "") : ""}<div style="min-width:0"><span class="lbl">${TXT.profil}</span><div style="font:700 20px var(--f-ui); color:#fff; overflow:hidden; text-overflow:ellipsis; white-space:nowrap">${c ? esc(c.pseudo) : "—"}</div></div></div>
       <button class="bouton-plat" id="m-profil">${c ? TXT.modifier : TXT.creerProfil}</button>
     </div>
     <div class="m-choix">
@@ -478,7 +478,7 @@ function ecranMulti(){
     $("#m-nb-ouverts").textContent = liste.length ? liste.length : "";
     el.innerHTML = liste.length ? liste.map((r,i) => {
         const js = (r.joueurs && r.joueurs.length ? r.joueurs : [{couleur:r.couleur||0}]);
-        const pions_ = js.map(j => pionSVG(pions()[(j.couleur||0) % pions().length].c)).join("");
+        const pions_ = js.map(j => jetonSVG(pions()[(j.couleur||0) % pions().length].c)).join("");
         return `<div class="m-joueur m-salon" data-code="${r.code}" style="animation-delay:${i*40}ms"><span class="m-pions">${pions_}</span>
         <span class="nom">${esc(TXT.salonDe(r.hote))}<small>${r.nb}/${r.max} · ${TXT.placesLibres(r.max - r.nb)}${r.auto ? ` <small class="rap">${TXT.rapide}</small>` : ""}</small></span>
         <button class="bouton-plat" data-code="${r.code}">${TXT.rejoindreBtn} ›</button></div>`; }).join("") : `<div class="m-vide"><i></i>${TXT.aucunSalon}</div>`;
@@ -525,7 +525,7 @@ function rafraichir(){
   if(!S || !S.rendu?.salon || !$("#m-liste")) return;
   const me = moi();
   $("#m-nb").textContent = `${S.joueurs.length}/${MAX}`;
-  $("#m-liste").innerHTML = S.joueurs.map((j,i) => `<div class="m-joueur ${j.pret?"pret":""}" data-id="${j.id}" style="animation-delay:${i*50}ms">${pionSVG(pions()[j.couleur % pions().length].c)}
+  $("#m-liste").innerHTML = S.joueurs.map((j,i) => `<div class="m-joueur ${j.pret?"pret":""}" data-id="${j.id}" style="animation-delay:${i*50}ms">${jetonSVG(pions()[j.couleur % pions().length].c)}
       <span class="nom">${esc(j.pseudo)}${j.hote?`<small>${TXT.hote}</small>`:""}${j.id===S.moi.id?`<small class="vous">${TXT.vous}</small>`:""}</span>
       <span class="etat"><i></i>${j.pret ? TXT.pret : TXT.pasPret}</span></div>`).join("")
     + (S.joueurs.length < MAX ? `<div class="m-vide"><i></i>${TXT.attente}</div>` : "");
@@ -548,7 +548,7 @@ function ecranDepart(){
     <div class="entete-ecran"><span></span><h1>${TXT.salon} ${S.code}</h1><span></span></div>
     <div class="m-carte m-depart">
       <div class="gros">${TXT.depart}</div>
-      <div class="m-sieges">${S.joueurs.map(j => `<span>${pionSVG(pions()[j.couleur % pions().length].c)}${esc(j.pseudo)}</span>`).join("")}</div>
+      <div class="m-sieges">${S.joueurs.map(j => `<span>${jetonSVG(pions()[j.couleur % pions().length].c)}${esc(j.pseudo)}</span>`).join("")}</div>
     </div>
     <div class="m-carte">
       <span class="lbl">${TXT.etape}</span>

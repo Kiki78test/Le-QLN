@@ -8,7 +8,7 @@ EN = APP/"en"
 import json as _json
 NOM = _json.loads((APP/"marque.json").read_text(encoding="utf-8"))["nom"] if (APP/"marque.json").exists() else "Le-QLN"
 sys.path.insert(0, str(ROOT/"tools"))
-FILES = {"index.html":"en_index", "plateau.js":"en_plateau", "pub.js":"en_pub", "infos.js":"en_infos", "multi.js":"en_multi", "progres.js":"en_progres", "compte.js":"en_compte", "series.js":"en_series"}
+FILES = {"index.html":"en_index", "plateau.js":"en_plateau", "pub.js":"en_pub", "infos.js":"en_infos", "multi.js":"en_multi", "progres.js":"en_progres", "compte.js":"en_compte", "series.js":"en_series", "barre.js":"en_barre"}
 STOP = set("le la les des du de un une vous votre vos pour avec sur dans pas qui que est sont ou et au aux ce cette ces mot mots carte cartes partie jouer joueur joueurs tour sans mais plus ne à il elle sa ses leur par se lettres lettre temps gain gains".split())
 missing = 0
 for fn, mod in FILES.items():
@@ -37,7 +37,7 @@ for fn, mod in FILES.items():
             if t1 not in seen and not re.match(r"^[\w\s.#:\[\]=\-,>*()\"'~]*$", t1) or (t1 not in seen and any(w in STOP for w in words)):
                 seen.add(t1); print(f"[{fn}] {t1}")
 # service worker + manifest
-sw = (APP/"sw.js").read_text(encoding="utf-8").replace("qln-v34","qln-en-v26").replace("data/fr.json","data/en.json").replace('"pubs/spot1.jpg", "pubs/spot2.jpg", "pubs/spot3.jpg", "pubs/spot1.mp4", "pubs/spot2.mp4", "pubs/spot3.mp4", "icons/icon-192.png", "icons/icon-512.png", "icons/apple-touch-icon.png"','"../pubs/spot1.jpg", "../pubs/spot2.jpg", "../pubs/spot3.jpg", "../pubs/spot1.mp4", "../pubs/spot2.mp4", "../pubs/spot3.mp4", "../icons/icon-192.png", "../icons/icon-512.png", "../icons/apple-touch-icon.png"')
+sw = (APP/"sw.js").read_text(encoding="utf-8").replace("qln-v35","qln-en-v27").replace("data/fr.json","data/en.json").replace('"pubs/spot1.jpg", "pubs/spot2.jpg", "pubs/spot3.jpg", "pubs/spot1.mp4", "pubs/spot2.mp4", "pubs/spot3.mp4", "icons/icon-192.png", "icons/icon-512.png", "icons/apple-touch-icon.png"','"../pubs/spot1.jpg", "../pubs/spot2.jpg", "../pubs/spot3.jpg", "../pubs/spot1.mp4", "../pubs/spot2.mp4", "../pubs/spot3.mp4", "../icons/icon-192.png", "../icons/icon-512.png", "../icons/apple-touch-icon.png"')
 sw = sw.replace('"en/data/en.json"','"../data/fr.json"').replace('data/themes-fr.json','data/themes-en.json').replace('"config.js", ','"../config.js", ').replace('"legal.js", ','"../legal.js", ').replace('"analyse.js", ','"../analyse.js", ').replace('"fonts/','"../fonts/')
 sw = sw.replace(NOM+" — service worker : jeu jouable hors connexion après la première visite.",NOM+" (EN) — service worker: playable offline after the first visit.")
 (EN/"sw.js").write_text(sw, encoding="utf-8")

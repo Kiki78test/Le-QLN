@@ -652,6 +652,12 @@ body::after{opacity:.28}
 .rg-arrivee b{width:22px; height:22px; border-radius:5px; display:grid; place-items:center; color:#1b1400!important; font:800 14px var(--f-ui); background:linear-gradient(160deg,#ffe98a,#e0a800)}
 /* touches du clavier */
 .r-clavier b{display:inline-block; padding:1px 9px 2px; margin:0 1px; border-radius:7px; color:#10204a!important; font:700 14px var(--f-ui); background:linear-gradient(180deg,#fff,#d7deef); box-shadow:0 2px 0 #8d9bc0, 0 3px 6px rgba(0,0,0,.35)}
+/* jetons des joueurs (anneau lumineux) : carrés, quelle que soit la taille prévue pour l'ancien pion */
+.pion-svg.jeton{width:auto !important; aspect-ratio:1; filter:drop-shadow(0 0 5px var(--cj)) drop-shadow(0 2px 3px rgba(0,0,0,.5)); overflow:visible}
+/* accueil : chevron « › » sur les tuiles de mode */
+.accueil .mode:not(.large) > .ico + span::after{content:""; position:absolute; right:10px; bottom:12px; width:22px; height:22px; background:#fff; opacity:.92;
+  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M9 5l7 7-7 7' fill='none' stroke='%23000' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/contain no-repeat;
+          mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M9 5l7 7-7 7' fill='none' stroke='%23000' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/contain no-repeat}
 /* carte : liseré doré lumineux ; titre du plateau encadré de filets dorés */
 .table-carte .carte{box-shadow:0 0 0 2px rgba(255,220,120,.85), 0 0 0 5px rgba(255,255,255,.05), 0 0 34px rgba(255,196,70,.32), 0 18px 36px rgba(0,0,0,.45)!important}
 .p-hud h1 small::before,.p-hud h1 small::after{content:""; display:inline-block; vertical-align:middle; width:min(46px,9vw); height:2px; margin:0 10px 2px; border-radius:2px; background:linear-gradient(90deg, transparent, #f2c230)}
@@ -703,7 +709,7 @@ body{box-sizing:border-box} .app{min-height:calc(100% - var(--ab-h))}
 .barre-app .ab-btn{width:40px; height:40px} .ab-logo b{font-size:29px}
 @media (max-width:999px){
   .app:has(.ecran.accueil){padding-block:8px 10px}
-  .ecran.accueil{min-height:calc(100dvh - var(--bp-h, 0px) - var(--ab-h) - 18px); gap:10px; justify-content:space-between}
+  .ecran.accueil{min-height:calc(100dvh - var(--bb-h, 0px) - var(--bp-h, 0px) - var(--ab-h) - 18px); gap:10px; justify-content:space-between}
   .accueil .barre-haut,.accueil .heros .logo,.accueil .pied,.accueil .credit{display:none}
   .accueil .heros{gap:2px; padding:0}
   .accueil .vitrine{height:calc(var(--tw, 44px)*1.08 + 12px)}
@@ -743,7 +749,7 @@ body{box-sizing:border-box} .app{min-height:calc(100% - var(--ab-h))}
   .accueil .acc-d{padding-top:0}
   .accueil .heros{gap:6px}
   .accueil .mode{min-height:128px}
-  .ecran.accueil{min-height:calc(100dvh - var(--bp-h, 0px) - var(--ab-h) - 48px); align-content:center}
+  .ecran.accueil{min-height:calc(100dvh - var(--bb-h, 0px) - var(--bp-h, 0px) - var(--ab-h) - 48px); align-content:center}
 }
 
 /* documentation : texte clair sur les cartes de verre */
@@ -900,6 +906,8 @@ const ICO = {
   livre:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M4 5.5C6.5 4 9.5 4 12 5.5 14.5 4 17.5 4 20 5.5V19c-2.5-1.5-5.5-1.5-8 0-2.5-1.5-5.5-1.5-8 0z"/><path d="M12 5.5V19"/></svg>',
 };
 const etoileSVG = on => `<svg viewBox="0 0 24 24" class="${on?"on":""}"><path d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.3l-5.9 3.3 1.3-6.6-4.9-4.6 6.6-.8z" fill="${on?"#ffcf3a":"#1a2a55"}" stroke="${on?"#a87400":"#000"}" stroke-width="1.4" stroke-linejoin="round"/></svg>`;
+/* jeton d'un joueur dans les listes et panneaux : silhouette dans un anneau lumineux de sa couleur */
+const jetonSVG = (couleur, cls="") => `<svg class="pion-svg jeton ${cls}" viewBox="0 0 40 40" aria-hidden="true" style="--cj:${couleur}"><defs><radialGradient id="jg" cx=".35" cy=".28" r=".8"><stop offset="0" stop-color="#2a4da3"/><stop offset="1" stop-color="#081638"/></radialGradient></defs><circle cx="20" cy="20" r="17" fill="url(#jg)" stroke="${couleur}" stroke-width="3.2"/><circle cx="20" cy="15.6" r="5.4" fill="${couleur}"/><path d="M9.6 30.2c.9-5.6 4.9-8.6 10.4-8.6s9.500 3 10.4 8.600a17 17 0 0 1-20.800 0z" fill="${couleur}"/></svg>`;
 const pionSVG = (couleur, cls="") => `<svg class="pion-svg ${cls}" viewBox="0 0 18 26" aria-hidden="true"><defs><radialGradient id="pg${couleur.slice(1)}" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#fff" stop-opacity=".85"/><stop offset=".35" stop-color="${couleur}"/><stop offset="1" stop-color="${couleur}" stop-opacity=".75"/></radialGradient></defs><ellipse cx="9" cy="23.5" rx="7.5" ry="2.3" fill="#000" opacity=".35"/><path d="M4 23c0-4 2-6 3.2-8.3h3.6C12 17 14 19 14 23z" fill="url(#pg${couleur.slice(1)})" stroke="#000" stroke-width="1.2"/><circle cx="9" cy="9" r="5.2" fill="url(#pg${couleur.slice(1)})" stroke="#000" stroke-width="1.2"/></svg>`;
 
 /* ---------- Sons ---------- */
@@ -1308,7 +1316,7 @@ function largeurTuile(n, max=56, dispo){
   return Math.max(26, Math.min(max, Math.floor((dispo - (n-1)*7) / n)));
 }
 /* taille maximale des lettres à déplacer : grande, mais réduite sur un écran peu haut pour que tout tienne sans défiler */
-function tuileMax(){ const h = window.innerHeight, l = window.innerWidth; return l < 700 ? 60 : Math.max(36, Math.min(66, Math.floor((h - 360) / 3.9))); }
+function tuileMax(){ const h = window.innerHeight - (window.innerWidth >= 1000 && window.innerHeight >= 560 ? 46 : 0), l = window.innerWidth; return l < 700 ? 60 : Math.max(36, Math.min(66, Math.floor((h - 360) / 3.9))); }
 function carteHTML(c, {consigne="Trouvez une anagramme de", indic="", chrono=false, inverse=false}={}){
   const N = NIVEAUX[c.niv];
   return `<div class="carte ${N.classe}">
@@ -1572,11 +1580,9 @@ async function ecranDocs(){
   }catch(e){ $("#docs").innerHTML = `<p class="sous-titre">Impossible de charger la liste des documents.</p>`; }
 }
 
-function ecranRegles(){
-  arreterVitrine();
-  app.innerHTML = `
-  <section class="ecran">
-    <div class="entete-ecran"><button class="icone-btn" id="b-retour" aria-label="Retour">${ICO.retour}</button><h1>Règles du jeu</h1><span></span></div>
+/* le contenu des règles : écran « Règles du jeu » et volet de la barre du bas */
+function reglesHTML(){
+  return `
     <div class="regles">
       <div class="regle r-principe"><h2><span class="rg-ico c-vert">${ICO.melanger}</span>Le principe</h2>
         ${illuPrincipe()}
@@ -1608,7 +1614,14 @@ function ecranRegles(){
         <li><b>Duel de l'ombre</b> : les cartes du jour contre un fantôme (votre meilleure partie du jour, ou une ombre simulée).</li>
         <li><b>Défi de la semaine</b> : un scénario imposé et les mêmes cartes pendant 7 jours. Le premier essai est classé.</li></ul></div>
       <div class="regle r-clavier"><h2><span class="rg-ico c-noir">${ICO.effacer}</span>Au clavier</h2><p>Tapez les lettres, <b>Entrée</b> pour valider, <b>Retour arrière</b> pour effacer, <b>Espace</b> pour mélanger.</p></div>
-    </div>
+    </div>`;
+}
+function ecranRegles(){
+  arreterVitrine();
+  app.innerHTML = `
+  <section class="ecran">
+    <div class="entete-ecran"><button class="icone-btn" id="b-retour" aria-label="Retour">${ICO.retour}</button><h1>Règles du jeu</h1><span></span></div>
+    ${reglesHTML()}
   </section>`;
   $("#b-retour").onclick = ecranAccueil;
   const dr = $("#de-regle"); if(dr) afficherDe(dr, 5);
@@ -2318,6 +2331,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || (location.pr
 <script src="multi.js"></script>
 <script src="legal.js"></script>
 <script src="series.js"></script>
+<script src="barre.js"></script>
 <script src="progres.js"></script>
 <script src="compte.js"></script>
 <script>
@@ -2352,7 +2366,7 @@ chargerDico().then(() => Contestation.charger()).then(() => (typeof Legal !== "u
   /* vibrations légères (mobiles) */
   if(typeof Son !== "undefined" && navigator.vibrate){
     const v = {tap:4, ok:[8,35,8], ko:[25], piece:5};   // impulsions courtes : vibration douce
-    for(const k in v){ const f = Son[k]; if(typeof f === "function") Son[k] = function(){ try{ if(Son.actif) navigator.vibrate(v[k]); }catch(e){} return f.apply(this, arguments); }; }
+    for(const k in v){ const f = Son[k]; if(typeof f === "function") Son[k] = function(){ try{ if(Son.actif && store.get("vibrations", true)) navigator.vibrate(v[k]); }catch(e){} return f.apply(this, arguments); }; }
   }
   /* sablier critique (< 3 s) */
   new MutationObserver(() => { const c = document.getElementById("chrono"), t = document.getElementById("temps"); if(!c || !t) return;

@@ -87,6 +87,8 @@ st.append(Paragraph("6. Confort et appli",H))
 st+=ul(["<b>Installable</b> (PWA) et <b>hors ligne</b> : après une première visite, tout le jeu (hors multijoueur) fonctionne sans réseau — dictionnaire, modes, progression, pubs. Un réseau lent (wifi d'avion) ne bloque jamais le démarrage : au-delà de 3 s, la copie de l'appareil est utilisée. En ligne, la dernière version est chargée automatiquement (numéro visible en bas du menu). Hors connexion, l'écran multijoueur l'indique clairement.",
  "<b>Applis mobiles</b> : Android (enveloppe autour du site, appli de test publiée automatiquement) et iPhone / iPad (jeu embarqué dans l'appli, fabriqué sur un Mac de GitHub, testé au simulateur ; TestFlight dès que le compte Apple existe). Voir « Version Apple ».",
  "<b>Confidentialité et mentions légales</b> : liens en bas de l'accueil et à la création de compte ; aussi en pages web publiques (adresse exigée par le Play Store), en français et en anglais.",
+ "<b>Barre du bas (ordinateur)</b> : Règles, Classement, Paramètres (son, vibrations) et Aide s'ouvrent dans un volet, sans quitter la partie ; en cours de partie, « Classement » montre le classement de la partie.",
+ "<b>Jetons des joueurs</b> : silhouette dans un anneau lumineux de leur couleur (panneaux, salons, podium) ; sur le plateau, jeton rond à l'initiale du joueur.",
  "<b>Barre du haut et menu ☰</b> : accueil, statistiques, compte, classements, partie guidée, règles, documentation, son, installation.",
  "<b>Français / anglais</b> : bouton FR / EN en haut, dictionnaire propre à chaque langue.",
  "<b>Bouton retour</b> du téléphone géré (ne ferme plus l'appli en pleine partie) ; <b>pause automatique</b> si l'appli passe en arrière-plan pendant un sablier ; <b>écran maintenu allumé</b> pendant une partie ; croix pour quitter même quand une carte est affichée.",
@@ -112,7 +114,8 @@ st+=ul(["Partie multijoueur synchronisée sur le plateau (dés, cartes et sablie
  "Hébergement : base Render à passer en Basic avant le 10/12/2026, serveur en Starter à l'ouverture au public ; domaine (Cloudflare) quand le nom est choisi.",
  "Décisions en attente : vidéos récompense touchant aux règles, propositions de règles, mots douteux, nom définitif."])
 st.append(Paragraph("Historique des versions",H))
-st+=ul(["<b>10 nov. 2026 (soirée)</b> — règles du jeu illustrées ; documentation à signature visuelle commune ; « le plus riche gagne » rendu évident sur le plateau.",
+st+=ul(["<b>10 nov. 2026 (soirée)</b> — barre du bas sur ordinateur, jetons des joueurs (anneau lumineux, initiale sur le plateau), chevrons sur les tuiles de l'accueil.",
+ "<b>10 nov. 2026 (soirée)</b> — règles du jeu illustrées ; documentation à signature visuelle commune ; « le plus riche gagne » rendu évident sur le plateau.",
  "<b>10 nov. 2026 (fin de journée)</b> — design rapproché des maquettes : dé blanc 3D avec halo et anneaux dorés, cadre lumineux du plateau, libellés du plateau en caractères gras, traînées de lumière en fond.",
  "<b>10 nov. 2026 (fin de journée)</b> — séries du Défi (thèmes et autre langue, débloquées par niveau) ; vibrations plus douces ; lueur de validation ; vitrine de l'accueil qui « tremble » sur un faux mot ; barres de défilement masquées.",
  "<b>10 nov. 2026 (fin de journée)</b> — version Apple préparée (iPhone, iPad).",
