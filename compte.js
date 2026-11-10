@@ -88,7 +88,10 @@ document.addEventListener("qln:fin-partie", async e => {
   if(!actif() || !connecte()) return;
   const {mode, total, braquageOk} = e.detail || {};
   const m = mode === "jour" ? "jour" : mode === "defi" ? "defi" : mode === "braquage" && braquageOk ? "braquage" : null;
-  try{ if(m) await api("/scores", {methode:"POST", corps:{mode:m, langue:TXT.langue, score:total || 0, jour: m === "jour" ? dateISO() : undefined}}); }catch(x){}
+  // les mots trouvés accompagnent le score : le serveur vérifie qu'ils sont réels et que le score est possible (anti-triche)
+  let historique;
+  try{ if((m === "jour" || m === "defi") && typeof P !== "undefined" && P && Array.isArray(P.historique)) historique = P.historique.filter(h => !h.special && h.origine).map(h => ({niv:h.niv, origine:h.origine, trouves:h.trouves || []})); }catch(x){}
+  try{ if(m) await api("/scores", {methode:"POST", corps:{mode:m, langue:TXT.langue, score:total || 0, jour: m === "jour" ? dateISO() : undefined, detail:historique ? {historique} : undefined}}); }catch(x){}
   synchroniser(true);
 });
 addEventListener("online", () => synchroniser(true));

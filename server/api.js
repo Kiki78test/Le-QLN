@@ -93,6 +93,7 @@ setInterval(() => { const t = Date.now(); for(const [k,e] of compteurs) if(t - e
 const PAYS = /^[A-Z]{2}$/;
 const nettoiePseudo = p => String(p || "").replace(/[\u0000-\u001f<>]/g, "").trim().slice(0, 14);
 const emailValide = e => /^[^\s@]{1,64}@[^\s@]{1,190}\.[^\s@]{2,}$/.test(e);
+const verif = require("./jour");
 const MODES = {jour:{max:20000}, defi:{max:20000}, braquage:{max:400}, festival:{max:20000}};
 const LANGUES = new Set(["fr", "en"]);
 const public_ = j => ({id:j.id, pseudo:j.pseudo, couleur:j.couleur, pays:j.pays, email:j.email || null, google:!!j.google_sub});
@@ -234,6 +235,9 @@ const ROUTES = {
       const ecart = jour ? Math.abs(Date.parse(jour + "T12:00:00Z") - Date.now()) : Infinity;
       if(ecart > 36*3600e3) throw erreur(400, "Ce défi du jour n'est plus ouvert.");
     }
+    // anti-triche : le serveur refait le tirage du jour et vérifie les mots annoncés (voir jour.js)
+    const motif = mode === "jour" ? verif.verifierJour(langue, jour, corps.detail, score) : mode === "defi" ? verif.verifierDefi(langue, corps.detail, score) : null;
+    if(motif) throw erreur(400, motif);
     const detail = corps.detail && typeof corps.detail === "object" ? JSON.parse(JSON.stringify(corps.detail).slice(0, 2000) || "{}") : null;
     // défi du jour : seul le premier essai compte (comme dans l'appli)
     const {rows} = await pool.query(

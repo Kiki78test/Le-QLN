@@ -38,14 +38,19 @@ origine JavaScript autorisée : `https://kiki78test.github.io`. Mettez l'identif
 | POST | `/api/google` | `{credential}` (jeton Google) → `{jeton, joueur}` |
 | GET / PATCH / DELETE | `/api/moi` | profil (pseudo, pion, pays) ; DELETE efface le compte et ses scores |
 | GET / PUT | `/api/progression?langue=fr` | progression (fusion : meilleur des deux appareils) |
-| POST | `/api/scores` | `{mode: jour|defi|braquage, langue, score, jour?}` — au défi du jour, seul le 1er essai compte |
+| POST | `/api/scores` | `{mode: jour|defi|braquage, langue, score, jour?, detail:{historique}}` — au défi du jour, seul le 1er essai compte ; `historique` = cartes jouées et mots trouvés, vérifiés par le serveur (voir « Anti-triche ») |
 | GET | `/api/classement?mode=jour&langue=fr&pays=FR&periode=semaine` | top 50 + rang du joueur connecté |
 
 Authentification : en-tête `Authorization: Bearer <jeton>` (jeton signé HMAC, valable 90 jours).
 Protections : mots de passe hachés (bcrypt), limitation du nombre de tentatives par IP, CORS limité à `ORIGINES`,
 scores bornés et défi du jour accepté seulement pour la date en cours (± 36 h).
 
+## Anti-triche (`jour.js`)
+- **Défi du jour** : les cartes sortent d'un tirage déterministe (graine = date). Le serveur refait le même tirage avec le même dictionnaire (`data/fr.json`, `en/data/en.json`), puis vérifie que les cartes sont celles du jour, que chaque mot annoncé est une vraie anagramme (sans doublon) et que le score ne dépasse pas le maximum possible avec ces mots (1er mot + bonus de rapidité, mots bonus, série ×2, événement, légendaire ×3, coffres). Sans la liste des mots, le score est refusé.
+- **Défi** (cartes libres) : mêmes vérifications des mots, avec un maximum plus large (cartes tirées au hasard côté appli).
+- **Braquage** : score borné seulement (pas de mots à vérifier).
+- Un changement des fichiers `data/` redéploie le serveur (`buildFilter`) : appli et serveur gardent le même dictionnaire.
+
 ## Limites connues
-- Les scores sont calculés par l'appli : un joueur très motivé pourrait en envoyer de faux. Parade prévue : recalcul côté serveur du défi du jour (cartes identiques pour tous) à partir des mots trouvés.
-- Pas encore de « mot de passe oublié » (nécessite un service d'e-mail, par ex. Resend).
-- Comptes de mineurs : l'appli demande l'accord d'un parent sous 15 ans ; à faire valider juridiquement (RGPD).
+- Les chronos ne sont pas rejoués : un joueur très motivé pourrait encore gonfler un peu son bonus de rapidité (jamais inventer des mots ou des cartes). Pour aller plus loin : jeton de début de partie signé + durée minimale par carte.
+- Juste après une mise à jour du dictionnaire, un joueur dont l'appli est encore en cache peut voir son score refusé jusqu'au rechargement.

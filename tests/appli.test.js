@@ -80,7 +80,13 @@ test("comptes et classements de bout en bout (avec serveur)", {skip: !SERVEUR &&
   await p.click("#ct-ok");
   await p.waitForFunction(() => Compte.connecte(), null, {timeout:8000});
   // un score du défi du jour, puis le classement l'affiche
-  await p.evaluate(async () => { const s = Compte.session(); await fetch(window.QLN_API_URL + "/api/scores", {method:"POST", headers:{"Content-Type":"application/json", Authorization:"Bearer " + s.jeton}, body:JSON.stringify({mode:"jour", langue:"fr", score:4321, jour:new Date().toISOString().slice(0,10)})}); });
+  // un vrai défi du jour : le client joint les mots trouvés, le serveur refait le tirage et valide
+  await p.evaluate(async () => {
+    demarrerPartie("jour", null, {}); await new Promise(r => setTimeout(r, 400));
+    P.historique = P.cartes.slice(0, 3).map(c => ({niv:c.niv, origine:c.origine, trouves:solutionsDe(c).map(w => w.toUpperCase())}));
+    document.dispatchEvent(new CustomEvent("qln:fin-partie", {detail:{mode:"jour", total:150}}));
+    await new Promise(r => setTimeout(r, 1200));
+  });
   await p.evaluate(() => Compte.ecranClassements());
   await p.waitForFunction(() => document.querySelector("#app").textContent.includes("Testeur"), null, {timeout:8000});
   // nettoyage

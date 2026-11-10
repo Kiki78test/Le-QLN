@@ -49,12 +49,20 @@ test("progression : fusion entre deux appareils", async () => {
   assert.equal((await api("/api/progression?langue=en", {jeton:A.jeton})).d.progres, null, "les langues sont séparées");
 });
 
+const JOUR = require("../server/jour.js");
+/** Une partie « parfaite » du défi du jour : toutes les solutions de chaque carte. Renvoie {historique, max} */
+function partieDuJour(jour, langue = "fr", nbCartes = 10){
+  const J = JOUR.jourDe(langue, +jour.replace(/-/g, ""));
+  const historique = J.cartes.slice(0, nbCartes).map(c => ({niv:c.niv, origine:c.origine, trouves:c.mots.filter(w => JOUR.norm(w) !== JOUR.norm(c.origine))}));
+  return {J, historique};
+}
 test("scores et classements", async () => {
-  const j = jourUTC();
-  assert.equal((await api("/api/scores", {methode:"POST", jeton:A.jeton, corps:{mode:"jour", langue:"fr", score:800, jour:j}})).d.enregistre, true);
-  assert.equal((await api("/api/scores", {methode:"POST", jeton:A.jeton, corps:{mode:"jour", langue:"fr", score:9000, jour:j}})).d.enregistre, false, "défi du jour : seul le 1er essai compte");
-  await api("/api/scores", {methode:"POST", jeton:B.jeton, corps:{mode:"jour", langue:"fr", score:1200, jour:j}});
-  assert.equal((await api("/api/scores", {methode:"POST", jeton:A.jeton, corps:{mode:"jour", langue:"fr", score:10, jour:"2020-01-01"}})).status, 400, "ancien défi refusé");
+  const j = jourUTC(), {historique} = partieDuJour(j);
+  const un = (jeton, score, detail = {historique}, extra = {}) => api("/api/scores", {methode:"POST", jeton, corps:{mode:"jour", langue:"fr", score, jour:j, detail, ...extra}});
+  assert.equal((await un(A.jeton, 800)).d.enregistre, true);
+  assert.equal((await un(A.jeton, 900)).d.enregistre, false, "défi du jour : seul le 1er essai compte");
+  assert.equal((await un(B.jeton, 1200)).d.enregistre, true);
+  assert.equal((await un(A.jeton, 10, {historique}, {jour:"2020-01-01"})).status, 400, "ancien défi refusé");
   assert.equal((await api("/api/scores", {methode:"POST", jeton:A.jeton, corps:{mode:"triche", score:10}})).status, 400);
   assert.equal((await api("/api/scores", {methode:"POST", jeton:A.jeton, corps:{mode:"defi", score:-5}})).status, 400);
   assert.equal((await api("/api/scores", {methode:"POST", corps:{mode:"defi", score:5}})).status, 401, "score sans compte refusé");
@@ -65,6 +73,49 @@ test("scores et classements", async () => {
   assert.equal(c.d.moi.pseudo, "Alicia"); assert.equal(c.d.moi.moi, true);
   const be = await api("/api/classement?mode=jour&langue=fr&pays=BE&jour=" + j);
   assert.ok(be.d.lignes.every(l => l.pays === "BE"), "filtre par pays");
+});
+
+test("anti-triche : le défi du jour est vérifié par le serveur", async () => {
+  const j = jourUTC(), {J, historique} = partieDuJour(j);
+  const C = (await api("/api/inscription", {methode:"POST", corps:{email:`cheat-${uniq}@test.fr`, mdp:"motdepasse-triche", pseudo:"Tricheur"}})).d;
+  assert.ok(C.jeton, "compte de test");
+  const essai = (score, detail) => api("/api/scores", {methode:"POST", jeton:C.jeton, corps:{mode:"jour", langue:"fr", score, jour:j, detail}});
+  // sans les mots : refusé (ancien client ou client modifié)
+  assert.equal((await essai(500)).status, 400, "score sans mots refusé");
+  assert.equal((await essai(500, {historique:[]})).status, 400);
+  // score démesuré pour les mots annoncés
+  assert.equal((await essai(19999, {historique})).status, 400, "score au-dessus du maximum possible");
+  // cartes qui ne sont pas celles du jour
+  const autre = JOUR.jourDe("fr", +j.replace(/-/g, "") + 1).cartes.map(c => ({niv:c.niv, origine:c.origine, trouves:[]}));
+  assert.equal((await essai(100, {historique:autre})).status, 400, "cartes d'un autre jour");
+  // mot qui n'est pas une solution, doublon, mot de la carte lui-même
+  const faux = JSON.parse(JSON.stringify(historique)); faux[0].trouves = ["zzzzzz"];
+  assert.equal((await essai(100, {historique:faux})).status, 400, "mot invalide");
+  const dbl = JSON.parse(JSON.stringify(historique)); dbl[0].trouves = [dbl[0].trouves[0], dbl[0].trouves[0]];
+  assert.equal((await essai(100, {historique:dbl})).status, 400, "doublon");
+  const ori = JSON.parse(JSON.stringify(historique)); ori[0].trouves = [ori[0].origine];
+  assert.equal((await essai(100, {historique:ori})).status, 400, "le mot de la carte ne compte pas");
+  // aucune carte réussie : le score doit rester minime
+  const rien = historique.map(h => ({...h, trouves:[]}));
+  assert.equal((await essai(300, {historique:rien})).status, 400, "des euros sans aucun mot");
+  // une partie réelle (quelques mots) est acceptée, et le score maximal d'une partie parfaite aussi
+  const reel = historique.map((h, i) => ({...h, trouves:i < 3 ? h.trouves.slice(0, 1) : []}));
+  assert.equal((await essai(60, {historique:reel})).d.enregistre, true, "partie légitime acceptée");
+  const D = await api("/api/moi", {methode:"DELETE", jeton:C.jeton}); assert.ok(D.status < 300);
+  // un score parfait théorique est accepté (borne maximale)
+  const P = (await api("/api/inscription", {methode:"POST", corps:{email:`parfait-${uniq}@test.fr`, mdp:"motdepasse-parfait", pseudo:"Parfait"}})).d;
+  const maxi = JOUR.verifierJour("fr", j, {historique}, 0) === null ? 0 : 0; void maxi;
+  let borne = 0; while(JOUR.verifierJour("fr", j, {historique}, borne + 100) === null) borne += 100;   // plus grand multiple de 100 accepté
+  assert.ok(borne > 800 && borne < 20000, "borne cohérente : " + borne);
+  assert.equal((await api("/api/scores", {methode:"POST", jeton:P.jeton, corps:{mode:"jour", langue:"fr", score:borne, jour:j, detail:{historique}}})).d.enregistre, true);
+  await api("/api/moi", {methode:"DELETE", jeton:P.jeton});
+  // défi (cartes libres) : mots vérifiés, score borné
+  const g = J.cartes[0], solo = [{niv:g.niv, origine:g.origine, trouves:g.mots.filter(w => JOUR.norm(w) !== JOUR.norm(g.origine)).slice(0, 1)}];
+  const dfi = (score, detail) => api("/api/scores", {methode:"POST", jeton:A.jeton, corps:{mode:"defi", langue:"fr", score, detail}});
+  assert.equal((await dfi(50, {historique:solo})).d.enregistre, true, "défi légitime");
+  assert.equal((await dfi(9000, {historique:solo})).status, 400, "défi : score impossible");
+  assert.equal((await dfi(50)).status, 400, "défi sans mots refusé");
+  assert.equal((await dfi(50, {historique:[{niv:"v", origine:"zzzzz", trouves:[]}]})).status, 400, "défi : carte inconnue");
 });
 
 test("mots contestés : validation de l'entrée", async () => {

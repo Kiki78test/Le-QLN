@@ -17,6 +17,8 @@ services:
       paths:
         - server/**
         - analyse.js
+        - data/**
+        - en/data/**
     envVars:
       - key: DATABASE_URL        # base dédiée ci-dessous, branchée automatiquement (adresse interne)
         fromDatabase:
