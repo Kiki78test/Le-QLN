@@ -124,7 +124,8 @@ st+=ul(["Multijoueur : reprendre une partie après une coupure (rejeu depuis l'h
  "Hébergement : base Render à passer en Basic avant le 10/12/2026, serveur en Starter à l'ouverture au public ; domaine (Cloudflare) quand le nom est choisi.",
  "Décisions en attente : vidéos récompense touchant aux règles, propositions de règles, mots douteux, nom définitif."])
 st.append(Paragraph("Historique des versions",H))
-st+=ul(["<b>10 nov. 2026 (nuit)</b> — choix de la série en tuiles (au lieu du menu déroulant) ; le contenu ne passe plus derrière le filet doré du bas.",
+st+=ul(["<b>10 nov. 2026 (nuit)</b> — écran Solo sur ordinateur en deux colonnes équilibrées (Partie libre / Campagnes) ; bande des séries : nombre de séries affiché, flèches ‹ › quand il en reste d'un côté, petit aller-retour de démonstration à la première visite.",
+ "<b>10 nov. 2026 (nuit)</b> — choix de la série en tuiles (au lieu du menu déroulant) ; le contenu ne passe plus derrière le filet doré du bas.",
  "<b>10 nov. 2026 (nuit)</b> — tablettes (iPad…) : la mise en page du téléphone est agrandie à la taille de l'écran ; appli iOS pour iPhone et iPad, captures iPad 13 pouces pour l'App Store.",
  "<b>10 nov. 2026 (nuit)</b> — appli Android à publier (.aab signé, clé d'envoi chiffrée) ; vraies publicités AdMob prêtes dans les applis (consentement RGPD, ATT, menu « Choix publicitaires »).",
  "<b>10 nov. 2026 (soir)</b> — définitions vérifiées au Wiktionnaire pour tout le dictionnaire français : 98 % des 8 156 mots en ont une (115 sans, liste dans « Cartes écartées de l'appli ») ; action GitHub « Définitions (Wiktionnaire) ».",

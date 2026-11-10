@@ -8,13 +8,13 @@
 const Series = (() => {
 const LG = document.documentElement.lang === "en" ? "en" : "fr";
 const TXT = LG === "en" ? {
-  serie:"Series", classique:"Classic", classiqueD:"10 cards from every colour", langues:"Languages", themes:"Themes",
+  serie:"Series", nb:n => `${n} to choose · swipe`, prec:"Previous series", suiv:"More series", classique:"Classic", classiqueD:"10 cards from every colour", langues:"Languages", themes:"Themes",
   verrou:n => `level ${n}`, nomLangue:{fr:"Français", en:"English", es:"Español", de:"Deutsch", it:"Italiano"},
   descTheme:(n, t) => `${n} cards per game · ${t}`, descLangue:l => `10 cards in ${{fr:"French", es:"Spanish", de:"German", it:"Italian"}[l]}`, pasClasse:"Series are not ranked: just for fun and XP.",
   chargement:"Loading the series…", echec:"This series could not be loaded. Check your connection and try again.",
   niveau:n => `Unlocked at level ${n}`, debloque:n => `New series unlocked: ${n}!`,
 } : {
-  serie:"Série", classique:"Classique", classiqueD:"10 cartes de toutes les couleurs", langues:"Langues", themes:"Thèmes",
+  serie:"Série", nb:n => `${n} au choix · faites défiler`, prec:"Séries précédentes", suiv:"Autres séries", classique:"Classique", classiqueD:"10 cartes de toutes les couleurs", langues:"Langues", themes:"Thèmes",
   verrou:n => `niveau ${n}`, nomLangue:{fr:"Français", en:"English", es:"Español", de:"Deutsch", it:"Italiano"},
   descTheme:(n, t) => `${n} cartes par partie · ${t}`, descLangue:l => `10 cartes en ${{en:"anglais", es:"espagnol", de:"allemand", it:"italien"}[l]}`, pasClasse:"Les séries ne sont pas classées : pour le plaisir et l'XP.",
   chargement:"Chargement de la série…", echec:"Impossible de charger cette série. Vérifiez la connexion et réessayez.",
@@ -83,8 +83,10 @@ async function menu(zone, majBouton){
   const groupes = [...new Set(liste.map(x => x.groupe))];
   const tuile = x => `<button class="serie-tuile ${x.ouvert ? "" : "verrou"}" data-serie="${x.cle}" role="radio" aria-checked="${x.cle === cle}" ${x.ouvert ? "" : "aria-disabled=\"true\""} style="--fond:${fondTuile(x)}" aria-label="${esc(x.nom)}${x.ouvert ? "" : " — " + TXT.verrou(x.requis)}">
       <i class="st-fond" aria-hidden="true"></i><span class="st-emoji" aria-hidden="true">${x.emoji}</span><span class="st-nom">${esc(x.nom)}</span>${x.ouvert ? "" : `<span class="st-verrou">🔒 ${TXT.verrou(x.requis)}</span>`}</button>`;
-  zone.innerHTML = `<div class="serie-choix"><span class="serie-lbl">${TXT.serie}</span>
-    <div class="serie-bande" role="radiogroup" aria-label="${TXT.serie}">${groupes.map(g => (g ? `<span class="serie-groupe">${esc(g)}</span>` : "") + liste.filter(x => x.groupe === g).map(tuile).join("")).join("")}</div></div>
+  zone.innerHTML = `<div class="serie-choix"><span class="serie-lbl">${TXT.serie} <em class="serie-nb">${TXT.nb(liste.length)}</em></span>
+    <div class="serie-defile"><button type="button" class="serie-fl prec" aria-label="${TXT.prec}" tabindex="-1">‹</button>
+    <div class="serie-bande" role="radiogroup" aria-label="${TXT.serie}">${groupes.map((g, i) => (i ? `<span class="serie-sep" aria-hidden="true"></span>` : "") + liste.filter(x => x.groupe === g).map(tuile).join("")).join("")}</div>
+    <button type="button" class="serie-fl suiv" aria-label="${TXT.suiv}" tabindex="-1">›</button></div></div>
     <p class="serie-note" id="serie-note"></p>`;
   const bande = $(".serie-bande", zone);
   const maj = () => {
@@ -102,12 +104,31 @@ async function menu(zone, majBouton){
   });
   // molette verticale = défilement horizontal (ordinateur)
   bande.addEventListener("wheel", e => { if(Math.abs(e.deltaY) > Math.abs(e.deltaX)){ bande.scrollLeft += e.deltaY; e.preventDefault(); } }, {passive:false});
+  // flèches de défilement : visibles seulement s'il reste des séries de ce côté
+  const defile = $(".serie-defile", zone);
+  const fleches = () => {
+    const max = bande.scrollWidth - bande.clientWidth;
+    defile.classList.toggle("a-gauche", bande.scrollLeft > 4);
+    defile.classList.toggle("a-droite", bande.scrollLeft < max - 4);
+  };
+  $$(".serie-fl", zone).forEach(b => b.onclick = () => {
+    bande.scrollBy({left:(b.classList.contains("prec") ? -1 : 1) * Math.max(120, bande.clientWidth * .7), behavior:"smooth"});
+    if(typeof Son !== "undefined") Son.tap();
+  });
+  bande.addEventListener("scroll", fleches, {passive:true});
+  if(typeof ResizeObserver !== "undefined") new ResizeObserver(fleches).observe(bande);
   maj();
   const sel = $(`.serie-tuile[data-serie="${cle}"]`, zone); if(sel) bande.scrollLeft = Math.max(0, sel.offsetLeft - bande.clientWidth/2 + sel.offsetWidth/2);
   // nouvelle série débloquée depuis la dernière visite
   const vu = store.get("seriesVues", 0), ouvertes = liste.filter(x => x.ouvert).length;
   if(vu && ouvertes > vu){ const n = liste.filter(x => x.ouvert).slice(vu).map(x => x.nom).join(", "); if(typeof toast === "function") toast(TXT.debloque(n), 3500); }
   store.set("seriesVues", ouvertes);
+  fleches();
+  // première visite : petit aller-retour pour montrer que la bande défile
+  if(!store.get("serieIndice", 0) && bande.scrollWidth > bande.clientWidth + 20 && !matchMedia("(prefers-reduced-motion: reduce)").matches){
+    store.set("serieIndice", 1); const x0 = bande.scrollLeft;
+    setTimeout(() => { bande.scrollTo({left:x0 + 110, behavior:"smooth"}); setTimeout(() => bande.scrollTo({left:x0, behavior:"smooth"}), 650); }, 700);
+  }
 }
 
 /* ---------- configuration d'une partie ---------- */
@@ -169,13 +190,24 @@ function habiller(c){
 const css = document.createElement("style");
 css.textContent = `
 .serie-zone{grid-column:1/-1; display:grid; gap:4px; justify-items:center}
-.serie-choix{width:100%; display:grid; gap:6px}
+.serie-choix{width:100%; min-width:0; display:grid; grid-template-columns:minmax(0,1fr); gap:6px}
 .serie-lbl{font:700 13px var(--f-ui); color:var(--brume); letter-spacing:.14em; text-transform:uppercase; text-align:center}
 .serie-bande{display:flex; gap:8px; overflow-x:auto; overflow-y:hidden; padding:6px 4px 8px; scroll-snap-type:x proximity; scrollbar-width:none; -webkit-overflow-scrolling:touch;
   -webkit-mask:linear-gradient(90deg, transparent, #000 18px, #000 calc(100% - 18px), transparent); mask:linear-gradient(90deg, transparent, #000 18px, #000 calc(100% - 18px), transparent)}
 .serie-bande::-webkit-scrollbar{display:none}
+.serie-nb{font-style:normal; font-weight:600; letter-spacing:.04em; text-transform:none; color:var(--or); opacity:.9; margin-left:6px}
+.serie-defile{position:relative; min-width:0}
+.serie-fl{position:absolute; top:50%; z-index:2; width:34px; height:34px; margin-top:-17px; border-radius:50%; border:1px solid rgba(255,216,74,.7); display:grid; place-items:center; padding:0 0 3px;
+  font:700 26px/1 var(--f-ui); color:#fff; background:rgba(9,26,74,.92); box-shadow:0 3px 10px rgba(0,0,0,.5); cursor:pointer; opacity:0; pointer-events:none; transition:opacity .2s, transform .15s}
+.serie-fl.prec{left:-6px} .serie-fl.suiv{right:-6px}
+.serie-fl:hover{transform:scale(1.1)}
+.serie-defile.a-gauche .serie-fl.prec,.serie-defile.a-droite .serie-fl.suiv{opacity:1; pointer-events:auto}
+.serie-defile.a-droite .serie-fl.suiv{animation:serie-pousse 1.6s ease-in-out 3}
+@keyframes serie-pousse{50%{transform:translateX(4px)}}
+@media (prefers-reduced-motion: reduce){ .serie-defile.a-droite .serie-fl.suiv{animation:none} }
+.serie-sep{flex:none; align-self:stretch; width:2px; margin:8px 2px; border-radius:2px; background:linear-gradient(180deg, transparent, rgba(255,216,74,.55), transparent)}
 .serie-groupe{flex:none; align-self:center; writing-mode:vertical-rl; transform:rotate(180deg); font:700 11px var(--f-ui); letter-spacing:.16em; text-transform:uppercase; color:var(--or); opacity:.85; padding:0 2px}
-.serie-tuile{flex:none; position:relative; width:92px; height:92px; border:0; border-radius:14px; padding:6px 6px 7px; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; gap:3px;
+.serie-tuile{flex:none; position:relative; width:88px; height:88px; border:0; border-radius:14px; padding:6px 6px 7px; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; gap:3px;
   color:#fff; cursor:pointer; scroll-snap-align:center; overflow:hidden; background:#0d2259;
   box-shadow:inset 0 0 0 1px rgba(255,255,255,.18), 0 4px 10px rgba(0,0,0,.35); transition:transform .15s, box-shadow .15s}
 .serie-tuile .st-fond{position:absolute; inset:0; background:var(--fond); opacity:.9}

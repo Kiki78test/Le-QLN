@@ -865,10 +865,13 @@ body::before{background:radial-gradient(130% 95% at 50% 45%, transparent 55%, rg
   .app:has(.ecran.solo){max-width:1180px}
   .ecran.solo{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); column-gap:40px; row-gap:14px; align-items:start; align-content:start}
   .ecran.solo > .entete-ecran,.ecran.solo > .sous-titre{grid-column:1/-1}
-  .ecran.solo .solo-d > .titre-section{margin-top:0}
-  .ecran.solo .mode{min-height:150px}
-  .ecran.solo .mode.large{min-height:120px}
+  .ecran.solo .titre-section{margin:0}
+  .ecran.solo .mode{min-height:118px; padding-top:14px; padding-bottom:14px}
+  .ecran.solo .mode .nom{font-size:26px}
+  .ecran.solo .mode.large{min-height:118px}
+  .ecran.solo .solo-d .modes{gap:14px}
 }
+.seul-pc{display:none} @media (min-width:1000px){ .seul-pc{display:block} }
 /* le contenu s'arrête au-dessus du filet doré du bas (il ne passe jamais derrière) */
 .app:not(:has(.plateau-ecran)){padding-bottom:calc(28px + 34px)}
 @media (min-width:1000px){ .app:not(:has(.plateau-ecran)){padding-bottom:calc(28px + 52px)} }
@@ -2229,6 +2232,7 @@ function ecranSolo(){
     <div class="entete-ecran"><button class="icone-btn" id="b-retour" aria-label="Retour">${ICO.retour}</button><h1>Mode solo</h1><span></span></div>
     <p class="sous-titre">Choisissez votre partie.</p>
     <div class="solo-g">
+    <h2 class="titre-section seul-pc">Partie libre</h2>
     <div class="modes">
       <button class="mode large piece c-vert" id="s-defi"><span class="filigrane" aria-hidden="true">A</span><span class="ico">${ICO.escalier}</span><span><span class="nom">Le Défi</span><span class="desc">Partie libre : 10 cartes, 3 vies, séries, événements et coffres${rec.defi ? " · record "+euros(rec.defi) : ""}</span></span></button>
       <div class="serie-zone" id="serie-zone"></div>
