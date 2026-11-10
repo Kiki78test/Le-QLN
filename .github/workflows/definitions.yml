@@ -11,6 +11,7 @@ permissions:
 jobs:
   definitions:
     runs-on: ubuntu-latest
+    timeout-minutes: 120
     steps:
       - uses: actions/checkout@v4
       - run: python3 tools/definitions_wiktionnaire.py
