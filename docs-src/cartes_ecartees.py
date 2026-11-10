@@ -8,9 +8,15 @@ wb = load_workbook(RACINE / "docs" / "le-qln-anagrammes-ecartees.xlsx", read_onl
 def lignes(nom):
     rows = list(wb[nom].iter_rows(values_only=True))
     return rows[0][0], [r for r in rows[3:] if r and r[0]]
+import json
+DEF = json.loads((RACINE / "docs-src" / "definitions.json").read_text(encoding="utf-8"))
 def tableau(rs):
-    return T([[r[0], f"<b>{html.escape(str(r[1]).upper())}</b>", html.escape(str(r[2] or "")), str(r[3]).replace(".", ","), str(r[4]).replace(".", ","), r[5] or ""] for r in rs],
-             ["Couleur", "Mot de la carte", "Autres anagrammes", "Lexique (occ./M)", "wordfreq (Zipf)", "Mots douteux"], [9, 20, 37, 12, 12, 10])
+    return T([[r[0], f"<b>{html.escape(str(r[1]).upper())}</b>", html.escape(str(r[2] or "")), str(r[3]).replace(".", ","), str(r[4]).replace(".", ","), r[5] or "", r[6]] for r in rs],
+             ["Couleur", "Mot de la carte", "Autres anagrammes", "Lexique (occ./M)", "wordfreq (Zipf)", "Mots douteux", "Mots définis"], [8, 19, 33, 11, 11, 9, 9])
+def bilan(rs):
+    mots = [w for r in rs for w in [r[1]] + [x.strip() for x in str(r[2] or "").split(",") if x.strip()]]
+    sans = [w for w in mots if not DEF.get(w)]
+    return len(mots), len(mots) - len(sans), sum(1 for r in rs if int(r[6].split("/")[0]) >= 2), sum(1 for r in rs if r[6].startswith("0/")), sans
 n1, e = lignes("Écartées (appli)"); n2, l = lignes("Limite (à décider)")
 h = ('<p class="intro">Certaines cartes ne contiennent aucun mot qu\'un joueur moyen connaît : celui qui les tire est sûr de perdre. '
      'Proposition : <b>les garder dans le dictionnaire et dans la boîte, mais ne plus les faire tirer dans l\'appli</b>. Rien n\'est encore appliqué.</p>')
@@ -18,6 +24,12 @@ h += B("Comment un mot est jugé « courant »", items=[
     "Fréquence Lexique 3.83 (films + livres) d'au moins 0,3 occurrence par million — le seuil déjà utilisé pour construire le dictionnaire ;",
     "<b>ou</b> fréquence wordfreq (textes récents : web, sous-titres, Wikipédia) d'au moins 2,0 sur l'échelle Zipf, qui rattrape des mots connus mais rares dans Lexique (climatiser, ralentisseur, urgentiste…).",
     "Une carte est écartée si <b>aucun</b> de ses mots n'est courant ; elle reste si au moins un mot l'est (ONDINISMES / DIMENSIONS reste : il suffit de trouver DIMENSIONS)."], classe="hl")
+me, oke, c2e, c0e, sanse = bilan(e); ml, okl, c2l, c0l, sansl = bilan(l)
+h += B("Définitions trouvées (Wiktionnaire, celui qu'utilise le bouton « Définition » du jeu)", items=[
+    f"<b>Cartes écartées</b> : {oke} mots définis sur {me} ; {c2e} cartes sur {len(e)} ont au moins 2 mots définis ; {c0e} n'en ont aucun.",
+    f"<b>Cartes limites</b> : {okl} mots définis sur {ml} ; {c2l} cartes sur {len(l)} ont au moins 2 mots définis ; {c0l} n'en ont aucun.",
+    "Sans définition (absents du Wiktionnaire) : " + ", ".join(html.escape(w) for w in sanse + sansl) + ".",
+    "Colonne « Mots définis » : nombre de mots de la carte ayant une définition. Les définitions complètes sont dans le tableur."])
 h += f"<h2>Cartes écartées de l'appli ({len(e)})</h2>" + tableau(e)
 h += f'<h2 class="pb">Cartes limites, gardées par défaut ({len(l)})</h2><p class="petit">Mot le plus connu peu fréquent : à votre appréciation.</p>' + tableau(l)
 h += B("Pour décider", "Dans le tableur « Cartes écartées de l'appli », dernière colonne de chaque onglet : « garder » ou « écarter ». Ou bien : « applique tel quel » (les cartes écartées ci-dessus ne sont plus tirées dans l'appli, les cartes limites restent).")

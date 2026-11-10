@@ -37,7 +37,7 @@ h += sec("Décisions à prendre", [
     ("vous", "<b>Relire les séries de langue</b> : tableur « Séries en espagnol, allemand, italien » (mots à retirer)."),
     ("vous", "<b>Relire les thèmes</b> : tableur « Thèmes des séries » (mettre un x pour retirer un mot, proposer des ajouts)."),
     ("dec", "<b>Sons</b> : ajout éventuel de nouveaux sons (ambiance, dé, enchères, victoire…)."),
-    ("vous", "<b>Vérifier la liste des cartes écartées de l'appli</b> (document « Cartes écartées de l'appli ») : 27 cartes sans mot courant à ne plus tirer, 46 cartes limites ; noter « garder » ou « écarter », ou « applique tel quel »."),
+    ("vous", "<b>Vérifier la liste des cartes écartées de l'appli</b> (document « Cartes écartées de l'appli ») : 27 cartes sans mot courant à ne plus tirer (45 mots sur 61 ont une définition au Wiktionnaire), 46 cartes limites (102 mots sur 111) ; noter « garder » ou « écarter », ou « applique tel quel »."),
     ("vous", "<b>Relire le dictionnaire anglais</b> : tableur « Dictionnaire anglais (relecture) », 377 nouvelles cartes marquées."),
     ("dec", "<b>Mots douteux</b> : tableur à relire (gardés par défaut)."),
 ])
