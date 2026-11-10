@@ -17,13 +17,24 @@ Adaptation en appli web installable du jeu de plateau **Le-QLN** (2 à 6 joueurs
 | Rouge | 8–9 | 100 € | 2 min |
 | Noir | 10 et + | 200 € | 3 min |
 
-## Fichiers
-- `index.html` : socle commun et mode solo (HTML, CSS, JS)
-- `plateau.js` : mode contre l'IA (plateau, moteur de partie, IA)
-- `manifest.webmanifest`, `sw.js`, `icons/` : installation et jeu hors connexion
-- `data/fr.json` : dictionnaire d'anagrammes français
-- `docs/` : documentation (PDF + `index.json`, affichée dans le menu Documentation)
-- `docs-src/` + `tools/pdf.js` : sources HTML des PDF ; générer avec `node tools/pdf.js docs-src/x.html docs/x.pdf` (polices : `npm i @fontsource/bebas-neue @fontsource/barlow-condensed @fontsource/barlow` dans `fonts/`)
-- `tools/build_dict.py` : régénère `data/fr.json` à partir de Lexique 3.83 et du tableau de cartes de l'auteur
+## Organisation du dépôt
+Le jeu web est à la **racine** : GitHub Pages publie la racine telle quelle (`https://kiki78test.github.io/Le-QLN/`).
+
+| Dossier / fichier | Contenu |
+|---|---|
+| racine : `index.html`, `*.js`, `sw.js`, `manifest.webmanifest`, `config.js`, `marque.json` | le jeu (socle + solo, plateau, multijoueur, comptes, progression, pubs, pages juridiques) |
+| `data/` | dictionnaire français (`fr.json`) |
+| `en/` | version anglaise **générée** (`python3 tools/build_en.py`) — ne pas modifier à la main |
+| `icons/`, `fonts/`, `pubs/` | icônes, polices, spots publicitaires de démonstration (`pubs-src/` : leurs sources) |
+| `server/` | serveur Node (Render) : relais multijoueur, API comptes/classements, anti-triche (`jour.js`) |
+| `mobile/` | applis Android et iOS (Capacitor) ; réglages natifs dans `mobile/native/` |
+| `docs/` | documentation (PDF, tableurs, `index.json` affiché dans le menu Documentation) |
+| `docs-src/` | sources des documents (ex. `services.py` → `docs/services-externes.pdf`, `checklist.py` → `docs/check-list.pdf`) |
+| `tools/` | outils : version anglaise, dictionnaires, pages juridiques, changement de nom |
+| `tests/` | tests automatiques (serveur + appli dans Chromium) |
+| `.github/workflows/` | automatismes : tests, version en ligne, sécurité, appli Android, appli iOS, changer le nom |
+| `render.yaml` | Blueprint Render (serveur + base) |
+
+Détails techniques (services, variables, base, API) : `docs/services-externes.pdf`.
 
 Dictionnaire construit à partir de [Lexique 3.83](http://www.lexique.org) (New, Pallier et al., licence CC BY-SA 4.0).

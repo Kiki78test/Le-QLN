@@ -1,5 +1,11 @@
 [
   {
+    "titre": "Check-list",
+    "fichier": "check-list.pdf",
+    "date": "2026-11-10",
+    "description": "Échéances (base Render en Basic avant le 10/12), démarches en cours de votre côté, décisions à prendre, prochaines étapes et ce qui est fait."
+  },
+  {
     "titre": "Services externes (développeur)",
     "fichier": "services-externes.pdf",
     "date": "2026-11-10",
