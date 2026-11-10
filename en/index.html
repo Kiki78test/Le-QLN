@@ -616,6 +616,42 @@ h1.logo{margin:0; font-weight:inherit}
 /* =====================  DESIGN V10 — « jeu télévisé premium » : contours fins, ombres discrètes, or réservé à l'important  ===================== */
 :root{--emeraude-a:#0f9f6e; --emeraude-b:#3fd99b; --emeraude-o:#06573c; --filet-or:rgba(255,214,90,.55); --ombre-douce:0 10px 24px rgba(0,0,0,.32)}
 body::after{opacity:.28}
+
+/* ---------- Règles du jeu : cartes sombres au liseré doré, médaillons, illustrations ---------- */
+.regles{gap:14px}
+.regle{background:linear-gradient(180deg, rgba(20,44,104,.92), rgba(8,20,52,.94)); color:#e6edff; border-radius:18px; padding:6px 18px 16px;
+  box-shadow:inset 0 0 0 1.5px rgba(255,214,90,.55), inset 0 1px 0 rgba(255,255,255,.12), 0 14px 30px rgba(0,0,0,.4)}
+.regle h2{font-size:27px; margin:12px 0 8px; gap:12px; background:var(--or-grad-2); -webkit-background-clip:text; background-clip:text; color:transparent}
+.rg-ico{flex:none; width:42px; height:42px; border-radius:50%; display:grid; place-items:center; color:#fff; background:linear-gradient(160deg,var(--b),var(--a));
+  box-shadow:inset 0 2px 0 rgba(255,255,255,.45), inset 0 -3px 5px rgba(0,0,0,.25), 0 0 0 2px rgba(255,255,255,.14), 0 4px 10px rgba(0,0,0,.4)}
+.rg-ico svg{width:22px; height:22px}
+.regle p,.regle li{color:#dbe5ff} .regle b{color:#ffe27a}
+.regle ul{list-style:none; padding-left:4px; display:grid; gap:7px}
+.regle ul li{position:relative; padding-left:20px}
+.regle ul li::before{content:""; position:absolute; left:2px; top:.5em; width:8px; height:8px; border-radius:2px; background:var(--or); transform:rotate(45deg); box-shadow:0 0 8px rgba(255,200,60,.6)}
+/* les 4 couleurs : quatre cartes */
+.r-couleurs ul{grid-template-columns:repeat(2,1fr); gap:10px; padding:0}
+.r-couleurs li{padding:10px 12px 11px; border-radius:14px; color:#fff; font-weight:600; line-height:1.3; box-shadow:inset 0 2px 0 rgba(255,255,255,.35), inset 0 -4px 6px rgba(0,0,0,.25), 0 6px 12px rgba(0,0,0,.35)}
+.r-couleurs li::before{display:none} .r-couleurs li span{display:block} .r-couleurs li b{display:block; color:#fff; font:400 24px/1 var(--f-titre); letter-spacing:.04em; text-transform:uppercase; margin-bottom:3px}
+.r-couleurs li:nth-child(1){background:linear-gradient(160deg,#8fd24a,#2f8a2e)} .r-couleurs li:nth-child(2){background:linear-gradient(160deg,#6db2ff,#1f5fc4)}
+.r-couleurs li:nth-child(3){background:linear-gradient(160deg,#ff6a66,#b3161f)} .r-couleurs li:nth-child(4){background:linear-gradient(160deg,#5a5d68,#15161b)}
+/* illustrations */
+.rg-illu{margin:4px 0 10px; padding:14px 10px; border-radius:14px; background:radial-gradient(120% 140% at 50% 0%, rgba(90,150,255,.22), rgba(3,10,30,.35)); box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
+.rg-principe{display:flex; align-items:center; justify-content:center; gap:10px; flex-wrap:wrap}
+.rg-mot{display:inline-flex; gap:4px} .rg-mot i{width:34px; height:38px; border-radius:8px; display:grid; place-items:center; font:400 26px/1 var(--f-titre); font-style:normal; color:#fff; padding-top:2px;
+  background:linear-gradient(165deg,var(--b),var(--a)); box-shadow:inset 0 1px 0 rgba(255,255,255,.5), 0 3px 0 var(--o), 0 6px 10px rgba(0,0,0,.3)}
+.rg-mot i.c-emeraude{--a:var(--emeraude-a); --b:var(--emeraude-b); --o:var(--emeraude-o)}
+.rg-fleche{width:38px; height:38px; border-radius:50%; display:grid; place-items:center; color:#1b1400; background:var(--or-grad); box-shadow:0 3px 0 var(--or-o), 0 0 14px rgba(255,200,60,.5)} .rg-fleche svg{width:20px; height:20px}
+.rg-piste{display:flex; gap:3px; justify-content:center} .rg-piste i{position:relative; width:30px; height:30px; border-radius:5px; background:linear-gradient(160deg,var(--b),var(--a)); box-shadow:inset 0 2px 0 rgba(255,255,255,.4), 0 2px 0 rgba(0,0,0,.5)}
+.rg-piste i.cd::after,.rg-piste i.plus::after,.rg-piste i.moins::after{position:absolute; inset:0; display:grid; place-items:center; font:800 17px var(--f-ui); font-style:normal; color:#fff}
+.rg-piste i.cd::after{content:"↔"} .rg-piste i.plus::after{content:"+"} .rg-piste i.moins::after{content:"−"}
+.rg-bas{display:flex; align-items:center; justify-content:center; gap:18px; margin-top:14px; flex-wrap:wrap}
+.rg-bas .de{--d:54px; margin:0; flex:none}
+.rg-arrivee{display:grid; grid-template-columns:repeat(3,auto); gap:5px 8px}
+.rg-arrivee span{display:inline-flex; align-items:center; gap:6px; font:800 15px var(--f-ui); font-variant-numeric:tabular-nums} .rg-arrivee span.plus{color:#9be15d} .rg-arrivee span.moins{color:#ff8f7d}
+.rg-arrivee b{width:22px; height:22px; border-radius:5px; display:grid; place-items:center; color:#1b1400!important; font:800 14px var(--f-ui); background:linear-gradient(160deg,#ffe98a,#e0a800)}
+/* touches du clavier */
+.r-clavier b{display:inline-block; padding:1px 9px 2px; margin:0 1px; border-radius:7px; color:#10204a!important; font:700 14px var(--f-ui); background:linear-gradient(180deg,#fff,#d7deef); box-shadow:0 2px 0 #8d9bc0, 0 3px 6px rgba(0,0,0,.35)}
 /* carte : liseré doré lumineux ; titre du plateau encadré de filets dorés */
 .table-carte .carte{box-shadow:0 0 0 2px rgba(255,220,120,.85), 0 0 0 5px rgba(255,255,255,.05), 0 0 34px rgba(255,196,70,.32), 0 18px 36px rgba(0,0,0,.45)!important}
 .p-hud h1 small::before,.p-hud h1 small::after{content:""; display:inline-block; vertical-align:middle; width:min(46px,9vw); height:2px; margin:0 10px 2px; border-radius:2px; background:linear-gradient(90deg, transparent, #f2c230)}
@@ -1546,37 +1582,53 @@ function ecranRegles(){
   <section class="ecran">
     <div class="entete-ecran"><button class="icone-btn" id="b-retour" aria-label="Back">${ICO.retour}</button><h1>How to play</h1><span></span></div>
     <div class="regles">
-      <div class="regle"><h2>The idea</h2>
+      <div class="regle r-principe"><h2><span class="rg-ico c-vert">${ICO.melanger}</span>The idea</h2>
+        ${illuPrincipe()}
         <p>You are shown a word. Find another English word that uses exactly the same letters before the timer runs out. Example: LISTEN gives SILENT.</p>
         <p>Accepted words: common nouns, adjectives, verbs, plurals and conjugated forms. Proper nouns are refused.</p></div>
-      <div class="regle"><h2>The colours</h2><ul>
-        <li><b>Green</b>: 4–5 letters, €20, 30 seconds</li><li><b>Blue</b>: 6–7 letters, €50, 1 minute</li>
-        <li><b>Red</b>: 8–9 letters, €100, 2 minutes</li><li><b>Black</b>: 10+ letters, €200, 3 minutes</li></ul></div>
-      <div class="regle"><h2>Versus AI</h2>
+      <div class="regle r-couleurs"><h2><span class="rg-ico c-bleu">${ICO.cible}</span>The colours</h2><ul>
+        <li><b>Green</b><span>4–5 letters, €20, 30 seconds</span></li><li><b>Blue</b><span>6–7 letters, €50, 1 minute</span></li>
+        <li><b>Red</b><span>8–9 letters, €100, 2 minutes</span></li><li><b>Black</b><span>10+ letters, €200, 3 minutes</span></li></ul></div>
+      <div class="regle r-plateau"><h2><span class="rg-ico c-rouge">${ICO.robot}</span>Versus AI</h2>
+        ${illuPlateau()}
         <p>The full Le-QLN board, for 2 to 6 players. Roll the die, move, and solve the card of the square's colour. Success: you collect and roll again. Failure: the other players can bid to buy the card.</p>
         <p>CD squares: you choose your path. Bonus and Penalty: the bank pays you or takes the amount. Pass: you wait for the next turn. Back to start: return to the starting line. Jail: pay the bail, get released by a player (who collects your winnings for the next 2 turns) or wait 2 turns.</p>
         <p>To finish you need a die roll at least equal to the squares left, and you earn a bonus depending on your finishing order (+€100 to −€100). The winner is the richest player, not the first to finish. Opponents' winnings stay hidden until the end.</p></div>
-      <div class="regle"><h2>The Challenge</h2>
+      <div class="regle r-defi"><h2><span class="rg-ico c-vert">${ICO.escalier}</span>The Challenge</h2>
         <p>Ten cards of rising difficulty and three lives. Each unsolved card costs a life.</p>
         <ul><li>Speed: +25% if you solve it in the first half of the time.</li>
         <li>Anagram hunt: once the card is won the timer keeps running; each extra anagram earns +50% of the card's value.</li>
         <li>Hint: reveals the first letter of a solution but halves the winnings.</li></ul></div>
-      <div class="regle"><h2>Solo rules</h2>
+      <div class="regle r-solo"><h2><span class="rg-ico c-violet">${ICO.indice}</span>Solo rules</h2>
         <p>Each can be switched off under “Free game rules”.</p>
         <ul><li><b>Streak or bank</b>: winnings go into a pot with a multiplier (×1, ×1.5, ×2). Cash in to make them safe, or keep going. A failure costs a life and half the pot.</li>
         <li><b>Pick your card</b>: three hidden cards, only the word length is visible.</li>
         <li><b>Jokers</b>: a hint, a shuffle, a pass. One more joker for every 3 wins in a row. Shop between cards: hint €30, pass €60, +10 s €40.</li>
         <li><b>Event cards</b>: one card in five (Double or nothing, Lightning timer, Hidden word, Mirror card, Time bonus, Winning life). You can dodge for €30.</li>
         <li><b>Mystery chests</b> after cards 3, 6 and 9. <b>Legendary card</b> after card 7: 10+ letters, winnings ×3.</li></ul></div>
-      <div class="regle"><h2>Campaigns</h2>
+      <div class="regle r-campagnes"><h2><span class="rg-ico c-orange">${ICO.calendrier}</span>Campaigns</h2>
         <ul><li><b>The Festival</b>: five rounds with a target. Bronze at the target, silver at +25%, gold at +50% or silver with no joker. A round opens when the previous one has a medal.</li>
         <li><b>The Heist</b>: six words of 5 to 10 letters, one shared 6-minute clock, +20 s per word, no pass.</li>
         <li><b>Shadow duel</b>: today's cards against a ghost (your best game of the day, or a simulated shadow).</li>
         <li><b>Weekly challenge</b>: a fixed scenario and the same cards for 7 days. The first attempt is ranked.</li></ul></div>
-      <div class="regle"><h2>Keyboard</h2><p>Type the letters, <b>Enter</b> to submit, <b>Backspace</b> to erase, <b>Space</b> to shuffle.</p></div>
+      <div class="regle r-clavier"><h2><span class="rg-ico c-noir">${ICO.effacer}</span>Keyboard</h2><p>Type the letters, <b>Enter</b> to submit, <b>Backspace</b> to erase, <b>Space</b> to shuffle.</p></div>
     </div>
   </section>`;
   $("#b-retour").onclick = ecranAccueil;
+  const dr = $("#de-regle"); if(dr) afficherDe(dr, 5);
+}
+/* illustrations des règles (sans texte : identiques dans toutes les langues, sauf l'exemple) */
+const REGLE_EX = ["LISTEN", "SILENT"];
+function illuPrincipe(){
+  const t = (m, cls) => `<span class="rg-mot">${m.split("").map(l => `<i class="piece ${cls}">${l}</i>`).join("")}</span>`;
+  return `<div class="rg-illu rg-principe" aria-hidden="true">${t(REGLE_EX[0], "c-vert")}<span class="rg-fleche">${ICO.melanger}</span>${t(REGLE_EX[1], "c-emeraude")}</div>`;
+}
+function illuPlateau(){
+  const cases = ["c-vert", "c-bleu", "c-vert cd", "c-rouge", "c-violet plus", "c-vert", "c-orange moins", "c-bleu", "c-noir"];
+  return `<div class="rg-illu rg-plateau" aria-hidden="true">
+    <div class="rg-piste">${cases.map(c => `<i class="${c}"></i>`).join("")}</div>
+    <div class="rg-bas">${deHTML("de-regle")}<div class="rg-arrivee">${[100, 75, 50, -25, -50, -100].map((v, i) => `<span class="${v > 0 ? "plus" : "moins"}"><b>${i+1}</b>${v > 0 ? "+" : "−"}${Math.abs(v)}</span>`).join("")}</div></div>
+  </div>`;
 }
 
 /* =========================================================================

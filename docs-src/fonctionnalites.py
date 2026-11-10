@@ -93,7 +93,7 @@ st+=ul(["<b>Installable</b> (PWA) et <b>hors ligne</b> : après une première vi
  "<b>Sons</b> (fanfare de victoire, tic-tac du sablier qui s'accélère, dé, pièces) avec bouton de coupure ; <b>vibrations</b> légères.",
  "<b>Design</b> : univers bleu nuit et or avec traînées lumineuses, contours fins, lettres vert émeraude, carte qui se retourne, plateau au cadre doré lumineux, dé blanc en 3D (trois faces visibles) lancé sur le plateau dans un tourbillon d'anneaux dorés, confettis, écran de récompense ; accueil et plateau tenant sur un seul écran (téléphone et ordinateur).",
  "<b>Accessibilité</b> : animations réduites si le téléphone le demande, libellés pour les lecteurs d'écran, grandes zones de toucher.",
- "<b>Aide</b> : règles du jeu complètes, bulles d'information « i » sur chaque mode, définitions des mots."])
+ "<b>Aide</b> : règles du jeu illustrées (exemple d'anagramme en tuiles, cartes des quatre couleurs, piste, dé et bonus d'arrivée, touches du clavier), bulles d'information « i » sur chaque mode, définitions des mots."])
 
 st.append(Paragraph("7. Publicité et monétisation (simulation)",H))
 st+=ul(["Bascule <b>Pub / No Pub</b> en haut de l'écran avec compteur de revenu simulé.",
@@ -111,7 +111,8 @@ st+=ul(["Partie multijoueur synchronisée sur le plateau (dés, cartes et sablie
  "Vraie régie publicitaire (AdSense H5 en web ou AdMob via une enveloppe Android) et achat « Sans pub ».",
  "Décisions en attente : vidéos récompense touchant aux règles, propositions de règles, mots douteux, nom définitif."])
 st.append(Paragraph("Historique des versions",H))
-st+=ul(["<b>10 nov. 2026 (fin de journée)</b> — design rapproché des maquettes : dé blanc 3D avec halo et anneaux dorés, cadre lumineux du plateau, libellés du plateau en caractères gras, traînées de lumière en fond.",
+st+=ul(["<b>10 nov. 2026 (soirée)</b> — règles du jeu illustrées ; documentation à signature visuelle commune ; « le plus riche gagne » rendu évident sur le plateau.",
+ "<b>10 nov. 2026 (fin de journée)</b> — design rapproché des maquettes : dé blanc 3D avec halo et anneaux dorés, cadre lumineux du plateau, libellés du plateau en caractères gras, traînées de lumière en fond.",
  "<b>10 nov. 2026 (fin de journée)</b> — séries du Défi (thèmes et autre langue, débloquées par niveau) ; vibrations plus douces ; lueur de validation ; vitrine de l'accueil qui « tremble » sur un faux mot ; barres de défilement masquées.",
  "<b>10 nov. 2026 (fin de journée)</b> — version Apple préparée (iPhone, iPad).",
  "<b>10 nov. 2026 (fin de journée)</b> — jeu complet hors ligne : scores en attente envoyés au retour du réseau, démarrage rapide sur réseau lent, vidéos de pub en cache, multijoueur signalé hors connexion.",
