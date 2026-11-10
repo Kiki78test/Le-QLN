@@ -3,10 +3,10 @@
 Usage: python3 tools/build_en.py   (from /home/claude/qln). Prints pairs not found + leftover French-looking text."""
 import re, sys, importlib, pathlib
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-APP = ROOT/"app" if (ROOT/"app"/"index.html").exists() else ROOT   # dépôt GitHub : les fichiers sont à la racine
+APP = ROOT/"app" if (ROOT/"app"/"index.html").exists() else ROOT   # le jeu est dans app/
 EN = APP/"en"
 import json as _json
-NOM = _json.loads((APP/"marque.json").read_text(encoding="utf-8"))["nom"] if (APP/"marque.json").exists() else "Le-QLN"
+NOM = _json.loads((ROOT/"marque.json").read_text(encoding="utf-8"))["nom"] if (ROOT/"marque.json").exists() else "Le-QLN"
 sys.path.insert(0, str(ROOT/"tools"))
 FILES = {"index.html":"en_index", "plateau.js":"en_plateau", "pub.js":"en_pub", "infos.js":"en_infos", "multi.js":"en_multi", "progres.js":"en_progres", "compte.js":"en_compte", "series.js":"en_series", "barre.js":"en_barre"}
 STOP = set("le la les des du de un une vous votre vos pour avec sur dans pas qui que est sont ou et au aux ce cette ces mot mots carte cartes partie jouer joueur joueurs tour sans mais plus ne à il elle sa ses leur par se lettres lettre temps gain gains".split())

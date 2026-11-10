@@ -15,7 +15,7 @@ name: Appli iOS
 on:
   push:
     branches: [main]
-    paths: ['mobile/**', 'icons/**', '.github/workflows/ios.yml']
+    paths: ['mobile/**', 'app/icons/**', '.github/workflows/ios.yml']
   workflow_dispatch:
 concurrency:
   group: appli-ios

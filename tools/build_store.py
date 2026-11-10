@@ -15,7 +15,7 @@ BRUTES = STORE / "captures" / "brutes"
 FORMATS = {"play": (360, 640, 3), "iphone": (440, 956, 3)}   # 1080x1920 ; 1320x2868 (iPhone 6,9")
 
 
-def police(f): return base64.b64encode((RACINE / "fonts" / f).read_bytes()).decode()
+def police(f): return base64.b64encode((RACINE / "app" / "fonts" / f).read_bytes()).decode()
 CSS_POLICES = (f"@font-face{{font-family:T;src:url(data:font/woff2;base64,{police('barlow-condensed-latin-800-italic.woff2')})}}"
                f"@font-face{{font-family:C;src:url(data:font/woff2;base64,{police('barlow-condensed-latin-700-normal.woff2')})}}"
                f"@font-face{{font-family:B;font-weight:600;src:url(data:font/woff2;base64,{police('barlow-latin-600-normal.woff2')})}}")
@@ -200,7 +200,7 @@ def main():
             print("store/" + lang)
         nav.close()
     from PIL import Image
-    Image.open(RACINE / "icons" / "icon-512.png").convert("RGBA").resize((512, 512)).save(STORE / "icone-play-512.png")
+    Image.open(RACINE / "app" / "icons" / "icon-512.png").convert("RGBA").resize((512, 512)).save(STORE / "icone-play-512.png")
     securite_md()
     pdf()
 

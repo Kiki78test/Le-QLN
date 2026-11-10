@@ -1,5 +1,5 @@
 /* Tests de l'appli Le-QLN dans un vrai navigateur (Chromium), français et anglais, téléphone et ordinateur.
-   Le site doit être servi en local : QLN_SITE (défaut http://localhost:8765, racine du dépôt).
+   Le site doit être servi en local : QLN_SITE (défaut http://localhost:8765) — le site assemblé par python3 tools/site.py (dossier _site/).
    Si QLN_TEST_URL est défini (serveur lancé), les comptes et classements sont aussi testés de bout en bout. */
 "use strict";
 const test = require("node:test");
@@ -69,7 +69,7 @@ test("documentation : chaque document listé existe", async () => {
 
 test("service worker : chaque fichier mis en cache existe", async () => {
   for(const sw of ["sw.js", "en/sw.js"]){
-    const f = path.join(RACINE, sw); if(!fs.existsSync(f)) continue;
+    const f = path.join(RACINE, "app", sw); if(!fs.existsSync(f)) continue;
     const src = fs.readFileSync(f, "utf8"), liste = (src.match(/\[[^\]]*"\.\/[^\]]*\]/) || ["[]"])[0];
     for(const m of liste.matchAll(/"\.\/([^"]*)"/g)) if(m[1]) assert.ok(fs.existsSync(path.join(path.dirname(f), m[1])), `${sw} : ${m[1]} manquant`);
   }
@@ -190,7 +190,7 @@ for(const lang of ["fr", "en"]) test(`${lang} : confidentialité et mentions lé
   await p.evaluate(() => document.querySelector("#lg-autre").click());
   await p.waitForFunction(() => /Hébergement|Hosting/.test(document.querySelector(".legal").textContent), null, {timeout:4000});
   sansErreur(erreurs); await ctx.close();
-  for(const f of lang === "fr" ? ["confidentialite.html", "mentions-legales.html"] : ["en/privacy.html", "en/legal-notice.html"]) assert.ok(fs.readFileSync(path.join(RACINE, f), "utf8").includes("<h2>"), f);
+  for(const f of lang === "fr" ? ["confidentialite.html", "mentions-legales.html"] : ["en/privacy.html", "en/legal-notice.html"]) assert.ok(fs.readFileSync(path.join(RACINE, "app", f), "utf8").includes("<h2>"), f);
 });
 
 /* Hors ligne (avion) : après une première visite, l'appli démarre et se joue sans réseau ; le multijoueur le dit clairement. */

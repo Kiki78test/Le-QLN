@@ -119,7 +119,7 @@ st+=ul(["Multijoueur : reprendre une partie après une coupure (rejeu depuis l'h
  "Hébergement : base Render à passer en Basic avant le 10/12/2026, serveur en Starter à l'ouverture au public ; domaine (Cloudflare) quand le nom est choisi.",
  "Décisions en attente : vidéos récompense touchant aux règles, propositions de règles, mots douteux, nom définitif."])
 st.append(Paragraph("Historique des versions",H))
-st+=ul(["<b>10 nov. 2026 (nuit)</b> — multijoueur synchronisé sur le plateau (mêmes règles que contre l'IA) ; fiches des stores (textes FR/EN, captures, questionnaires) ; séries en espagnol, allemand et italien.",
+st+=ul(["<b>10 nov. 2026 (nuit)</b> — dépôt rangé (jeu dans app/, même adresse) ; multijoueur synchronisé sur le plateau (mêmes règles que contre l'IA) ; fiches des stores (textes FR/EN, captures, questionnaires) ; séries en espagnol, allemand et italien.",
  "<b>10 nov. 2026 (soirée)</b> — barre du bas sur ordinateur, jetons des joueurs (anneau lumineux, initiale sur le plateau), chevrons sur les tuiles de l'accueil.",
  "<b>10 nov. 2026 (soirée)</b> — règles du jeu illustrées ; documentation à signature visuelle commune ; « le plus riche gagne » rendu évident sur le plateau.",
  "<b>10 nov. 2026 (fin de journée)</b> — design rapproché des maquettes : dé blanc 3D avec halo et anneaux dorés, cadre lumineux du plateau, libellés du plateau en caractères gras, traînées de lumière en fond.",

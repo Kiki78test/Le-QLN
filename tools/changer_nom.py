@@ -10,7 +10,9 @@ import json, pathlib, re, subprocess, sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 APP = ROOT / "app" if (ROOT / "app" / "index.html").exists() else ROOT
-FICHIERS = ["index.html", "multi.js", "infos.js", "progres.js", "compte.js", "pub.js", "plateau.js", "manifest.webmanifest",
+JEU = ["index.html", "multi.js", "infos.js", "progres.js", "compte.js", "pub.js", "plateau.js", "series.js", "barre.js", "manifest.webmanifest"]
+PRE = "app/" if APP != ROOT else ""   # le jeu est dans app/
+FICHIERS = [PRE + f for f in JEU] + [
             "README.md", "server/index.js", "server/README.md", "mobile/capacitor.config.json", "mobile/www/index.html",
             "tools/en_index.py", "tools/en_plateau.py", "tools/en_pub.py", "tools/en_infos.py"]
 FICHIERS += [f"tools/{p.name}" for p in (ROOT / "tools").glob("en_*.py") if f"tools/{p.name}" not in FICHIERS]
@@ -55,7 +57,7 @@ def icones(sigle):
         dr.rectangle([taille * marge - 2, by - 2, taille * (1 - marge) + 2, by + bh + 2], outline=(0, 0, 0), width=max(2, taille // 100))
         return im
     for nom, t, m in [("icon-192.png", 192, .09), ("icon-512.png", 512, .09), ("apple-touch-icon.png", 180, .09), ("maskable-192.png", 192, .2), ("maskable-512.png", 512, .2), ("icon-1024.png", 1024, .09)]:
-        dessiner(t, m).save(ROOT / "icons" / nom)
+        dessiner(t, m).save(APP / "icons" / nom)
     print("Icônes régénérées avec :", sigle)
 
 def android():
@@ -65,7 +67,7 @@ def android():
     res = ROOT / "mobile" / "native" / "android" / "res"
     if not res.exists(): return
     BG = (11, 26, 58, 255)
-    ico = Image.open(ROOT / "icons" / "icon-512.png").convert("RGBA"); mask = Image.open(ROOT / "icons" / "maskable-512.png").convert("RGBA")
+    ico = Image.open(APP / "icons" / "icon-512.png").convert("RGBA"); mask = Image.open(APP / "icons" / "maskable-512.png").convert("RGBA")
     dens = {"mdpi": 1, "hdpi": 1.5, "xhdpi": 2, "xxhdpi": 3, "xxxhdpi": 4}
     for d, f in dens.items():
         p = res / f"mipmap-{d}"; p.mkdir(parents=True, exist_ok=True); s = int(48 * f)

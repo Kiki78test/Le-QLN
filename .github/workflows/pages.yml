@@ -1,0 +1,33 @@
+# Publie le site du jeu sur GitHub Pages, à la même adresse qu'avant : https://kiki78test.github.io/Le-QLN/
+# Le jeu est dans app/ ; la documentation (docs/) est ajoutée pour le menu « Documentation » (tools/site.py).
+# Déclenchement : chaque envoi qui touche app/ ou docs/, ou à la demande (Actions → « Publication du site » → Run workflow).
+# Réglage du dépôt (une seule fois, déjà fait) : Settings → Pages → Source : « GitHub Actions ».
+name: Publication du site
+on:
+  push:
+    branches: [main]
+    paths: ['app/**', 'docs/**', 'tools/site.py', '.github/workflows/pages.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: pages
+  cancel-in-progress: false
+jobs:
+  publier:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploiement.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Assembler le site (jeu + documentation)
+        run: python3 tools/site.py
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deploiement
+        uses: actions/deploy-pages@v4

@@ -24,6 +24,7 @@ h += sec("Échéances", [
     ("urg", "<b>Serveur Render → Starter (7 $/mois)</b> à l'ouverture au public : l'offre Free s'endort après 15 min (premier réveil ≈ 30 s)."),
 ])
 h += sec("En cours chez vous", [
+    ("urg", "<b>GitHub → Settings → Pages → Source : « GitHub Actions »</b> (une seule fois, pour publier le jeu rangé dans <code>app/</code> à la même adresse)."),
     ("vous", "<b>Google Play Console</b> : validation d'identité en attente (statut « non professionnel » pour l'instant) ; puis confirmer l'accès à un appareil Android et le numéro de téléphone."),
     ("vous", "<b>AdMob</b> : compte créé, validation d'identité en attente. Ensuite : ajouter l'appli Android (puis iOS), créer les blocs d'annonces, envoyer les identifiants à Claude."),
     ("vous", "<b>Cloudflare</b> : prêt à créer ; acheter le domaine quand le nom est choisi."),
@@ -38,7 +39,6 @@ h += sec("Décisions à prendre", [
     ("vous", "<b>Relire les thèmes</b> : tableur « Thèmes des séries » (mettre un x pour retirer un mot, proposer des ajouts)."),
     ("dec", "<b>Règles</b> : propositions en attente (document « Propositions de règles »), vidéos récompense touchant aux règles."),
     ("dec", "<b>Mots douteux</b> : tableur à relire (gardés par défaut)."),
-    ("dec", "<b>Organisation du dépôt</b> : garder le jeu à la racine, ou le ranger dans <code>app/</code> (publication par une action GitHub, même adresse)."),
 ])
 h += sec("Prochaines étapes de Claude", [
     ("todo", "Brancher <b>AdMob</b> (Android puis iOS) dès les identifiants reçus : consentement RGPD, ATT sur iPhone, app-ads.txt, repli hors ligne sur des créations locales."),
@@ -48,6 +48,7 @@ h += sec("Prochaines étapes de Claude", [
     ("todo", "Changer le nom partout dès qu'il est choisi (action « Changer le nom »)."),
 ])
 h += sec("Fait", [
+    ("ok", "<b>10/11</b> — dépôt rangé : le jeu dans <code>app/</code>, publié par l'action « Publication du site » à la même adresse."),
     ("ok", "<b>10/11</b> — <b>multijoueur synchronisé sur le plateau</b> : mêmes règles que contre l'IA, cartes vues en direct par les autres, enchères simultanées, prison et garant entre joueurs, remplacement automatique d'un joueur absent ; parties complètes testées à deux (local et serveur)."),
     ("ok", "<b>10/11</b> — séries du Défi en <b>espagnol, allemand, italien</b> (débloquées aux niveaux 5, 6, 7), drapeaux, définitions sur le Wiktionnaire de chaque langue, jouables hors ligne."),
     ("ok", "<b>10/11</b> — fiches des stores prêtes (dossier <code>store/</code> + PDF « Fiches des stores ») : textes FR/EN, 8 captures Play et iPhone, bannière, icône, réponses Sécurité des données / Confidentialité Apple ; appli iOS réservée à l'iPhone pour la 1re version ; suppression du compte sans l'appli décrite dans la politique."),

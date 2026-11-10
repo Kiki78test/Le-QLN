@@ -127,7 +127,7 @@ function fusionner(a = {}, b = {}){
 
 /* ---------- Mots contestés : vérification côté serveur (mêmes règles que l'appli, analyse.js) ---------- */
 let AnalyseMot = null;
-for(const chemin of ["../analyse.js", "../app/analyse.js"]){ try{ AnalyseMot = require(chemin); break; }catch(e){} }
+for(const chemin of ["../app/analyse.js", "../analyse.js"]){ try{ AnalyseMot = require(chemin); break; }catch(e){} }
 const WIKI = {fr:"https://fr.wiktionary.org/w/api.php", en:"https://en.wiktionary.org/w/api.php"};
 const ACCENTS = {e:["é","è","ê"], a:["à","â"], i:["î","ï"], o:["ô"], u:["û","ù"], c:["ç"]};
 const sansAccent = x => x.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();

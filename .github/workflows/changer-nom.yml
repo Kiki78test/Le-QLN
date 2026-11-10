@@ -34,7 +34,8 @@ jobs:
       - name: Fiches des stores (captures et textes avec le nouveau nom)
         run: |
           (cd tests && npm install --no-audit --no-fund && npx playwright install --with-deps chromium)
-          python3 -m http.server 8765 >/dev/null 2>&1 &
+          python3 tools/site.py
+          (cd _site && python3 -m http.server 8765 >/dev/null 2>&1 &)
           sleep 2
           NODE_PATH=tests/node_modules node tools/store_captures.js
           python3 tools/build_store.py
@@ -49,7 +50,7 @@ jobs:
           git commit -m "Nom du jeu : $NOM"
           git push
           # un envoi fait avec le jeton de GitHub ne lance pas les autres automatismes : on les lance à la main
-          gh api -X POST repos/${{ github.repository }}/pages/builds || true
+          gh workflow run pages.yml || true
           gh workflow run tests.yml || true
           gh workflow run android.yml || true
           gh workflow run en-ligne.yml || true

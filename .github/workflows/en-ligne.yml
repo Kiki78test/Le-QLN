@@ -6,7 +6,7 @@
 name: Version en ligne
 on:
   workflow_run:
-    workflows: ["pages-build-deployment", "pages build and deployment"]
+    workflows: ["Publication du site"]
     types: [completed]
   schedule:
     - cron: '23 */6 * * *'
@@ -26,7 +26,7 @@ jobs:
           node-version: 22
       - name: Site et serveur répondent
         run: |
-          API=$(sed -n 's/^window.QLN_API_URL = "\([^"]*\)".*/\1/p' config.js)
+          API=$(sed -n 's/^window.QLN_API_URL = "\([^"]*\)".*/\1/p' app/config.js)
           echo "QLN_API_URL=$API" >> $GITHUB_ENV
           for u in "$QLN_SITE/" "$QLN_SITE/en/" "$QLN_SITE/docs/index.json"; do
             curl -sSf -o /dev/null -w "%{http_code} $u\n" "$u"

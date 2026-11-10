@@ -14,7 +14,7 @@ MOIS = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août
 DATE_LONGUE = f"{MAINTENANT.day} {MOIS[MAINTENANT.month-1]} {MAINTENANT.year}"
 DATE_ISO = MAINTENANT.strftime("%Y-%m-%d")
 
-def _police(f): return base64.b64encode((RACINE / "fonts" / f).read_bytes()).decode()
+def _police(f): return base64.b64encode((RACINE / "app" / "fonts" / f).read_bytes()).decode()
 _FT, _FT8, _FB, _FB6, _FB7 = (_police(f) for f in ["barlow-condensed-latin-700-normal.woff2", "barlow-condensed-latin-800-italic.woff2",
                                                     "barlow-latin-400-normal.woff2", "barlow-latin-600-normal.woff2", "barlow-latin-700-normal.woff2"])
 CSS = f"""

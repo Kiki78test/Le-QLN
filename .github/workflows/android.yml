@@ -7,7 +7,7 @@ name: Appli Android
 on:
   push:
     branches: [main]
-    paths: ['mobile/**', 'icons/**', '.github/workflows/android.yml']
+    paths: ['mobile/**', 'app/icons/**', '.github/workflows/android.yml']
   workflow_dispatch:
 permissions:
   contents: write
