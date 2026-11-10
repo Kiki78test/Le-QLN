@@ -31,6 +31,7 @@ Le jeu web est à la **racine** : GitHub Pages publie la racine telle quelle (`h
 | `docs/` | documentation (PDF, tableurs, `index.json` affiché dans le menu Documentation) |
 | `docs-src/` | sources des documents : un script par PDF, tous habillés par la charte commune `charte.py` (en-tête au logo du jeu, polices, pied de page) ; `python3 docs-src/tout.py` régénère tout |
 | `tools/` | outils : version anglaise, dictionnaires, pages juridiques, changement de nom |
+| `store/` | fiches Google Play / App Store : textes FR/EN, captures, bannière, icône, questionnaires (générés : `node tools/store_captures.js` puis `python3 tools/build_store.py`) |
 | `tests/` | tests automatiques (serveur + appli dans Chromium) |
 | `.github/workflows/` | automatismes : tests, version en ligne, sécurité, appli Android, appli iOS, changer le nom |
 | `render.yaml` | Blueprint Render (serveur + base) |

@@ -61,7 +61,7 @@ function lienDirect(){
 }
 return {ecran, lienDirect, libelles: () => DATA[LG].libelles};
 })();
-""" % json.dumps({lang: {k: ({"titre": v["titre"], "maj": v["maj"], "intro": v["intro"], "sections": [[s[0], s[1]] for s in v["sections"]]} if k != "libelles" else v) for k, v in D[lang].items()} for lang in D}, ensure_ascii=False)
+""" % json.dumps({lang: {k: ({"titre": v["titre"], "maj": v["maj"], "intro": v["intro"], "sections": [[s[0], s[-1]] for s in v["sections"]]} if k != "libelles" else v) for k, v in D[lang].items()} for lang in D}, ensure_ascii=False)
 (ROOT / "legal.js").write_text(JS, encoding="utf-8")
 
 # ------------------------------------------------------------------ pages web publiques
@@ -75,7 +75,7 @@ def page(lang, cle, chemin_app, autre_fichier, lien_lang):
     t = D[lang][cle]; autre = "mentions" if cle == "confidentialite" else "confidentialite"
     L = D[lang]["libelles"]
     corps = (f"<p class='maj'>{esc(t['maj'])}</p>" + (f"<p>{esc(t['intro'])}</p>" if t["intro"] else "")
-             + "".join(f"<h2>{esc(s[0])}</h2>{blocs_html(s[1])}" for s in t["sections"]))
+             + "".join((f"<h2 id='{s[1]}'>" if len(s) == 3 else "<h2>") + f"{esc(s[0])}</h2>{blocs_html(s[-1])}" for s in t["sections"]))
     return f"""<!doctype html>
 <html lang="{lang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{esc(t['titre'])} — {esc(M['nom'])}</title><meta name="robots" content="index,follow"><style>{CSS}</style></head>
@@ -109,7 +109,7 @@ def pdf():
     for cle in ("confidentialite", "mentions"):
         t = fr[cle]
         h += f'<h2 class="pb" style="font-size:19pt">{esc(t["titre"])}</h2><p class="petit">{esc(t["maj"])}</p>' + (f'<p class="intro">{esc(t["intro"])}</p>' if t["intro"] else "")
-        for i, (titre, bl) in enumerate(t["sections"], 1):
+        for i, (titre, *_, bl) in enumerate(t["sections"], 1):
             h += f"<h3>{i}. {esc(titre)}</h3>" + blocs_html(bl)
     charte.document("textes-juridiques.pdf", "Textes juridiques", "Politique de confidentialité et mentions légales", h, date_iso=L.MAJ,
                     description="Politique de confidentialité et mentions légales (texte complet) + liste de ce qu'il faut compléter avant la publication (éditeur, adresse, contact, publicité).")

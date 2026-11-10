@@ -14,8 +14,8 @@ BLEU = (11, 26, 58)
 def preparer():
     www = os.path.join(MOBILE, "www")
     shutil.rmtree(www, ignore_errors=True); os.makedirs(www)
-    fichiers = ["index.html", "plateau.js", "multi.js", "legal.js", "progres.js", "compte.js", "analyse.js", "config.js",
-                "pub.js", "infos.js", "manifest.webmanifest", "marque.json"]
+    # tous les scripts et pages de la racine (un nouveau module .js est ainsi embarqué automatiquement)
+    fichiers = sorted(f for f in os.listdir(RACINE) if f.endswith((".js", ".html")) and f != "sw.js") + ["manifest.webmanifest", "marque.json"]
     for f in fichiers: shutil.copy(os.path.join(RACINE, f), os.path.join(www, f))
     for d in ["data", "fonts", "icons", "pubs", "docs", "en"]:
         shutil.copytree(os.path.join(RACINE, d), os.path.join(www, d))
@@ -41,10 +41,14 @@ def reglages():
     plistlib.dump(pl, open(pl_p, "wb"))
     # numéros de version aussi dans le projet Xcode (MARKETING_VERSION / CURRENT_PROJECT_VERSION)
     pbx = os.path.join(MOBILE, "ios", "App", "App.xcodeproj", "project.pbxproj")
-    if n and os.path.exists(pbx):
+    if os.path.exists(pbx):
         t = open(pbx, encoding="utf-8").read()
-        t = re.sub(r"CURRENT_PROJECT_VERSION = [^;]+;", "CURRENT_PROJECT_VERSION = %s;" % n, t)
-        t = re.sub(r"MARKETING_VERSION = [^;]+;", "MARKETING_VERSION = 0.1.%s;" % n, t)
+        if n:
+            t = re.sub(r"CURRENT_PROJECT_VERSION = [^;]+;", "CURRENT_PROJECT_VERSION = %s;" % n, t)
+            t = re.sub(r"MARKETING_VERSION = [^;]+;", "MARKETING_VERSION = 0.1.%s;" % n, t)
+        # iPhone uniquement pour la première version (sur iPad, l'appli s'ouvre en mode iPhone agrandi) :
+        # pas de captures iPad exigées par l'App Store ; une mise en page iPad dédiée pourra venir ensuite
+        t = re.sub(r'TARGETED_DEVICE_FAMILY = "?[0-9,]+"?;', "TARGETED_DEVICE_FAMILY = 1;", t)
         open(pbx, "w", encoding="utf-8").write(t)
     try:
         from PIL import Image

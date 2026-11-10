@@ -28,6 +28,7 @@ h += sec("En cours chez vous", [
     ("vous", "<b>AdMob</b> : compte créé, validation d'identité en attente. Ensuite : ajouter l'appli Android (puis iOS), créer les blocs d'annonces, envoyer les identifiants à Claude."),
     ("vous", "<b>Cloudflare</b> : prêt à créer ; acheter le domaine quand le nom est choisi."),
     ("vous", "<b>Apple Developer</b> (99 €/an) : quand le nom est choisi ; puis clé API App Store Connect et 4 secrets GitHub (voir « Version Apple »)."),
+    ("vous", "<b>Fiches des stores</b> : à copier dans la Play Console et App Store Connect le moment venu (document « Fiches des stores »)."),
     ("vous", "<b>marque.json</b> : renseigner éditeur, adresse, e-mail de contact avant la publication (mentions légales)."),
     ("vous", "<b>Entreprise</b> : micro-entreprise conseillée pour Airmony et Le-QLN ensemble, juste avant d'activer de vraies publicités."),
 ])
@@ -42,11 +43,12 @@ h += sec("Prochaines étapes de Claude", [
     ("todo", "Brancher <b>AdMob</b> (Android puis iOS) dès les identifiants reçus : consentement RGPD, ATT sur iPhone, app-ads.txt, repli hors ligne sur des créations locales."),
     ("todo", "<b>Multijoueur synchronisé sur le plateau</b> (dés, cartes et sabliers partagés) — quand vous le demandez."),
     ("todo", "<b>Mot de passe oublié</b> (Resend) après l'achat du domaine."),
-    ("todo", "<b>Fiche Play Store / App Store</b> : textes FR/EN, captures, formulaire Sécurité des données."),
+    ("todo", "Retirer de l'appli publiée la barre de démonstration « Pub / No Pub » (en branchant AdMob)."),
     ("todo", "Clé de signature de publication Android (Google Play) et fabrication de l'appli publiée."),
     ("todo", "Changer le nom partout dès qu'il est choisi (action « Changer le nom »)."),
 ])
 h += sec("Fait", [
+    ("ok", "<b>10/11</b> — fiches des stores prêtes (dossier <code>store/</code> + PDF « Fiches des stores ») : textes FR/EN, 8 captures Play et iPhone, bannière, icône, réponses Sécurité des données / Confidentialité Apple ; appli iOS réservée à l'iPhone pour la 1re version ; suppression du compte sans l'appli décrite dans la politique."),
     ("ok", "<b>10/11</b> — documentation : signature visuelle commune, règles du jeu illustrées (appli + PDF), étapes déjà faites marquées « Fait » (Render, comptes, applis)."),
     ("ok", "<b>10/11</b> — « le plus riche gagne » rendu évident (rappel, bandeau, bonus d'arrivée, podium détaillé) ; design rapproché des maquettes (dé 3D doré, cadre lumineux)."),
     ("ok", "<b>10/11</b> — séries du Défi : 16 thèmes FR / 9 EN, série dans l'autre langue, design par thème, déblocage par niveau, sans classement ; vibrations plus douces, lueur de validation."),

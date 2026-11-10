@@ -4,3 +4,6 @@ ICI = pathlib.Path(__file__).resolve().parent
 for f in ["fonctionnalites.py", "regles.py", "services.py", "checklist.py", "serveur_et_publicite.py", "version_apple.py", "choix_du_nom.py", "idees_de_noms.py", "monetisation.py", "anciens.py"]:
     subprocess.run([sys.executable, str(ICI / f)], check=True)
 subprocess.run([sys.executable, str(ICI.parent / "tools" / "build_legal.py")], check=True)
+# fiches des stores : seulement si les captures brutes existent (sinon : node tools/store_captures.js d'abord)
+if (ICI.parent / "store" / "captures" / "brutes" / "fr").exists():
+    subprocess.run([sys.executable, str(ICI.parent / "tools" / "build_store.py")], check=True)

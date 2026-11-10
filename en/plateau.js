@@ -573,7 +573,7 @@ function debiter(j, montant, motif, cat = "cases"){
 async function jouerCarte(j, niv){
   const c = tirerCarte(niv, Math.random, G.deja), N = NIVEAUX[niv];
   j.cartes++;
-  dock({de:false, msg: j.ia ? `${esc(j.nom)} draws a ${N.nom.toLowerCase()} card` : `${N.nom} card: €${N.gain}`});
+  dock({de:false, msg: j.ia ? `${esc(j.nom)} draws ${/^[aeiou]/i.test(N.nom) ? "an" : "a"} ${N.nom.toLowerCase()} card` : `${N.nom} card: €${N.gain}`});
   let resultat;
   if(j.ia) resultat = await ui(carteIA(j, c));
   else resultat = await ui(carteHumaine(j, c));

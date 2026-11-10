@@ -2,7 +2,8 @@
 Tout est généré à partir d'ici par tools/build_legal.py : pages dans l'appli (legal.js), pages web publiques
 (confidentialite.html, mentions-legales.html, en/privacy.html, en/legal-notice.html) et PDF (docs/).
 Le nom du jeu et les coordonnées de l'éditeur viennent de marque.json : ne rien écrire en dur ici.
-Un bloc est un paragraphe (str) ou une liste à puces (list[str])."""
+Un bloc est un paragraphe (str) ou une liste à puces (list[str]).
+Une section est (titre, blocs) ou (titre, ancre, blocs) : l'ancre donne un lien direct (ex. confidentialite.html#droits)."""
 
 MAJ = "2026-11-10"          # à changer à chaque modification du fond
 A_COMPLETER = {"fr": "[à compléter]", "en": "[to be completed]"}
@@ -68,9 +69,10 @@ def contenu(lang, M):
                         "Journaux techniques : durée limitée fixée par l'hébergeur.",
                         "Données locales de l'appareil : tant que vous ne les effacez pas.",
                     ]]),
-                    ("Vos droits", [
+                    ("Vos droits", "droits", [
                         "Vous pouvez accéder à vos données, les corriger, les effacer, les récupérer, limiter leur usage, vous y opposer et retirer un consentement.",
                         "Dans l'appli : Mon compte permet de modifier votre profil et de supprimer votre compte. La suppression efface le compte, la progression en ligne et les scores.",
+                        f"Supprimer votre compte sans l'appli : écrivez à {mail} depuis l'adresse e-mail du compte, en demandant sa suppression. Elle est faite sous 30 jours et confirmée par e-mail. Sont effacés : le compte (e-mail, pseudo, pays, pion), la progression en ligne et tous les scores. Rien n'est conservé, hormis les journaux techniques de l'hébergeur pendant leur durée limitée.",
                         f"Pour toute autre demande : {mail}. En cas de désaccord, vous pouvez saisir la CNIL (www.cnil.fr).",
                     ]),
                     ("Enfants", [
@@ -177,9 +179,10 @@ def contenu(lang, M):
                     "Technical logs: a limited period set by the hosting provider.",
                     "Local device data: until you erase it.",
                 ]]),
-                ("Your rights", [
+                ("Your rights", "droits", [
                     "You can access, correct, erase and export your data, restrict its use, object to it and withdraw consent.",
                     "In the app: My account lets you edit your profile and delete your account. Deletion erases the account, the online progress and the scores.",
+                    f"Deleting your account without the app: email {mail} from your account's email address and ask for deletion. It is done within 30 days and confirmed by email. Deleted: the account (email, nickname, country, pawn), the online progress and all scores. Nothing is kept, apart from the hosting provider's technical logs for their limited period.",
                     f"For any other request: {mail}. If you disagree with how we handle it, you can lodge a complaint with your data protection authority (in France, the CNIL: www.cnil.fr).",
                 ]),
                 ("Children", [

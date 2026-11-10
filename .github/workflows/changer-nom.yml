@@ -28,6 +28,16 @@ jobs:
           SIGLE: ${{ inputs.sigle }}
         run: |
           if [ -n "$SIGLE" ]; then python3 tools/changer_nom.py "$NOM" --sigle "$SIGLE"; else python3 tools/changer_nom.py "$NOM"; fi
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Fiches des stores (captures et textes avec le nouveau nom)
+        run: |
+          (cd tests && npm install --no-audit --no-fund && npx playwright install --with-deps chromium)
+          python3 -m http.server 8765 >/dev/null 2>&1 &
+          sleep 2
+          NODE_PATH=tests/node_modules node tools/store_captures.js
+          python3 tools/build_store.py
       - name: Envoyer
         env:
           GH_TOKEN: ${{ github.token }}
