@@ -1,5 +1,17 @@
 [
   {
+    "titre": "Services externes (développeur)",
+    "fichier": "services-externes.pdf",
+    "date": "2026-11-10",
+    "description": "Note technique : services (GitHub, Render, Google, Apple, Resend, Cloudflare, Wiktionnaire), variables d'environnement et secrets, tables de la base, API et multijoueur, anti-triche, stockage de l'appli, applis mobiles, tests, coûts et échéances."
+  },
+  {
+    "titre": "Version Apple (iPhone)",
+    "fichier": "version-apple.pdf",
+    "date": "2026-11-10",
+    "description": "Appli iOS fabriquée sur un Mac de GitHub (sans Mac chez vous), jeu embarqué, étapes compte Apple → TestFlight → App Store, publicité AdMob sur iPhone (ATT, achat Sans pub), coûts et délais."
+  },
+  {
     "titre": "Choisir le nom du jeu",
     "fichier": "aide-choix-du-nom.pdf",
     "date": "2026-11-10",

@@ -80,7 +80,7 @@ wss.on("connection", ws => {
 
 // nettoyage : clients muets et salons abandonnés
 setInterval(() => {
-  for(const ws of wss.clients){ if(!ws.vivant) return ws.terminate(); ws.vivant = false; ws.ping(); }
+  for(const ws of wss.clients){ if(!ws.vivant){ ws.terminate(); continue; } ws.vivant = false; ws.ping(); }   // (un « return » ici sautait les autres joueurs et le nettoyage des salons)
   const t = Date.now();
   for(const [code, s] of salons) if(t - s.vu > 2*3600e3){ for(const m of s.membres) envoyer(m, {t:"ferme", code, de:"serveur"}); salons.delete(code); }
 }, 30000);
