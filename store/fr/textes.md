@@ -74,4 +74,4 @@ Séries à thème dans le Défi, partie rapide en multijoueur, jeu complet hors 
 
 ## Images
 - Google Play : `play/` (8 captures 1080 × 1920), `banniere-play-1024x500.png`, icône `../icone-play-512.png`.
-- App Store : `iphone/` (8 captures 1320 × 2868, iPhone 6,9 pouces ; les autres tailles d'iPhone sont déduites).
+- App Store : `iphone/` (8 captures 1320 × 2868, iPhone 6,9 pouces ; les autres tailles d'iPhone sont déduites) et `ipad/` (8 captures 2064 × 2752, iPad 13 pouces).

@@ -55,9 +55,8 @@ def reglages():
         if n:
             t = re.sub(r"CURRENT_PROJECT_VERSION = [^;]+;", "CURRENT_PROJECT_VERSION = %s;" % n, t)
             t = re.sub(r"MARKETING_VERSION = [^;]+;", "MARKETING_VERSION = 0.1.%s;" % n, t)
-        # iPhone uniquement pour la première version (sur iPad, l'appli s'ouvre en mode iPhone agrandi) :
-        # pas de captures iPad exigées par l'App Store ; une mise en page iPad dédiée pourra venir ensuite
-        t = re.sub(r'TARGETED_DEVICE_FAMILY = "?[0-9,]+"?;', "TARGETED_DEVICE_FAMILY = 1;", t)
+        # iPhone et iPad (sur iPad, la mise en page « téléphone » est agrandie à la taille de l'écran : voir index.html)
+        t = re.sub(r'TARGETED_DEVICE_FAMILY = "?[0-9,]+"?;', 'TARGETED_DEVICE_FAMILY = "1,2";', t)
         open(pbx, "w", encoding="utf-8").write(t)
     try:
         from PIL import Image

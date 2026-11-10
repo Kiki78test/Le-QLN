@@ -3,6 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>/* tablettes tactiles (iPad…) : la mise en page « téléphone » est agrandie à la taille de l'écran (fenêtre virtuelle de 500 à 680 px de large) */
+(function(){ try{ var s = Math.min(screen.width, screen.height); if(matchMedia("(pointer:coarse)").matches && s >= 700){ var w = Math.round(Math.max(500, Math.min(680, s / 1.55)));
+  document.querySelector('meta[name="viewport"]').setAttribute("content", "width=" + w + ", viewport-fit=cover"); document.documentElement.classList.add("tablette"); } }catch(e){} })();</script>
 <title>Le-QLN</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <meta name="description" content="Le-QLN, the anagram board game: find the anagram before the timer runs out.">

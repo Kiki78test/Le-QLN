@@ -62,6 +62,7 @@ h += sec("Prochaines étapes de Claude", [
     ("todo", "Changer le nom partout dès qu'il est choisi (action « Changer le nom »)."),
 ])
 h += sec("Fait", [
+    ("ok", "<b>10/11</b> — iPad : mise en page agrandie sur tablette, appli iOS pour iPhone et iPad, captures iPad 13 pouces."),
     ("ok", "<b>10/11</b> — AdMob prêt dans les applis (module, consentement RGPD, ATT iPhone, menu « Choix publicitaires », repli de démonstration, texte de confidentialité prêt) ; barre « Pub / No Pub » conservée."),
     ("ok", "<b>10/11</b> — fabrication de l'appli Android à publier (.aab signé, clé d'envoi créée et chiffrée automatiquement, version croissante) ; document « Publier sur Google Play »."),
     ("ok", "<b>10/11</b> — dictionnaire anglais agrandi (option D1) : 911 cartes au lieu de 534, 12 thèmes anglais au lieu de 9."),

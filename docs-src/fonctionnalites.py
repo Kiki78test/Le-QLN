@@ -95,6 +95,7 @@ st+=ul(["<b>Installable</b> (PWA) et <b>hors ligne</b> : après une première vi
  "<b>Applis mobiles</b> : Android (enveloppe autour du site, appli de test publiée automatiquement) et iPhone / iPad (jeu embarqué dans l'appli, fabriqué sur un Mac de GitHub, testé au simulateur ; TestFlight dès que le compte Apple existe). Voir « Version Apple ».",
  "<b>Confidentialité et mentions légales</b> : liens en bas de l'accueil et à la création de compte ; aussi en pages web publiques (adresse exigée par le Play Store), en français et en anglais.",
  "<b>Barre du bas (ordinateur)</b> : Règles, Classement, Paramètres (son, vibrations) et Aide s'ouvrent dans un volet, sans quitter la partie ; en cours de partie, « Classement » montre le classement de la partie.",
+ "<b>Tablettes</b> (iPad, tablettes Android) : la mise en page du téléphone est agrandie à la taille de l'écran en portrait (fenêtre virtuelle de 500 à 680 px), sans rien perdre de la jouabilité au doigt.",
  "<b>Tout sur un écran (ordinateur)</b> : un écran un peu trop haut (réglages d'une partie, mode solo, multijoueur) est réduit automatiquement pour tenir sans défilement ; les écrans longs (règles, documentation, classements) défilent normalement.",
  "<b>Jetons des joueurs</b> : silhouette dans un anneau lumineux de leur couleur (panneaux, salons, podium) ; sur le plateau, jeton rond à l'initiale du joueur.",
  "<b>Barre du haut et menu ☰</b> : accueil, statistiques, compte, classements, partie guidée, règles, documentation, son, installation.",
@@ -123,7 +124,8 @@ st+=ul(["Multijoueur : reprendre une partie après une coupure (rejeu depuis l'h
  "Hébergement : base Render à passer en Basic avant le 10/12/2026, serveur en Starter à l'ouverture au public ; domaine (Cloudflare) quand le nom est choisi.",
  "Décisions en attente : vidéos récompense touchant aux règles, propositions de règles, mots douteux, nom définitif."])
 st.append(Paragraph("Historique des versions",H))
-st+=ul(["<b>10 nov. 2026 (nuit)</b> — appli Android à publier (.aab signé, clé d'envoi chiffrée) ; vraies publicités AdMob prêtes dans les applis (consentement RGPD, ATT, menu « Choix publicitaires »).",
+st+=ul(["<b>10 nov. 2026 (nuit)</b> — tablettes (iPad…) : la mise en page du téléphone est agrandie à la taille de l'écran ; appli iOS pour iPhone et iPad, captures iPad 13 pouces pour l'App Store.",
+ "<b>10 nov. 2026 (nuit)</b> — appli Android à publier (.aab signé, clé d'envoi chiffrée) ; vraies publicités AdMob prêtes dans les applis (consentement RGPD, ATT, menu « Choix publicitaires »).",
  "<b>10 nov. 2026 (soir)</b> — définitions vérifiées au Wiktionnaire pour tout le dictionnaire français : 98 % des 8 156 mots en ont une (115 sans, liste dans « Cartes écartées de l'appli ») ; action GitHub « Définitions (Wiktionnaire) ».",
  "<b>10 nov. 2026 (soir)</b> — dictionnaire français corrigé après audit externe : sigles, noms propres et mots familiers retirés des réponses (SFIO, BAES, PETA, RÉAC, NERAC, PETRO, PETROS, ESPORT, LOIRET, PERSO), fautes de frappe du tableau d'origine retirées (CAROSSIER, SERPIERE, CROLATES, ENTONOIR) ; 3 228 cartes (outil tools/corrections_fr.py).",
  "<b>10 nov. 2026 (soir)</b> — dictionnaire anglais agrandi : 911 cartes au lieu de 534 (formes de base seulement, mots un peu moins courants acceptés), 12 thèmes anglais au lieu de 9 ; tableur de relecture « Dictionnaire anglais ».",
@@ -133,7 +135,7 @@ st+=ul(["<b>10 nov. 2026 (nuit)</b> — appli Android à publier (.aab signé, c
  "<b>10 nov. 2026 (soirée)</b> — règles du jeu illustrées ; documentation à signature visuelle commune ; « le plus riche gagne » rendu évident sur le plateau.",
  "<b>10 nov. 2026 (fin de journée)</b> — design rapproché des maquettes : dé blanc 3D avec halo et anneaux dorés, cadre lumineux du plateau, libellés du plateau en caractères gras, traînées de lumière en fond.",
  "<b>10 nov. 2026 (fin de journée)</b> — séries du Défi (thèmes et autre langue, débloquées par niveau) ; vibrations plus douces ; lueur de validation ; vitrine de l'accueil qui « tremble » sur un faux mot ; barres de défilement masquées.",
- "<b>10 nov. 2026 (fin de journée)</b> — version Apple préparée (iPhone ; sur iPad en mode iPhone).",
+ "<b>10 nov. 2026 (fin de journée)</b> — version Apple préparée (iPhone et iPad).",
  "<b>10 nov. 2026 (fin de journée)</b> — jeu complet hors ligne : scores en attente envoyés au retour du réseau, démarrage rapide sur réseau lent, vidéos de pub en cache, multijoueur signalé hors connexion.",
  "<b>10 nov. 2026 (soir)</b> — accueil multi avec salons en attente et Partie rapide ; anti-triche (le serveur refait le tirage du défi du jour et vérifie mots et score) ; politique de confidentialité et mentions légales (appli, pages web, PDF) ; aide au choix du nom.",
  "<b>10 nov. 2026</b> — serveur en ligne (Render, base dédiée), tests et mises à jour automatiques, appli Android de test ; nom changeable en un seul endroit.",

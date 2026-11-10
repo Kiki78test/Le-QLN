@@ -74,4 +74,4 @@ Themed series in Challenge mode, multiplayer quick match, full offline play, ill
 
 ## Images
 - Google Play: `play/` (8 screenshots 1080 × 1920), `banniere-play-1024x500.png`, icon `../icone-play-512.png`.
-- App Store: `iphone/` (8 screenshots 1320 × 2868, 6.9-inch iPhone; other iPhone sizes are derived).
+- App Store: `iphone/` (8 screenshots 1320 × 2868, 6.9-inch iPhone; other iPhone sizes are derived) and `ipad/` (8 screenshots 2064 × 2752, 13-inch iPad).

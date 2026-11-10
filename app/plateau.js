@@ -364,7 +364,8 @@ function changerHote(nouveau){
   } else if(!M.hote) for(const [cle, v] of M.propositions) M.envoyer({t:"act", cle, val:v});
 }
 /* toutes les décisions déjà prises (pour un joueur qui revient) */
-const journalMulti = () => G && G.multi ? [...G.multi.decides] : [];
+let journalFini = [];   // (partie terminée chez l'hôte : un joueur qui revient peut encore rejouer jusqu'au podium)
+const journalMulti = () => G && G.multi ? [...G.multi.decides] : journalFini;
 function appliquerJournal(decs){
   const M = G && G.multi; if(!M || !Array.isArray(decs)) return;
   for(const [cle, v] of decs) if(typeof cle === "string" && !M.decides.has(cle)){ if(M.hote) M.tranchees.add(cle); appliquer(cle, v); }
@@ -388,7 +389,7 @@ function surveillerPresence(){
 }
 async function demarrerMulti(opt){
   // opt : {graine, joueurs:[{id, pseudo, couleur}], moi, hote, hoteId, envoyer, present, quitter, retour}
-  arreterVitrine();
+  arreterVitrine(); journalFini = [];
   const joueurs = opt.joueurs.map(x => ({id:x.id, nom:x.pseudo, couleur:PIONS[x.couleur % PIONS.length].c, ia:null,
     argent:0, pos:"D", prison:0, dette:null, arrive:null, horsJeu:false, cartes:0, reussies:0, detail:{cartes:0, encheres:0, cases:0, arrivee:0}}));
   G = { joueurs, ordre:[], idx:0, caches:true, rapideIA:false, rapide:false, arrivees:[], deja:new Set(), journal:[], dernier:null, tours:0, courant:null,
@@ -1193,6 +1194,7 @@ async function finPartie(){
 
 /* ---------- Multijoueur : podium ---------- */
 function finMulti(g, classes, gagnant, victoire){
+  journalFini = [...g.multi.decides];
   const moi = g.joueurs.find(j => j.id === g.multi.moi);
   setTimeout(() => { if(typeof Progres !== "undefined") Progres.finPartie({mode:"multi", victoire}); }, 0);
   app.innerHTML = `

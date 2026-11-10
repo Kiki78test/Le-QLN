@@ -9,12 +9,13 @@ const SITE = (process.env.QLN_SITE || "http://localhost:8765").replace(/\/$/, ""
 const SORTIE = path.join(__dirname, "..", "store", "captures", "brutes");
 // format -> fenêtre (CSS) ; la densité est choisie pour que l'image brute soit nette une fois composée
 const FORMATS = {
-  telephone: {width:390, height:844, dpr:3, mobile:true},     // Play (1080x1920) et iPhone 6,9" (1320x2868) ; appli iPhone uniquement : pas de captures iPad
+  telephone: {width:390, height:844, dpr:3, mobile:true},     // Play (1080x1920) et iPhone 6,9" (1320x2868)
+  tablette:  {width:1032, height:1376, dpr:2, mobile:true},   // iPad 13" (2064x2752) : mise en page « téléphone » agrandie
 };
 const FILTRE = process.argv[2] || "";
 
 async function ouvrir(nav, lang, f){
-  const ctx = await nav.newContext({viewport:{width:f.width, height:f.height}, deviceScaleFactor:f.dpr, isMobile:f.mobile, hasTouch:true, serviceWorkers:"block", locale: lang === "en" ? "en-GB" : "fr-FR"});
+  const ctx = await nav.newContext({viewport:{width:f.width, height:f.height}, screen:{width:f.width, height:f.height}, deviceScaleFactor:f.dpr, isMobile:f.mobile, hasTouch:true, serviceWorkers:"block", locale: lang === "en" ? "en-GB" : "fr-FR"});
   const p = await ctx.newPage(); p.setDefaultTimeout(10000);
   const pre = lang === "en" ? "qln-en:" : "qln:";
   await p.addInitScript(([pre, lang]) => {
@@ -71,7 +72,7 @@ const SCENES = [
     await p.evaluate(() => document.querySelector("#b-go").click());
     await p.waitForSelector("#b-parti"); await p.evaluate(() => document.querySelector("#b-parti").click()); await pause(p, 600);
     await p.evaluate(() => { const G = PlateauIA._etat(); G.joueurs.forEach((j, i) => { j.detail = {cartes:[640, 520, 470, 380][i], encheres:[-120, -60, -150, -40][i], cases:[90, 40, 60, 20][i], arrivee:[50, 100, 75, -25][i]}; j.argent = Object.values(j.detail).reduce((a, b) => a + b, 0); j.arrive = [2, 1, 3, 4][i]; }); PlateauIA._fin(); });
-    await pause(p, 3200); await p.evaluate(() => { document.querySelectorAll(".pg-succes").forEach(e => e.remove()); scrollTo(0, 0); document.querySelectorAll(".ecran, #app").forEach(e => e.scrollTop = 0); });
+    await pause(p, 5500); await p.evaluate(() => { document.querySelectorAll(".pg-succes").forEach(e => e.remove()); scrollTo(0, 0); document.querySelectorAll(".ecran, #app").forEach(e => e.scrollTop = 0); });
     await pause(p, 300);
   }],
   ["multi", async p => { await p.evaluate(() => { ecranAccueil(); document.querySelector("#b-multi").click(); }); await pause(p, 1200); }],
@@ -81,6 +82,7 @@ const SCENES = [
 (async () => {
   const nav = await chromium.launch();
   for(const lang of ["fr", "en"]) for(const [nomF, f] of Object.entries(FORMATS)){
+    if(process.env.QLN_FORMAT && process.env.QLN_FORMAT !== nomF) continue;
     const dossier = path.join(SORTIE, lang, nomF); fs.mkdirSync(dossier, {recursive:true});
     for(const [i, [nom, scene]] of SCENES.entries()){
       if(FILTRE && !nom.includes(FILTRE)) continue;
