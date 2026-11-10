@@ -32,11 +32,12 @@ st+=ul(["<b>Le Défi</b> : partie libre de 10 cartes (3 vertes, 3 bleues, 2 roug
  "<b>Duel de l'ombre</b> : les cartes du jour contre le « fantôme » de votre meilleure partie (sa banque s'affiche carte après carte).",
  "<b>Défi de la semaine</b> : une variante par semaine (Sablier éclair, Sans filet, Montée en puissance, Une seule vie) ; un seul essai classé, puis essais libres."])
 st.append(Paragraph("Séries du Défi (menu « Série »)",H2))
-st+=ul(["Sur l'écran Solo, un menu déroulant sous « Le Défi » : <b>Classique</b>, <b>autre langue</b> (cartes en anglais dans la version française, en français dans la version anglaise) ou <b>thème</b>.",
+st+=ul(["Sur l'écran Solo, un menu déroulant sous « Le Défi » : <b>Classique</b>, <b>langues</b> (cartes en anglais dans la version française, en français dans la version anglaise, et dans les deux versions : <b>espagnol, allemand, italien</b>) ou <b>thème</b>.",
  "<b>16 thèmes en français</b> (Animaux, Cuisine, Paysages et météo, Sports et loisirs, Métiers et personnes, Plantes et fleurs, Corps et santé, Maison et objets, Voyages et géographie, Musique et arts, Sciences, Vêtements et mode, Mer et marine, Émotions et caractère, Transports, Histoire et légendes) ; <b>9 en anglais</b> (dictionnaire anglais plus petit). Un thème n'est proposé que s'il compte au moins 16 cartes.",
  "Série à thème : 8 cartes dont le mot de départ appartient au thème, de la plus facile à la plus difficile ; toutes les anagrammes du dictionnaire restent acceptées. Les cartes déjà vues sont évitées d'une série à l'autre.",
  "<b>Design</b> : chaque thème a sa couleur (cadre de la carte, lueur de l'écran), un motif de fond avec son emblème et un badge ; une carte d'une autre langue porte les couleurs du drapeau et un badge drapeau. Définitions des mots étrangers : Wiktionnaire de cette langue (nouvel onglet).",
- "<b>Déblocage par niveau</b> : 2 thèmes au niveau 1, puis un de plus à chaque niveau ; la série de langue au niveau 3 ; annonce quand une série se débloque.",
+ "<b>Dictionnaires espagnol, allemand, italien</b> (≈ 450, 420 et 230 cartes) : construits à partir de sources libres (fréquences wordfreq, lemmatiseur simplemma) ; formes de base seulement, noms propres et mots anglais écartés, au moins 2 mots courants par carte ; tableur de relecture « Séries en espagnol, allemand, italien ». Disponibles hors ligne.",
+ "<b>Déblocage par niveau</b> : 2 thèmes au niveau 1, puis un de plus à chaque niveau ; séries de langue : l'autre langue du jeu au niveau 3, espagnol au niveau 5, allemand au 6, italien au 7 ; annonce quand une série se débloque.",
  "<b>Pas de classement</b> : les séries rapportent de l'XP et comptent dans les statistiques, mais ne sont pas envoyées aux classements. Règles : celles du Défi, sans « choix de la carte » ni carte légendaire.",
  "Listes de mots relisibles dans le tableur « Thèmes » (Documentation) ; source : tools/themes_listes.py, construit par tools/build_themes.py."])
 st.append(Paragraph("Entraînement",H2)); st+=ul(["Une couleur au choix, sablier facultatif, cartes à l'infini, sans pression."])
@@ -115,11 +116,12 @@ st+=ul(["Partie multijoueur synchronisée sur le plateau (dés, cartes et sablie
  "Hébergement : base Render à passer en Basic avant le 10/12/2026, serveur en Starter à l'ouverture au public ; domaine (Cloudflare) quand le nom est choisi.",
  "Décisions en attente : vidéos récompense touchant aux règles, propositions de règles, mots douteux, nom définitif."])
 st.append(Paragraph("Historique des versions",H))
-st+=ul(["<b>10 nov. 2026 (soirée)</b> — barre du bas sur ordinateur, jetons des joueurs (anneau lumineux, initiale sur le plateau), chevrons sur les tuiles de l'accueil.",
+st+=ul(["<b>10 nov. 2026 (nuit)</b> — fiches des stores (textes FR/EN, captures, questionnaires) ; séries en espagnol, allemand et italien.",
+ "<b>10 nov. 2026 (soirée)</b> — barre du bas sur ordinateur, jetons des joueurs (anneau lumineux, initiale sur le plateau), chevrons sur les tuiles de l'accueil.",
  "<b>10 nov. 2026 (soirée)</b> — règles du jeu illustrées ; documentation à signature visuelle commune ; « le plus riche gagne » rendu évident sur le plateau.",
  "<b>10 nov. 2026 (fin de journée)</b> — design rapproché des maquettes : dé blanc 3D avec halo et anneaux dorés, cadre lumineux du plateau, libellés du plateau en caractères gras, traînées de lumière en fond.",
  "<b>10 nov. 2026 (fin de journée)</b> — séries du Défi (thèmes et autre langue, débloquées par niveau) ; vibrations plus douces ; lueur de validation ; vitrine de l'accueil qui « tremble » sur un faux mot ; barres de défilement masquées.",
- "<b>10 nov. 2026 (fin de journée)</b> — version Apple préparée (iPhone, iPad).",
+ "<b>10 nov. 2026 (fin de journée)</b> — version Apple préparée (iPhone ; sur iPad en mode iPhone).",
  "<b>10 nov. 2026 (fin de journée)</b> — jeu complet hors ligne : scores en attente envoyés au retour du réseau, démarrage rapide sur réseau lent, vidéos de pub en cache, multijoueur signalé hors connexion.",
  "<b>10 nov. 2026 (soir)</b> — accueil multi avec salons en attente et Partie rapide ; anti-triche (le serveur refait le tirage du défi du jour et vérifie mots et score) ; politique de confidentialité et mentions légales (appli, pages web, PDF) ; aide au choix du nom.",
  "<b>10 nov. 2026</b> — serveur en ligne (Render, base dédiée), tests et mises à jour automatiques, appli Android de test ; nom changeable en un seul endroit.",

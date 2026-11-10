@@ -1,32 +1,39 @@
 /* =========================================================================
    Le-QLN — Séries du Défi : Classique, par langue (cartes dans l'autre langue), à thème.
    Choix par un menu déroulant sur l'écran Solo ; débloquées par niveau ; pas de classement (mode "serie").
-   Données : data/themes-<langue>.json (tools/build_themes.py) ; dictionnaire de l'autre langue chargé à la demande.
+   Données : data/themes-<langue>.json (tools/build_themes.py) ; dictionnaires des autres langues chargés à la demande
+   (français / anglais : ceux du jeu ; espagnol, allemand, italien : data/langues/, tools/build_dict_langues.py).
    Dépend du socle de index.html (DICO, NIVEAUX, PARCOURS_DEFI, VIES, REGLES_DEFAUT, norm, cleTri, store, esc, $).
    ========================================================================= */
 const Series = (() => {
 const LG = document.documentElement.lang === "en" ? "en" : "fr";
 const TXT = LG === "en" ? {
   serie:"Series", classique:"Classic", classiqueD:"10 cards from every colour", langues:"Languages", themes:"Themes",
-  verrou:n => `level ${n}`, carteEn:"English cards", carteFr:"French cards", nomLangue:{fr:"Français", en:"English"},
-  descTheme:(n, t) => `${n} cards per game · ${t}`, descLangue:"10 cards in French", pasClasse:"Series are not ranked: just for fun and XP.",
+  verrou:n => `level ${n}`, nomLangue:{fr:"Français", en:"English", es:"Español", de:"Deutsch", it:"Italiano"},
+  descTheme:(n, t) => `${n} cards per game · ${t}`, descLangue:l => `10 cards in ${{fr:"French", es:"Spanish", de:"German", it:"Italian"}[l]}`, pasClasse:"Series are not ranked: just for fun and XP.",
   chargement:"Loading the series…", echec:"This series could not be loaded. Check your connection and try again.",
   niveau:n => `Unlocked at level ${n}`, debloque:n => `New series unlocked: ${n}!`,
 } : {
   serie:"Série", classique:"Classique", classiqueD:"10 cartes de toutes les couleurs", langues:"Langues", themes:"Thèmes",
-  verrou:n => `niveau ${n}`, carteEn:"Cartes en anglais", carteFr:"Cartes en français", nomLangue:{fr:"Français", en:"English"},
-  descTheme:(n, t) => `${n} cartes par partie · ${t}`, descLangue:"10 cartes en anglais", pasClasse:"Les séries ne sont pas classées : pour le plaisir et l'XP.",
+  verrou:n => `niveau ${n}`, nomLangue:{fr:"Français", en:"English", es:"Español", de:"Deutsch", it:"Italiano"},
+  descTheme:(n, t) => `${n} cartes par partie · ${t}`, descLangue:l => `10 cartes en ${{en:"anglais", es:"espagnol", de:"allemand", it:"italien"}[l]}`, pasClasse:"Les séries ne sont pas classées : pour le plaisir et l'XP.",
   chargement:"Chargement de la série…", echec:"Impossible de charger cette série. Vérifiez la connexion et réessayez.",
   niveau:n => `Débloquée au niveau ${n}`, debloque:n => `Nouvelle série débloquée : ${n} !`,
 };
 const AUTRE = LG === "en" ? "fr" : "en";
-const CHEMIN_AUTRE = LG === "en" ? "../data/fr.json" : "en/data/en.json";
-const DRAPEAU = {fr:{emoji:"🇫🇷", bandes:["#0055a4", "#ffffff", "#ef4135"]}, en:{emoji:"🇬🇧", bandes:["#012169", "#ffffff", "#c8102e"]}};
+const BASE = LG === "en" ? "../" : "";
+// séries de langue : dictionnaire et niveau requis (l'autre langue du jeu d'abord, puis espagnol, allemand, italien)
+const LANGUES = [{lang:AUTRE, chemin: LG === "en" ? "../data/fr.json" : "en/data/en.json", requis:3},
+                 {lang:"es", chemin:BASE + "data/langues/es.json", requis:5},
+                 {lang:"de", chemin:BASE + "data/langues/de.json", requis:6},
+                 {lang:"it", chemin:BASE + "data/langues/it.json", requis:7}];
+const DRAPEAU = {fr:{emoji:"🇫🇷", bandes:["#0055a4", "#ffffff", "#ef4135"]}, en:{emoji:"🇬🇧", bandes:["#012169", "#ffffff", "#c8102e"]},
+                 es:{emoji:"🇪🇸", bandes:["#aa151b", "#f1bf00", "#aa151b"]}, de:{emoji:"🇩🇪", bandes:["#000000", "#dd0000", "#ffce00"]},
+                 it:{emoji:"🇮🇹", bandes:["#009246", "#ffffff", "#ce2b37"]}};
 const LONGUEUR = 8;                      // cartes par série à thème
-const NIV_LANGUE = 3;                    // niveau requis pour la série de langue
 const nivTheme = i => i < 2 ? 1 : i;     // 2 thèmes dès le niveau 1, puis un de plus à chaque niveau
 
-let THEMES = null, AUTRE_DICO = null;
+let THEMES = null; const DICOS = {};
 const niveauJoueur = () => { try{ return typeof Progres !== "undefined" ? Progres.niveau().n : 1; }catch(e){ return 1; } };
 
 async function chargerThemes(){
@@ -34,17 +41,17 @@ async function chargerThemes(){
   try{ const r = await fetch(`data/themes-${LG}.json`); THEMES = (await r.json()).themes || []; }catch(e){ THEMES = []; }
   return THEMES;
 }
-async function chargerAutre(){
-  if(AUTRE_DICO) return AUTRE_DICO;
-  const brut = await (await fetch(CHEMIN_AUTRE)).json(), D = {};
+async function chargerLangue(lang){
+  if(DICOS[lang]) return DICOS[lang];
+  const brut = await (await fetch(LANGUES.find(x => x.lang === lang).chemin)).json(), D = {};
   for(const k of Object.keys(NIVEAUX)) D[k] = (brut[k] || []).map(g => { const vus = new Set(), m = []; for(const w of g){ const n = norm(w); if(!vus.has(n)){ vus.add(n); m.push(w); } } return m; }).filter(g => g.length >= 2);
-  return AUTRE_DICO = D;
+  return DICOS[lang] = D;
 }
 /* liste du menu : {cle, nom, emoji, desc, requis, ouvert} */
 async function catalogue(){
   const t = await chargerThemes(), nv = niveauJoueur();
   const liste = [{cle:"classique", nom:TXT.classique, emoji:"🎴", desc:TXT.classiqueD, requis:1, groupe:""}];
-  liste.push({cle:"langue-" + AUTRE, nom:TXT.nomLangue[AUTRE], emoji:DRAPEAU[AUTRE].emoji, desc:TXT.descLangue, requis:NIV_LANGUE, groupe:TXT.langues});
+  for(const x of LANGUES) liste.push({cle:"langue-" + x.lang, nom:TXT.nomLangue[x.lang], emoji:DRAPEAU[x.lang].emoji, desc:TXT.descLangue(x.lang), requis:x.requis, groupe:TXT.langues});
   t.forEach((th, i) => liste.push({cle:"theme-" + th.cle, nom:th.nom, emoji:th.emoji, desc:TXT.descTheme(LONGUEUR, th.mots.length + " " + (LG === "en" ? "words in the theme" : "mots dans le thème")), requis:nivTheme(i), groupe:TXT.themes, th}));
   liste.forEach(x => x.ouvert = nv >= x.requis);
   return liste;
@@ -79,7 +86,8 @@ async function config(cle){
   if(!cle || cle === "classique") return null;
   const regles = {...REGLES_DEFAUT, choix3:false, legendaire:false};
   if(cle.startsWith("langue-")){
-    const lang = cle.slice(7), D = await chargerAutre();
+    const lang = cle.slice(7); if(!LANGUES.some(x => x.lang === lang)) return null;
+    const D = await chargerLangue(lang);
     const deco = {type:"langue", lang, emoji:DRAPEAU[lang].emoji, nom:TXT.nomLangue[lang], bandes:DRAPEAU[lang].bandes};
     return {cartes:[...PARCOURS_DEFI], vies:VIES, regles, serieCle:cle, langueCartes:lang, deco,
       tirer(niv, rnd, deja){

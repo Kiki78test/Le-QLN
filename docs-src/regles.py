@@ -54,7 +54,7 @@ h += f"""<div class="r"><h2>{med("v","1")}Le principe</h2>
 <ul><li><b>Rapidité</b> : +25 % si vous trouvez dans la première moitié du temps.</li>
 <li><b>Chasse aux anagrammes</b> : une fois la carte gagnée, le sablier continue ; chaque anagramme supplémentaire rapporte +50 % du gain.</li>
 <li><b>Indice</b> : révèle la première lettre d'une solution, mais divise le gain par deux.</li>
-<li><b>Séries</b> (menu « Série ») : Classique, cartes dans l'autre langue, ou thème (Animaux, Cuisine, Voyages…) ; 8 cartes par série à thème, débloquées par niveau, sans classement.</li></ul></div>
+<li><b>Séries</b> (menu « Série ») : Classique, cartes dans une autre langue (anglais ou français, espagnol, allemand, italien), ou thème (Animaux, Cuisine, Voyages…) ; 8 cartes par série à thème, débloquées par niveau, sans classement.</li></ul></div>
 <div class="r"><h2>{med("vi","5")}Règles du solo</h2>
 <p>Chacune peut être coupée dans « Règles de la partie libre ».</p>
 <ul><li><b>Série ou banque</b> : les gains vont dans une cagnotte avec un multiplicateur (×1, ×1,5, ×2). Encaissez pour les mettre à l'abri, ou continuez. Un échec fait perdre une vie et la moitié de la cagnotte.</li>

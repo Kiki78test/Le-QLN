@@ -204,7 +204,7 @@ for(const lang of ["fr", "en"]) test(`${lang} : séries à thème et par langue`
   await p.evaluate(() => Progres.remplacer({...Progres.donnees(), xp:999999}));
   await p.evaluate(() => ecranSolo()); await p.waitForSelector("#s-serie");
   assert.equal(await p.evaluate(() => document.querySelectorAll("#s-serie option[disabled]").length), 0, "tout est débloqué à haut niveau");
-  for(const k of ["theme-animaux", "langue-" + (lang === "en" ? "fr" : "en")]){
+  for(const k of ["theme-animaux", "langue-" + (lang === "en" ? "fr" : "en"), "langue-es", "langue-de", "langue-it"]){
     await p.evaluate(() => ecranSolo()); await p.waitForSelector("#s-serie");
     await p.selectOption("#s-serie", k);
     await p.evaluate(() => document.querySelector("#s-defi").click());

@@ -34,6 +34,7 @@ h += sec("En cours chez vous", [
 ])
 h += sec("Décisions à prendre", [
     ("dec", "<b>Nom définitif</b> : présélection Qlinn, Anagold, Wordheist, Lexipot (voir « Choisir le nom du jeu »)."),
+    ("vous", "<b>Relire les séries de langue</b> : tableur « Séries en espagnol, allemand, italien » (mots à retirer)."),
     ("vous", "<b>Relire les thèmes</b> : tableur « Thèmes des séries » (mettre un x pour retirer un mot, proposer des ajouts)."),
     ("dec", "<b>Règles</b> : propositions en attente (document « Propositions de règles »), vidéos récompense touchant aux règles."),
     ("dec", "<b>Mots douteux</b> : tableur à relire (gardés par défaut)."),
@@ -48,6 +49,7 @@ h += sec("Prochaines étapes de Claude", [
     ("todo", "Changer le nom partout dès qu'il est choisi (action « Changer le nom »)."),
 ])
 h += sec("Fait", [
+    ("ok", "<b>10/11</b> — séries du Défi en <b>espagnol, allemand, italien</b> (débloquées aux niveaux 5, 6, 7), drapeaux, définitions sur le Wiktionnaire de chaque langue, jouables hors ligne."),
     ("ok", "<b>10/11</b> — fiches des stores prêtes (dossier <code>store/</code> + PDF « Fiches des stores ») : textes FR/EN, 8 captures Play et iPhone, bannière, icône, réponses Sécurité des données / Confidentialité Apple ; appli iOS réservée à l'iPhone pour la 1re version ; suppression du compte sans l'appli décrite dans la politique."),
     ("ok", "<b>10/11</b> — documentation : signature visuelle commune, règles du jeu illustrées (appli + PDF), étapes déjà faites marquées « Fait » (Render, comptes, applis)."),
     ("ok", "<b>10/11</b> — « le plus riche gagne » rendu évident (rappel, bandeau, bonus d'arrivée, podium détaillé) ; design rapproché des maquettes (dé 3D doré, cadre lumineux)."),

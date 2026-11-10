@@ -1297,7 +1297,7 @@ const Definitions = (() => {
     const cible = e.target.closest("[data-def]");
     if(cible){
       e.preventDefault(); e.stopPropagation();
-      if(window.QLN_LANGUE_CARTE){ window.open("https://" + window.QLN_LANGUE_CARTE + ".wiktionary.org/wiki/" + encodeURIComponent(String(cible.dataset.def).toLowerCase()), "_blank", "noopener"); return; }
+      if(window.QLN_LANGUE_CARTE){ const m = String(cible.dataset.def); window.open("https://" + window.QLN_LANGUE_CARTE + ".wiktionary.org/wiki/" + encodeURIComponent(window.QLN_LANGUE_CARTE === "de" ? m : m.toLowerCase()), "_blank", "noopener"); return; }   // (allemand : majuscule des noms)
       if(bulle && bulle.dataset.pour === cible.dataset.def) return fermer();
       ouvrir(cible, cible.dataset.def);
       return;
