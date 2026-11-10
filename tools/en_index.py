@@ -1,5 +1,36 @@
 # FR -> EN pairs for index.html (applied literally, longest first)
 P = [
+('const LANGUE = "fr";','const LANGUE = "en";'),
+('${esc(prop)} n\'est pas dans le dictionnaire du jeu.` + (deja.length','${esc(prop)} is not in the game dictionary.` + (deja.length'),
+('id="b-contester">Contester</button>','id="b-contester">Challenge</button>'),
+('titre:"Contestation", corps:','titre:"Challenge", corps:'),
+('id="ct-etat">Vérification dans le Wiktionnaire…</p>','id="ct-etat">Checking Wiktionary…</p>'),
+('raison:"pas d\'accès au Wiktionnaire pour le moment"','raison:"no access to Wiktionary right now"'),
+('etat.innerHTML = `Mot accepté : <b>','etat.innerHTML = `Word accepted: <b>'),
+('.<br>Il est ajouté au dictionnaire du jeu. Merci !`','.<br>It has been added to the game dictionary. Thank you!`'),
+('id="ct-ok">Continuer</button>`','id="ct-ok">Continue</button>`'),
+('etat.innerHTML = `Contestation refusée : ${esc(verdict.raison)}.`','etat.innerHTML = `Challenge rejected: ${esc(verdict.raison)}.`'),
+('(page ? ` <a href="${"https://fr.wiktionary.org/wiki/"','(page ? ` <a href="${"https://en.wiktionary.org/wiki/"'),
+('target="_blank" rel="noopener">Voir la page ↗</a>` : "")','target="_blank" rel="noopener">See the page ↗</a>` : "")'),
+('id="ct-ok">Reprendre</button>`','id="ct-ok">Resume</button>`'),
+
+('const AUTRE_DICO = mot => "https://www.cnrtl.fr/definition/" + encodeURIComponent(mot.toLowerCase()), AUTRE_NOM = "CNRTL (Trésor de la langue française)";','const AUTRE_DICO = mot => "https://www.merriam-webster.com/dictionary/" + encodeURIComponent(mot.toLowerCase()), AUTRE_NOM = "Merriam-Webster";'),
+('<p class="autres-sources">Chercher ailleurs : ','<p class="autres-sources">Look elsewhere: '),
+('const ACCENTS = {e:["é","è","ê"], a:["à","â"], i:["î","ï"], o:["ô"], u:["û","ù"], c:["ç"]};','const ACCENTS = {};'),
+
+('<span>Mon compte</span>','<span>My account</span>'),('<span>Classements</span>','<span>Leaderboards</span>'),('aria-label="Mon compte"','aria-label="My account"'),
+
+("<small>Dictionnaire construit à partir de Lexique 3.83 (CC BY-SA 4.0)</small>","<small>English dictionary: web2, wordfreq, lemminflect (open data)</small>"),
+
+('<span>Accueil</span>','<span>Home</span>'),('<span>Mes statistiques</span>','<span>My stats</span>'),('<span>Mon profil</span>','<span>My profile</span>'),
+('<span>Partie guidée</span>','<span>Guided game</span>'),('<span>Règles du jeu</span>','<span>Game rules</span>'),('<span>Documentation</span>','<span>Documentation</span>'),
+('<span>Son</span>','<span>Sound</span>'),("<span>Installer l'appli</span>","<span>Install the app</span>"),("Le jeu d'anagrammes qui rapporte<small>","The anagram game that pays<small>"),
+('aria-label="Accueil"','aria-label="Home"'),('aria-label="Mon profil"','aria-label="My profile"'),('aria-label="Fermer"','aria-label="Close"'),
+('Son.actif ? "Activé" : "Coupé"','Son.actif ? "On" : "Off"'),
+
+("Le-QLN — le jeu d'anagrammes qui rapporte","Le-QLN — the anagram game that pays"),
+("Trouvez l'anagramme avant la fin du sablier : solo, contre l'IA ou entre amis.","Find the anagram before the timer runs out: solo, against the AI or with friends."),
+
 ('<html lang="fr">','<html lang="en">'),
 ("Le-QLN, le jeu d'anagrammes : trouvez l'anagramme avant la fin du sablier.","Le-QLN, the anagram board game: find the anagram before the timer runs out."),
 ("Chargement du dictionnaire…","Loading the dictionary…"),
@@ -40,7 +71,7 @@ P = [
 ("Contre l'IA","Versus AI"),("Le plateau complet, enchères et prison","The full board, auctions and jail"),
 ("Défi du jour","Daily challenge"),("Fait : ","Done: "),("Les mêmes cartes pour tous","Same cards for everyone"),
 ('<span class="nom">Entraînement</span><span class="desc">Votre couleur, sans pression</span>','<span class="nom">Practice</span><span class="desc">Your colour, no pressure</span>'),
-("Multijoueur de 2 à 6 joueurs : bientôt","Multiplayer for 2–6 players: coming soon"),
+('<span class="nom">Multijoueur</span><span class="desc">Créez un salon, partagez le code, jouez à 2-6</span></span><span class="etiquette">Nouveau</span>','<span class="nom">Multiplayer</span><span class="desc">Create a room, share the code, play with 2–6</span></span><span class="etiquette">New</span>'),
 ("<span>Record Défi</span>","<span>Challenge record</span>"),
 ('aria-label="Gains et temps par couleur"','aria-label="Winnings and time per colour"'),
 ("Règles du jeu</button>","How to play</button>"),("Documentation</button>","Documentation</button>"),("Installer l'appli","Install the app"),

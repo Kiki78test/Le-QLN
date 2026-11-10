@@ -3,9 +3,12 @@
 Usage: python3 tools/build_en.py   (from /home/claude/qln). Prints pairs not found + leftover French-looking text."""
 import re, sys, importlib, pathlib
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-APP, EN = ROOT/"app", ROOT/"app"/"en"
+APP = ROOT/"app" if (ROOT/"app"/"index.html").exists() else ROOT   # dépôt GitHub : les fichiers sont à la racine
+EN = APP/"en"
+import json as _json
+NOM = _json.loads((APP/"marque.json").read_text(encoding="utf-8"))["nom"] if (APP/"marque.json").exists() else "Le-QLN"
 sys.path.insert(0, str(ROOT/"tools"))
-FILES = {"index.html":"en_index", "plateau.js":"en_plateau", "pub.js":"en_pub", "infos.js":"en_infos"}
+FILES = {"index.html":"en_index", "plateau.js":"en_plateau", "pub.js":"en_pub", "infos.js":"en_infos", "multi.js":"en_multi", "progres.js":"en_progres", "compte.js":"en_compte"}
 STOP = set("le la les des du de un une vous votre vos pour avec sur dans pas qui que est sont ou et au aux ce cette ces mot mots carte cartes partie jouer joueur joueurs tour sans mais plus ne à il elle sa ses leur par se lettres lettre temps gain gains".split())
 missing = 0
 for fn, mod in FILES.items():
@@ -19,7 +22,7 @@ for fn, mod in FILES.items():
     src = re.sub(r'(\$\{[^{}]+\}|\b\d[\d,]*) ?€(?!\w)', lambda m: "€"+m.group(1), src)
     src = src.replace('qln:"+k','qln-en:"+k')
     src = src.replace('data/en.json','data/en.json')
-    src = src.replace('href="manifest.webmanifest"','href="manifest.webmanifest"').replace('href="icons/','href="../icons/').replace('"pubs/spot','"../pubs/spot').replace('fetch("docs/index.json"','fetch("../docs/index.json"').replace('"docs/${encodeURI','"../docs/${encodeURI')
+    src = src.replace('href="manifest.webmanifest"','href="manifest.webmanifest"').replace('href="icons/','href="../icons/').replace('url(fonts/','url(../fonts/').replace('"pubs/spot','"../pubs/spot').replace('fetch("docs/index.json"','fetch("../docs/index.json"').replace('<script src="config.js">','<script src="../config.js">').replace('<script src="analyse.js">','<script src="../analyse.js">').replace('"docs/${encodeURI','"../docs/${encodeURI')
     (EN/fn).write_text(src, encoding="utf-8")
     # leftover scan: only inside string literals / template text / HTML text
     segs = re.findall(r'"((?:[^"\\\n]|\\.)*)"|\'((?:[^\'\\\n]|\\.)*)\'|`((?:[^`\\]|\\.)*)`|>([^<>{}`\n]{3,})<', src)
@@ -34,12 +37,13 @@ for fn, mod in FILES.items():
             if t1 not in seen and not re.match(r"^[\w\s.#:\[\]=\-,>*()\"'~]*$", t1) or (t1 not in seen and any(w in STOP for w in words)):
                 seen.add(t1); print(f"[{fn}] {t1}")
 # service worker + manifest
-sw = (APP/"sw.js").read_text(encoding="utf-8").replace("qln-v6","qln-en-v1").replace("data/fr.json","data/en.json").replace('"pubs/spot1.jpg", "pubs/spot2.jpg", "pubs/spot3.jpg", "icons/icon-192.png", "icons/icon-512.png", "icons/apple-touch-icon.png"','"../pubs/spot1.jpg", "../pubs/spot2.jpg", "../pubs/spot3.jpg", "../icons/icon-192.png", "../icons/icon-512.png", "../icons/apple-touch-icon.png"')
-sw = sw.replace("Le-QLN — service worker : jeu jouable hors connexion après la première visite.","Le-QLN (EN) — service worker: playable offline after the first visit.")
+sw = (APP/"sw.js").read_text(encoding="utf-8").replace("qln-v28","qln-en-v20").replace("data/fr.json","data/en.json").replace('"pubs/spot1.jpg", "pubs/spot2.jpg", "pubs/spot3.jpg", "icons/icon-192.png", "icons/icon-512.png", "icons/apple-touch-icon.png"','"../pubs/spot1.jpg", "../pubs/spot2.jpg", "../pubs/spot3.jpg", "../icons/icon-192.png", "../icons/icon-512.png", "../icons/apple-touch-icon.png"')
+sw = sw.replace('"config.js", ','"../config.js", ').replace('"analyse.js", ','"../analyse.js", ').replace('"fonts/','"../fonts/')
+sw = sw.replace(NOM+" — service worker : jeu jouable hors connexion après la première visite.",NOM+" (EN) — service worker: playable offline after the first visit.")
 (EN/"sw.js").write_text(sw, encoding="utf-8")
 import json
 m = json.loads((APP/"manifest.webmanifest").read_text(encoding="utf-8"))
-m.update({"name":"Le-QLN — the anagram game","description":"Find the anagram before the timer runs out.","lang":"en","start_url":"./","scope":"./"})
+m.update({"name":NOM+" — the anagram game","description":"Find the anagram before the timer runs out.","lang":"en","start_url":"./","scope":"./"})
 for ic in m["icons"]: ic["src"] = "../" + ic["src"]
 (EN/"manifest.webmanifest").write_text(json.dumps(m, ensure_ascii=False, indent=2), encoding="utf-8")
 print("missing pairs:", missing)

@@ -1,0 +1,45 @@
+# Change le nom du jeu partout, sans rien installer : onglet Actions → « Changer le nom » → Run workflow → saisir le nom
+# (et, si besoin, les 2 à 4 lettres de l'icône). Le script met à jour le titre, le logo, les menus, le partage, le manifeste,
+# l'appli Android, la version anglaise et les icônes, puis envoie le tout : le site se met à jour, les tests et la vérification
+# en ligne repartent, et l'appli Android est refabriquée. Les adresses techniques (…/Le-QLN/, noms Render) ne changent pas.
+name: Changer le nom
+on:
+  workflow_dispatch:
+    inputs:
+      nom:
+        description: "Nouveau nom du jeu (ex. Zorbo)"
+        required: true
+      sigle:
+        description: "Lettres de l'icône (2 à 4, facultatif ; ex. ZRB)"
+        required: false
+permissions:
+  contents: write
+  actions: write
+  pages: write
+jobs:
+  nom:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: pip install pillow
+      - name: Changer le nom
+        env:
+          NOM: ${{ inputs.nom }}
+          SIGLE: ${{ inputs.sigle }}
+        run: |
+          if [ -n "$SIGLE" ]; then python3 tools/changer_nom.py "$NOM" --sigle "$SIGLE"; else python3 tools/changer_nom.py "$NOM"; fi
+      - name: Envoyer
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NOM: ${{ inputs.nom }}
+        run: |
+          git config user.name "github-actions"; git config user.email "actions@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then echo "Rien à changer."; exit 0; fi
+          git commit -m "Nom du jeu : $NOM"
+          git push
+          # un envoi fait avec le jeton de GitHub ne lance pas les autres automatismes : on les lance à la main
+          gh api -X POST repos/${{ github.repository }}/pages/builds || true
+          gh workflow run tests.yml || true
+          gh workflow run android.yml || true
+          gh workflow run en-ligne.yml || true

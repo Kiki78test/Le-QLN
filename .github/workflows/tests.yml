@@ -53,6 +53,8 @@ jobs:
           curl -sf http://localhost:8790/sante
       - name: Tests du serveur
         run: cd tests && node --test serveur.test.js
+      - name: Test du changement de nom
+        run: cd tests && pip install pillow -q && node --test marque.test.js
       - name: Tests de l'appli
         run: cd tests && node --test --test-concurrency=1 appli.test.js
       - name: Journal du serveur

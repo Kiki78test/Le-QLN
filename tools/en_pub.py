@@ -10,7 +10,7 @@ P = [
 
 ('aria-pressed="${actif}">Pub</button><button data-v="0" aria-pressed="${!actif}">No Pub</button>','aria-pressed="${actif}">Ads</button><button data-v="0" aria-pressed="${!actif}">No Ads</button>'),
 ('"Mode No Pub : aucune publicité."','"No Ads mode: no advertising."'),
-('"Mode Pub : un spot avant la partie, un bandeau pendant les sabliers, des vidéos facultatives contre des bonus."','"Ads mode: a spot before the game, a banner during timers, optional videos for bonuses."'),
+('"Mode Pub : un spot entre deux parties, un bandeau sur les écrans calmes, des vidéos facultatives contre des bonus. Jamais pendant un sablier."','"Ads mode: a spot between two games, a banner on quiet screens, optional videos for bonuses. Never during a timer."'),
 ('titre = "Publicité"','titre = "Advertisement"'),
 ('<span class="tag">Pub</span>','<span class="tag">Ad</span>'),
 ("`Passer dans ${passerApres} s`","`Skip in ${passerApres} s`"),("Passer dans ${passerApres} s","Skip in ${passerApres} s"),
