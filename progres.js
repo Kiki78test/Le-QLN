@@ -89,7 +89,7 @@ function suivantSucces(){
   affiche = true;
   const el = document.createElement("div"); el.className = "pg-succes"; el.setAttribute("role", "status");
   el.innerHTML = `<span class="pg-medaille">${medailleSVG(true)}</span><span><small>${TXT.succesDebloque}</small><b>${esc(TXT.S[id][0])}</b><em>${esc(TXT.S[id][1])}</em></span>`;
-  document.body.appendChild(el); Son.piece(); try{ navigator.vibrate && navigator.vibrate([20,40,20]); }catch(e){}
+  document.body.appendChild(el); Son.piece(); try{ navigator.vibrate && navigator.vibrate([8,40,8]); }catch(e){}
   setTimeout(() => { el.classList.add("sort"); setTimeout(() => { el.remove(); suivantSucces(); }, 400); }, 3200);
 }
 function ajouterXp(x){

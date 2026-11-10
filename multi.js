@@ -116,7 +116,7 @@ const uid = () => (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString
 const codeAleatoire = () => Array.from({length:5}, () => ALPHA[Math.floor(Math.random()*ALPHA.length)]).join("");
 const normCode = s => (s||"").toUpperCase().replace(/[^A-Z]/g,"").slice(0,5);
 const pions = () => typeof PIONS !== "undefined" ? PIONS : [{nom:"Jaune",c:"#ffd60a"},{nom:"Rose",c:"#ff4fa3"},{nom:"Cyan",c:"#35e0ff"},{nom:"Blanc",c:"#f2f2f2"},{nom:"Lilas",c:"#c59bff"},{nom:"Orange",c:"#ff8a1f"}];
-const vibre = ms => { try{ if(navigator.vibrate) navigator.vibrate(ms); }catch(e){} };
+const vibre = ms => { try{ if(navigator.vibrate) navigator.vibrate(Array.isArray(ms) ? ms.map((x, i) => i % 2 ? x : Math.max(4, Math.round(x*.4))) : Math.max(4, Math.round(ms*.4))); }catch(e){} };   // vibrations douces
 const MAX = 6;
 
 /* =========================================================================

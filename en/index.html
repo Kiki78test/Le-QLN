@@ -291,8 +291,10 @@ button.piece:active, .piece.enfonce{transform:translateY(calc(var(--lip) - 1px))
 .mot .t{background:linear-gradient(165deg,var(--b),var(--a))}
 .slot{box-shadow:inset 0 4px 10px rgba(0,0,0,.55), inset 0 0 0 2px rgba(255,255,255,.07), 0 1px 0 rgba(255,255,255,.1)}
 .slot.plein{box-shadow:inset 0 2px 0 #fff, inset 0 -3px 5px rgba(0,0,0,.12), 0 4px 0 var(--ivoire-3), 0 10px 14px rgba(0,0,0,.4)}
-.reponse.juste{animation:victoire .6s ease}
+.reponse.juste{animation:valide .5s ease-out}
 @keyframes victoire{30%{transform:scale(1.06)} 60%{filter:drop-shadow(0 0 18px rgba(143,202,66,.9))}}
+/* mot validé : lueur verte brève et légère (pas de saut) */
+@keyframes valide{0%{filter:none} 30%{filter:drop-shadow(0 0 9px rgba(170,235,100,.8)) brightness(1.1)} 100%{filter:none}}
 .chrono{filter:drop-shadow(0 3px 5px rgba(0,0,0,.4))}
 .chrono .fond{fill:rgba(0,0,0,.35)}
 .chrono.urgent{animation:alerte .6s ease infinite alternate}
@@ -358,7 +360,7 @@ button.piece:active, .piece.enfonce{transform:translateY(calc(var(--lip) - 1px))
 .mode:hover::before{opacity:1}
 .lettre:active:not(:disabled){transform:translateY(4px) scale(.97)}
 .slot.plein{animation:pose .18s cubic-bezier(.2,1.4,.4,1)}
-.reponse.juste .slot,.mot-juste .slot{box-shadow:0 0 0 2px rgba(143,202,66,.9), 0 0 18px rgba(143,202,66,.7)}
+.reponse.juste .slot,.mot-juste .slot{box-shadow:0 0 0 1.5px rgba(143,202,66,.75), 0 0 10px rgba(143,202,66,.45)}
 .chrono.critique .arc{stroke:#ff4d4d}
 .chrono.critique b{color:#ff8a8a}
 .chrono.critique{animation:alerteRouge .4s ease infinite alternate}
@@ -2266,7 +2268,7 @@ chargerDico().then(() => Contestation.charger()).then(() => (typeof Legal !== "u
   }
   /* vibrations légères (mobiles) */
   if(typeof Son !== "undefined" && navigator.vibrate){
-    const v = {tap:8, ok:[18,40,18], ko:[60], piece:12};
+    const v = {tap:4, ok:[8,35,8], ko:[25], piece:5};   // impulsions courtes : vibration douce
     for(const k in v){ const f = Son[k]; if(typeof f === "function") Son[k] = function(){ try{ if(Son.actif) navigator.vibrate(v[k]); }catch(e){} return f.apply(this, arguments); }; }
   }
   /* sablier critique (< 3 s) */
