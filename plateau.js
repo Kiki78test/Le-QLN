@@ -99,8 +99,8 @@ css.textContent = `
 .podium-l small{display:block; color:var(--brume); font-weight:600; font-size:14px}
 
 /* ===== V10 plateau : cadre doré fin, cases plus grandes sur mobile, fiches joueurs, bouton dé premium ===== */
-.tapis-cadre{padding:4px; border-radius:18px; background:linear-gradient(145deg,#ffe9a8,#c8922a 40%,#f2cf6a 70%,#a8741e); box-shadow:0 0 0 1px rgba(0,0,0,.35), 0 0 30px rgba(255,200,60,.12), 0 18px 40px rgba(0,0,0,.5)!important}
-.tapis-cadre::before{inset:4px; border-radius:14px; box-shadow:inset 0 0 0 1px rgba(0,0,0,.4), inset 0 6px 18px rgba(0,0,0,.45)}
+.tapis-cadre{padding:5px; border-radius:20px; background:linear-gradient(145deg,#fff1b8,#d39a2c 38%,#ffe08a 62%,#b67f1f 82%,#f3cf6c); box-shadow:0 0 0 1px rgba(0,0,0,.35), 0 0 22px rgba(255,196,70,.5), 0 0 70px rgba(70,130,255,.28), 0 18px 40px rgba(0,0,0,.5)!important}
+.tapis-cadre::before{inset:5px; border-radius:15px; box-shadow:inset 0 0 0 1px rgba(0,0,0,.4), inset 0 6px 18px rgba(0,0,0,.45)}
 .tapis-cadre::after{display:none}
 @media (max-width:699px){
   #tapis{min-width:880px}
@@ -171,7 +171,22 @@ css.textContent = `
   .plateau-ecran #tapis{min-width:0}
 }
 
-.de-vol .noyau{position:absolute; inset:2%; background:#d9d0b5; backface-visibility:hidden}
+/* dé en vol : halo doré et anneaux lumineux qui tournent autour (traînées), estompés une fois le dé posé */
+.de-vol .de{position:relative; z-index:1}
+.de-halo{position:absolute; inset:-95%; border-radius:50%; mix-blend-mode:screen; background:radial-gradient(closest-side, rgba(255,226,130,.95) 28%, rgba(255,186,60,.62) 48%, rgba(255,150,30,.22) 64%, transparent 78%); animation:deHalo .45s ease-in-out infinite alternate; pointer-events:none}
+.de-orbite{position:absolute; inset:-62%; border-radius:50%; pointer-events:none; mix-blend-mode:screen;
+  background:conic-gradient(from 0deg, transparent 0 8%, rgba(255,200,80,.25) 22%, rgba(255,224,120,.95) 42%, #fffbe6 50%, transparent 53% 58%, rgba(255,214,100,.5) 78%, #fff3c4 86%, transparent 89% 100%);
+  -webkit-mask:radial-gradient(closest-side, transparent 80%, #000 84% 95%, transparent 99%); mask:radial-gradient(closest-side, transparent 80%, #000 84% 95%, transparent 99%);
+  filter:drop-shadow(0 0 8px rgba(255,196,60,1)) drop-shadow(0 0 18px rgba(255,170,40,.7))}
+.de-orbite.o1{animation:deOrbite1 .7s linear infinite}
+.de-orbite.o2{inset:-88%; opacity:.8; animation:deOrbite2 .95s linear infinite}
+.de-orbite.o3{inset:-40%; z-index:2; animation:deOrbite3 .6s linear infinite}
+@keyframes deOrbite1{from{transform:rotateX(66deg) rotateZ(0deg)} to{transform:rotateX(66deg) rotateZ(360deg)}}
+@keyframes deOrbite2{from{transform:rotateX(72deg) rotateY(20deg) rotateZ(360deg)} to{transform:rotateX(72deg) rotateY(20deg) rotateZ(0deg)}}
+@keyframes deOrbite3{from{transform:rotateX(58deg) rotateY(-26deg) rotateZ(0deg)} to{transform:rotateX(58deg) rotateY(-26deg) rotateZ(360deg)}}
+@keyframes deHalo{from{opacity:.75; transform:scale(.93)} to{opacity:1; transform:scale(1.07)}}
+.de-vol-zone.pose .de-orbite{animation-play-state:paused; opacity:0; transition:opacity .35s}
+.de-vol-zone.pose .de-halo{animation:none; opacity:.55; transition:opacity .3s}
 .de-vol .face{border-radius:calc(var(--d)*.14)}
 `;
 document.head.appendChild(css);
@@ -890,7 +905,7 @@ function svgTapis(){
     const x = X0 + n.c*CW, y = Y0 + n.r*CH;
     const fill = n.type === "carte" ? n.niv : (n.type === "bonus" ? "violet" : "orange");
     let label = "";
-    const txt = (t, dy, taille=30) => `<text x="${x+CW/2}" y="${y+CH/2+dy}" text-anchor="middle" font-family="Bebas Neue, Oswald, Arial Narrow, sans-serif" font-size="${taille}" fill="#fff" stroke="#000" stroke-width="1" paint-order="stroke" letter-spacing="1" ${t.length>=5?`textLength="${Math.min(84, t.length*14)}" lengthAdjust="spacingAndGlyphs"`:""}>${t}</text>`;
+    const txt = (t, dy, taille=30) => `<text x="${x+CW/2}" y="${y+CH/2+dy}" text-anchor="middle" font-family="Barlow Condensed, Arial Narrow, sans-serif" font-weight="800" font-size="${taille}" fill="#fff" stroke="#000" stroke-width="1" paint-order="stroke" letter-spacing="1" ${t.length>=5?`textLength="${Math.min(84, t.length*14)}" lengthAdjust="spacingAndGlyphs"`:""}>${t}</text>`;
     if(n.type === "bonus") label = txt("BONUS", -4) + txt(n.montant+"€", 26);
     if(n.type === "malus") label = txt("MALUS", -4) + txt(n.montant+"€", 26);
     if(n.type === "prison") label = txt("PRISON", -4) + txt(n.montant+"€", 26);
@@ -900,7 +915,7 @@ function svgTapis(){
     if(n.cd){
       const [cx, cy] = [x+CW/2, y+CH/2];
       fleches = n.next.map(t => { const m = NOEUDS[t]; const dx = Math.sign(m.c-n.c), dy = Math.sign(m.r-n.r); return `<line x1="${cx}" y1="${cy}" x2="${cx+dx*34}" y2="${cy+dy*30}" stroke="#000" stroke-width="4.5" marker-end="url(#fl)"/>`; }).join("")
-        + `<text x="${x+16}" y="${y+CH-12}" font-family="Bebas Neue, Oswald, Arial Narrow, sans-serif" font-size="26" fill="#000" opacity=".85">CD</text>`;
+        + `<text x="${x+16}" y="${y+CH-12}" font-family="Barlow Condensed, Arial Narrow, sans-serif" font-weight="800" font-size="26" fill="#000" opacity=".85">CD</text>`;
     }
     cases += `<g class="case-g" data-id="${n.id}">
       <rect x="${x}" y="${y}" width="${CW}" height="${CH}" fill="url(#g-${fill})" stroke="#000" stroke-width="3.5"/>
@@ -915,21 +930,21 @@ function svgTapis(){
   const yTop = Y0 + CH/2, yMil = Y0 + 4*CH + CH/2, yBas = Y0 + 7*CH + CH/2;
   const accolade = `<path d="M${X0+14*CW+4} ${yTop}H${xb}V${yBas}H${X0+14*CW+4}M${X0+14*CW+4} ${yMil}H${xb}" fill="none" stroke="#cfe0ff" stroke-width="4" opacity=".85"/>
     <line x1="${xb}" y1="${yMil}" x2="${XA-8}" y2="${yMil}" stroke="#cfe0ff" stroke-width="4" marker-end="url(#fl-c)" opacity=".85"/>`;
-  const arrivee = `<ellipse class="lueur" cx="${XA+40}" cy="${Y0+CH*4.05}" rx="120" ry="${CH*3.6}" fill="url(#g-halo-or)"/><text x="${XA+38}" y="${Y0+CH*1.05-16}" text-anchor="middle" font-family="Bebas Neue, Oswald, Arial Narrow, sans-serif" font-size="32" fill="url(#g-or)" stroke="#5a3706" stroke-width=".8" paint-order="stroke" letter-spacing="1.5">ARRIVÉE</text>`
+  const arrivee = `<ellipse class="lueur" cx="${XA+40}" cy="${Y0+CH*4.05}" rx="120" ry="${CH*3.6}" fill="url(#g-halo-or)"/><text x="${XA+38}" y="${Y0+CH*1.05-16}" text-anchor="middle" font-family="Barlow Condensed, Arial Narrow, sans-serif" font-weight="800" font-size="32" fill="url(#g-or)" stroke="#5a3706" stroke-width=".8" paint-order="stroke" letter-spacing="1.5">ARRIVÉE</text>`
     + BONUS_ARRIVEE.map((b,i)=>{ const [cx,cy] = caseArrivee(i); const col = i<2 ? ["#b8c21a","#e8ee55"] : i<4 ? ["#8f9399","#d9dce0"] : ["#8a4a2c","#c98463"];
       return `<g class="case-g" data-id="A${i}"><rect x="${cx-36}" y="${cy-CH/2+2}" width="72" height="${CH-4}" fill="${col[1]}" stroke="#000" stroke-width="3.5"/><rect x="${cx-34}" y="${cy-CH/2+4}" width="68" height="${CH-8}" fill="url(#g-biseau)"/><rect x="${cx-32}" y="${cy-CH/2+6}" width="64" height="${CH*.4}" fill="url(#g-reflet)"/>
         <text x="${cx}" y="${cy+16}" text-anchor="middle" font-family="Barlow Condensed, Arial Narrow, sans-serif" font-weight="800" font-size="46" fill="#111">${i+1}</text>
-        <text x="${cx+48}" y="${cy+10}" font-family="Bebas Neue, Oswald, Arial Narrow, sans-serif" font-size="30" fill="${b>0?"#9be15d":"#ff6b6b"}">${b>0?"+":""}${b}€</text></g>`; }).join("")
+        <text x="${cx+48}" y="${cy+10}" font-family="Barlow Condensed, Arial Narrow, sans-serif" font-weight="800" font-size="30" fill="${b>0?"#9be15d":"#ff6b6b"}">${b>0?"+":""}${b}€</text></g>`; }).join("")
     + `<g class="case-g" data-id="A"><rect class="halo" x="${XA-2}" y="${Y0+CH*1.05-4}" width="80" height="${CH*6+8}" rx="8"/></g>`;
   const depart = [0,1,2,3,4,5].map(i=>{ const [cx,cy] = caseDepart(i); return `<rect x="${cx-35}" y="${cy-35}" width="70" height="70" fill="url(#g-jaune)" stroke="#000" stroke-width="3.5"/><rect x="${cx-33}" y="${cy-33}" width="66" height="66" fill="url(#g-biseau)"/><text x="${cx}" y="${cy+16}" text-anchor="middle" font-family="Barlow Condensed, Arial Narrow, sans-serif" font-weight="800" font-size="44" fill="#111">${i+1}</text>`; }).join("")
-    + `<text x="${X0+4.5*CW}" y="${Y0+9*CH+110}" text-anchor="middle" font-family="Bebas Neue, Oswald, Arial Narrow, sans-serif" font-size="30" fill="#fff" letter-spacing="1.5">DÉPART</text>`;
+    + `<text x="${X0+4.5*CW}" y="${Y0+9*CH+110}" text-anchor="middle" font-family="Barlow Condensed, Arial Narrow, sans-serif" font-weight="800" font-size="30" fill="#fff" letter-spacing="1.5">DÉPART</text>`;
   const logo = `<g transform="translate(${X0+12.5*CW} ${Y0+2.5*CH}) rotate(-9)"><ellipse rx="138" ry="50" fill="#000" opacity=".95" stroke="#6b7ca3" stroke-width="2"/><ellipse cx="-10" cy="-26" rx="104" ry="17" fill="#fff" opacity=".14"/><text y="22" text-anchor="middle" font-family="Bebas Neue, Oswald, Impact, sans-serif" font-size="66" fill="#fff" letter-spacing="2" textLength="200" lengthAdjust="spacingAndGlyphs">LE - QLN</text></g>`;
   const bx = X0 + 8, by = Y0 + 5.35*CH, bw = 92;
   const bareme = `<g filter="url(#ombre)"><rect x="${bx-4}" y="${by-4}" width="${bw*4+8}" height="${CH*2.3+8}" fill="#000"/>`
     + Object.values(NIVEAUX).map((N,i)=>{ const x = bx + i*bw, f = N.cle;
-      return `<text x="${x+bw/2}" y="${by+26}" text-anchor="middle" font-family="Bebas Neue, Oswald, Arial Narrow, sans-serif" font-size="22" fill="#ffe68f" textLength="${Math.min(84, N.nom.length*10.5)}" lengthAdjust="spacingAndGlyphs">${N.nom.toUpperCase()}</text>
-        <rect x="${x+3}" y="${by+38}" width="${bw-6}" height="${CH*.75}" fill="url(#g-${f})"/><text x="${x+bw/2}" y="${by+38+CH*.5}" text-anchor="middle" font-family="Bebas Neue, Oswald, Arial Narrow, sans-serif" font-size="34" fill="#fff">${N.gain}€</text>
-        <rect x="${x+3}" y="${by+44+CH*.75}" width="${bw-6}" height="${CH*.75}" fill="url(#g-${f})"/><text x="${x+bw/2}" y="${by+44+CH*1.25}" text-anchor="middle" font-family="Bebas Neue, Oswald, Arial Narrow, sans-serif" font-size="26" fill="#fff" textLength="${N.temps<60?60:56}" lengthAdjust="spacingAndGlyphs">${N.temps<60?N.temps+" SEC":N.temps/60+" MIN"}</text>`; }).join("") + `</g>`;
+      return `<text x="${x+bw/2}" y="${by+26}" text-anchor="middle" font-family="Barlow Condensed, Arial Narrow, sans-serif" font-weight="800" font-size="22" fill="#ffe68f" textLength="${Math.min(84, N.nom.length*10.5)}" lengthAdjust="spacingAndGlyphs">${N.nom.toUpperCase()}</text>
+        <rect x="${x+3}" y="${by+38}" width="${bw-6}" height="${CH*.75}" fill="url(#g-${f})"/><text x="${x+bw/2}" y="${by+38+CH*.5}" text-anchor="middle" font-family="Barlow Condensed, Arial Narrow, sans-serif" font-weight="800" font-size="34" fill="#fff">${N.gain}€</text>
+        <rect x="${x+3}" y="${by+44+CH*.75}" width="${bw-6}" height="${CH*.75}" fill="url(#g-${f})"/><text x="${x+bw/2}" y="${by+44+CH*1.25}" text-anchor="middle" font-family="Barlow Condensed, Arial Narrow, sans-serif" font-weight="800" font-size="26" fill="#fff" textLength="${N.temps<60?60:56}" lengthAdjust="spacingAndGlyphs">${N.temps<60?N.temps+" SEC":N.temps/60+" MIN"}</text>`; }).join("") + `</g>`;
   return `<svg id="tapis" viewBox="0 0 ${LARG} ${HAUT}" role="img" aria-label="Plateau Le-QLN"><defs>${defs}</defs>
     <rect width="${LARG}" height="${HAUT}" fill="url(#lampe)"/><rect width="${LARG}" height="${HAUT}" fill="url(#feutre)"/><g filter="url(#ombre)">${cases}</g>${accolade}${arrivee}<g filter="url(#ombre)">${depart}</g>${bareme}${logo}<g id="pions"></g></svg>`;
 }
@@ -1053,9 +1068,9 @@ function deSurPlateau(valeur, ms){
   let haut = Math.max(r.top, plafond), bas = Math.min(r.bottom, innerHeight);
   if(bas - haut < 260) r = {left:0, width:innerWidth}, haut = plafond, bas = innerHeight;
   const zone = document.createElement("div"); zone.className = "de-vol-zone";
-  const d = Math.round(Math.min(110, Math.max(70, r.width*.2)));
+  const d = Math.round(Math.min(168, Math.max(78, r.width*.17)));
   zone.style.cssText = `left:${r.left}px; top:${haut}px; width:${r.width}px; height:${bas-haut}px; --d:${d}px`;
-  zone.innerHTML = `<div class="de-vol-sol"></div><div class="de-vol">${deHTML("de-vol")}</div><div class="de-vol-val"></div>`;
+  zone.innerHTML = `<div class="de-vol-sol"></div><div class="de-vol"><i class="de-halo"></i><i class="de-orbite o1"></i><i class="de-orbite o2"></i>${deHTML("de-vol")}<i class="de-orbite o3"></i></div><div class="de-vol-val"></div>`;
   document.body.appendChild(zone);
   const W = r.width, H = bas - haut, cx = W/2 - d/2, cy = H/2 - d/2;
   const x0 = -d*1.2, y0 = H*.85, sens = Math.random() < .5 ? 1 : -1;
@@ -1063,17 +1078,17 @@ function deSurPlateau(valeur, ms){
   const ys = [y0, cy + H*.12, cy - H*.04, cy];
   const vol = $(".de-vol", zone), cube = $(".cube", zone), sol = $(".de-vol-sol", zone);
   // noyau : un cube intérieur aux arêtes vives comble les coins arrondis des faces (sinon on voit « à travers » le dé)
-  cube.insertAdjacentHTML("afterbegin", ["rotateY(0deg)","rotateY(180deg)","rotateY(90deg)","rotateY(-90deg)","rotateX(90deg)","rotateX(-90deg)"].map(r => `<i class="noyau" style="transform:${r} translateZ(calc(var(--d)*.47))"></i>`).join(""));
   const [fx, fy] = ROT_DE[valeur];
-  cube.style.transform = `rotateX(${fx}deg) rotateY(${fy}deg)`;
+  const INC = typeof INCLINE_DE === "string" ? INCLINE_DE : "";
+  cube.style.transform = `${INC}rotateX(${fx}deg) rotateY(${fy}deg)`;
   // trajectoire : 3 arcs de plus en plus bas (rebonds), puis petit tassement
   const k = [], ks = [], arcs = [.34, .28, .18], hauteurs = [H*.38, H*.18, H*.07];
   let t = 0;
-  k.push({transform:`translate(${xs[0]}px,${ys[0]-H*.3}px) scale(1.25)`, offset:0}); ks.push({transform:`translate(${xs[0]}px,${ys[0]}px) scale(.5)`, opacity:.15, offset:0});
+  k.push({transform:`translate(${xs[0]}px,${ys[0]-H*.3}px) scale(1.1)`, offset:0}); ks.push({transform:`translate(${xs[0]}px,${ys[0]}px) scale(.5)`, opacity:.15, offset:0});
   for(let i=0;i<3;i++){
     const a = arcs[i], xa = xs[i], xb = xs[i+1], ya = ys[i], yb = ys[i+1];
     const tm = t + a/2, tb = t + a;
-    k.push({transform:`translate(${(xa+xb)/2}px,${(ya+yb)/2 - hauteurs[i]}px) scale(${1 + hauteurs[i]/H*.6})`, offset:tm, easing:"cubic-bezier(.3,0,.7,1)"});
+    k.push({transform:`translate(${(xa+xb)/2}px,${(ya+yb)/2 - hauteurs[i]}px) scale(${1 + hauteurs[i]/H*.35})`, offset:tm, easing:"cubic-bezier(.3,0,.7,1)"});
     k.push({transform:`translate(${xb}px,${yb}px) scale(1.06,.92)`, offset:tb, easing:"cubic-bezier(.3,0,.7,1)"});
     ks.push({transform:`translate(${(xa+xb)/2}px,${(ya+yb)/2}px) scale(${.6 - hauteurs[i]/H*.4})`, opacity:.25, offset:tm});
     ks.push({transform:`translate(${xb}px,${yb}px) scale(1)`, opacity:.55, offset:tb});
@@ -1084,7 +1099,7 @@ function deSurPlateau(valeur, ms){
   ks.push({transform:`translate(${cx}px,${cy}px) scale(1)`, opacity:.55, offset:1});
   vol.animate(k, {duration:ms, fill:"forwards"});
   sol.animate(ks, {duration:ms, fill:"forwards"});
-  cube.animate([{transform:`rotateX(${fx+1440}deg) rotateY(${fy-1080}deg) rotateZ(${sens*180}deg)`},{transform:`rotateX(${fx+360}deg) rotateY(${fy-180}deg) rotateZ(${sens*30}deg)`, offset:.62},{transform:`rotateX(${fx}deg) rotateY(${fy}deg) rotateZ(0deg)`}], {duration:ms, easing:"cubic-bezier(.2,.6,.3,1)", fill:"forwards"});
+  cube.animate([{transform:`${INC}rotateX(${fx+1440}deg) rotateY(${fy-1080}deg) rotateZ(${sens*180}deg)`},{transform:`${INC}rotateX(${fx+360}deg) rotateY(${fy-180}deg) rotateZ(${sens*30}deg)`, offset:.62},{transform:`${INC}rotateX(${fx}deg) rotateY(${fy}deg) rotateZ(0deg)`}], {duration:ms, easing:"cubic-bezier(.2,.6,.3,1)", fill:"forwards"});
   // rebonds : petites secousses du plateau (désactivées si l'on évite les animations)
   [.34,.62].forEach(f => setTimeout(() => cadre.animate([{transform:"translateY(0)"},{transform:"translateY(2px)"},{transform:"translateY(0)"}], {duration:140}), ms*f));
   return new Promise(res => {

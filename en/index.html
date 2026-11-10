@@ -429,6 +429,10 @@ button.piece:active, .piece.enfonce{transform:translateY(calc(var(--lip) - 1px))
 .de .f3{transform:rotateX(90deg) translateZ(calc(var(--d)/2))}
 .de .f4{transform:rotateX(-90deg) translateZ(calc(var(--d)/2))}
 .de.vide .face i{visibility:hidden !important}
+.de .cube > i.noyau{position:absolute; inset:2%; width:auto !important; height:auto !important; border-radius:0; background:#d9d0b5; box-shadow:none; backface-visibility:hidden; visibility:visible !important}
+/* faces : blanc brillant, ombrées selon leur orientation (dessus clair, côté plus sombre) */
+.de .face{background:radial-gradient(130% 110% at 28% 18%, #ffffff, #f3efe3 52%, #d8d1bb)}
+.de .f3,.de .f4{filter:brightness(1.06)} .de .f2,.de .f5{filter:brightness(.9)}
 .de::after{content:""; position:absolute; left:10%; right:10%; bottom:-14px; height:12px; border-radius:50%; background:radial-gradient(closest-side, rgba(0,0,0,.5), transparent); transform:scaleX(1); z-index:-1}
 .de.roule{animation:sautDe var(--dur,.7s) cubic-bezier(.3,.6,.4,1)}
 .de.roule::after{animation:ombreDe var(--dur,.7s) cubic-bezier(.3,.6,.4,1)}
@@ -612,6 +616,10 @@ h1.logo{margin:0; font-weight:inherit}
 /* =====================  DESIGN V10 — « jeu télévisé premium » : contours fins, ombres discrètes, or réservé à l'important  ===================== */
 :root{--emeraude-a:#0f9f6e; --emeraude-b:#3fd99b; --emeraude-o:#06573c; --filet-or:rgba(255,214,90,.55); --ombre-douce:0 10px 24px rgba(0,0,0,.32)}
 body::after{opacity:.28}
+#scene::before{content:""; position:absolute; inset:-15%; pointer-events:none; filter:blur(22px);
+  background:linear-gradient(118deg, transparent 26%, rgba(80,140,255,.20) 39%, rgba(170,205,255,.07) 44%, transparent 55%),
+             linear-gradient(104deg, transparent 60%, rgba(60,120,255,.17) 72%, transparent 84%),
+             radial-gradient(45% 28% at 88% 104%, rgba(255,190,70,.12), transparent 70%)}
 /* pièces (cartes de mode, boutons, tuiles) : moins épaisses */
 .piece{--lip:3px; box-shadow:inset 0 0 0 1px rgba(255,255,255,.16), inset 0 1px 0 rgba(255,255,255,.45), inset 0 -2px 4px rgba(0,0,0,.18),
   0 var(--lip) 0 var(--o), 0 calc(var(--lip) + 8px) 18px rgba(0,0,0,.32)}
@@ -1347,19 +1355,21 @@ function panneau({classe="c-noir", titre, valeur="", corps, large=false}){
 }
 const FACES = {1:[4],2:[0,8],3:[0,4,8],4:[0,2,6,8],5:[0,2,4,6,8],6:[0,2,3,5,6,8]};
 const ROT_DE = {1:[0,0], 2:[0,-90], 3:[-90,0], 4:[90,0], 5:[0,90], 6:[0,-180]};
-function afficherDe(el, v){ const c = $(".cube", el); if(!c) return; el.classList.remove("vide"); const [x,y] = ROT_DE[v] || [0,0]; c.style.transform = `rotateX(${x}deg) rotateY(${y}deg)`; }
+const INCLINE_DE = "rotateX(-24deg) rotateY(-30deg) ";   // dé présenté de trois quarts (3 faces visibles), la valeur face à nous
+function afficherDe(el, v){ const c = $(".cube", el); if(!c) return; el.classList.remove("vide"); const [x,y] = ROT_DE[v] || [0,0]; c.style.transform = `${INCLINE_DE}rotateX(${x}deg) rotateY(${y}deg)`; }
 function lancerDeAnime(el, valeur, ms=640){
   return new Promise(res => {
     const c = $(".cube", el), [x,y] = ROT_DE[valeur];
     el.classList.remove("vide","roule"); void el.offsetWidth; el.classList.add("roule");
-    c.style.transform = `rotateX(${x}deg) rotateY(${y}deg)`;
+    c.style.transform = `${INCLINE_DE}rotateX(${x}deg) rotateY(${y}deg)`;
     if(c.animate)
-      c.animate([{transform:`rotateX(${x+1080}deg) rotateY(${y-720}deg)`},{transform:`rotateX(${x}deg) rotateY(${y}deg)`}], {duration:ms, easing:"cubic-bezier(.12,.7,.25,1)"});
+      c.animate([{transform:`${INCLINE_DE}rotateX(${x+1080}deg) rotateY(${y-720}deg)`},{transform:`${INCLINE_DE}rotateX(${x}deg) rotateY(${y}deg)`}], {duration:ms, easing:"cubic-bezier(.12,.7,.25,1)"});
     [.18,.38,.58,.78,.95].forEach((f,i) => setTimeout(() => { if(Son.clac) Son.clac(i === 4 ? 1 : .55); else Son.de(); }, ms*f));
     setTimeout(() => res(valeur), ms);
   });
 }
-const deHTML = (id="de") => `<div class="de" id="${id}"><div class="cube">${[1,2,3,4,5,6].map(v => `<div class="face f${v}">${Array.from({length:9}, (_,i) => `<i style="visibility:${FACES[v].includes(i)?"visible":"hidden"}"></i>`).join("")}</div>`).join("")}</div></div>`;
+const NOYAU_DE = ["rotateY(0deg)","rotateY(180deg)","rotateY(90deg)","rotateY(-90deg)","rotateX(90deg)","rotateX(-90deg)"].map(r => `<i class="noyau" style="transform:${r} translateZ(calc(var(--d)*.47))"></i>`).join("");
+const deHTML = (id="de") => `<div class="de" id="${id}"><div class="cube">${NOYAU_DE}${[1,2,3,4,5,6].map(v => `<div class="face f${v}">${Array.from({length:9}, (_,i) => `<i style="visibility:${FACES[v].includes(i)?"visible":"hidden"}"></i>`).join("")}</div>`).join("")}</div></div>`;
 
 /* =========================================================================
    Accueil
