@@ -143,7 +143,11 @@ test("relais multijoueur : annuaire et salon", async () => {
   const perdu = await ouvrir(); perdu.send(JSON.stringify({t:"entrer", code:"ZZZZZ", de:"perdu"}));
   assert.equal((await attendre(perdu, m => m.t === "refus")).raison, "introuvable");
   hote.close();
-  await attendre(invite, m => m.t === "ferme");
+  // l'hôte part : le joueur restant devient l'hôte (le salon continue)
+  const chg = await attendre(invite, m => m.t === "hote-change");
+  assert.equal(chg.nouveau, "invite"); assert.equal(chg.ancien, "hote");
+  invite.send(JSON.stringify({t:"publier", resume:{hote:"Bruno", phase:"attente"}, de:"invite"}));
+  await attendre(badaud, m => m.t === "salons" && m.liste.some(s => s.code === code && s.hote === "Bruno"));
   for(const w of [invite, badaud, perdu]) w.close();
 });
 

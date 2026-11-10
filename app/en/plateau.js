@@ -274,7 +274,7 @@ const J = id => G.joueurs.find(j => j.id === id);
 const actifs = () => G.joueurs.filter(j => !j.arrive && !j.horsJeu);
 const humain = () => G.joueurs.find(j => G.multi ? j.id === G.multi.moi : !j.ia);   // le joueur de CET appareil
 const estLocal = j => !j.ia && (!G.multi || j.id === G.multi.moi);
-const VITE = () => window.QLN_TEST_VITE || 1;   // (tests automatiques : animations accélérées)
+const VITE = () => window.QLN_TEST_VITE || (G && G.rattrape ? .01 : 1);   // (tests ; reprise d'une partie : on rejoue vite les coups manqués)   // (tests automatiques : animations accélérées)
 const attendre = ms => { const g = G; return new Promise((ok, ko) => setTimeout(() => (G && G === g) ? ok() : ko(new Abandon()), ms * (g && g.rapide ? .4 : 1) * VITE())); };
 async function ui(promesse){ const g = G; const v = await promesse; if(!G || G !== g) throw new Abandon(); return v; }
 const round5 = x => Math.max(5, Math.round(x/5)*5);
@@ -283,11 +283,11 @@ const alea = () => G.rnd();   // hasard de la partie (graine commune en multijou
 
 /* ---------- Textes du multijoueur (la version EN remplace ce bloc) ---------- */
 const TM = {
-  multi:"Multiplayer", vous:"you", absent:"away", joue:n=>`${n} is playing their card…`, choisit:n=>`${n} is choosing…`, lance:n=>`${n} is rolling the die…`,
+  multi:"Multiplayer", vous:"you", absent:"AI relay", joue:n=>`${n} is playing their card…`, choisit:n=>`${n} is choosing…`, lance:n=>`${n} is rolling the die…`,
   prepare:"Prepare an answer: if the player gets stuck, you can bid.", seche:n=>`${n} is stuck! Bidding is open.`, trouve:(n,m)=>`${n} suggests ${m}`,
   enchOuvertes:"The other players can bid…", offreEnvoyee:"Bid sent: waiting for the other players.", enchFermees:"Bidding is over.",
   prisonChoix:n=>`${n} is in jail and choosing…`, garantAttente:"Waiting for the other players' answers…", personneGarant:"No player agrees to pay your bail.",
-  quitterQ:"You will leave the game; the other players carry on without you.", retourSalon:"Back to the room", menu:"Menu",
+  quitterQ:"You will leave the game; the AI will play for you and you can come back from the Multiplayer screen.", retour:n=>`${n} is back and takes over again.`, rattrapage:"Resuming the game…", retourSalon:"Back to the room", menu:"Menu",
   victoire:"Victory!", gagne:n=>`${n} wins`, hoteParti:"The host has left: the game stops.", deconnecte:n=>`${n} is disconnected: the app plays for them.`,
 };
 
@@ -296,11 +296,14 @@ const TM = {
    ========================================================================= */
 function decision(type, j, invite, defaut, delai = 60000, ctx = {}){
   const M = G.multi, g = G;
-  const proprio = j === "hote" ? M.hoteId : j.id;
+  const proprio = j === "hote" ? "hote" : j.id;   // (« hote » : décision de l'hôte du moment, quel qu'il soit)
   const cle = `${++G.n}:${type}:${proprio}`;
   return new Promise((ok, ko) => {
     M.attentes.set(cle, v => { if(G !== g) return ko(new Abandon()); ok(v); });
     if(M.decides.has(cle)){ appliquer(cle, M.decides.get(cle)); return; }
+    if(G.rattrape) finRattrapage();
+    M.meta.set(cle, {proprio, defaut, delai, invite});
+    if(proprio === "hote"){ if(M.hote) Promise.resolve().then(invite).then(v => decider(cle, v)).catch(() => {}); return; }
     if(proprio === M.moi){
       // l'invite ne crée que des éléments à elle : on sait les fermer si l'hôte tranche avant (délai dépassé)
       const avant = new Set(document.querySelectorAll(".voile"));
@@ -315,14 +318,14 @@ function decision(type, j, invite, defaut, delai = 60000, ctx = {}){
 function proposer(cle, v){
   const M = G && G.multi; if(!M) return;
   if(v === undefined) v = null;
-  if(M.hote) decider(cle, v); else M.envoyer({t:"act", cle, val:v});
+  if(M.hote) decider(cle, v); else { M.propositions.set(cle, v); M.envoyer({t:"act", cle, val:v}); }   // (renvoyée au nouvel hôte si l'hôte change)
 }
 function decider(cle, v){   // (hôte) la première décision reçue pour un numéro est la bonne
   const M = G.multi; if(M.tranchees.has(cle)) return;
   M.tranchees.add(cle); M.envoyer({t:"dec", cle, val:v}); appliquer(cle, v);
 }
 function appliquer(cle, v){
-  const M = G.multi; M.decides.set(cle, v);
+  const M = G.multi; M.decides.set(cle, v); M.propositions.delete(cle); M.meta.delete(cle);
   const f = M.attentes.get(cle); if(!f) return;
   M.attentes.delete(cle);
   const fermer = M.ouvertes.get(cle); if(fermer){ M.ouvertes.delete(cle); fermer(); }
@@ -341,7 +344,47 @@ function surveiller(cle, proprio, defaut, delai){
 function recevoirMulti(m){
   const M = G && G.multi; if(!M || !m || typeof m.cle !== "string") return;
   if(M.hote && m.t === "act"){ const i = m.cle.indexOf(":", m.cle.indexOf(":") + 1); if(m.cle.slice(i + 1) === m.de) decider(m.cle, m.val); }   // seul le joueur concerné décide pour lui
+  else if(m.t === "dec" && M.hote && !M.tranchees.has(m.cle)){ M.tranchees.add(m.cle); appliquer(m.cle, m.val); }   // (décision de l'ancien hôte arrivée tard)
   else if(!M.hote && m.t === "dec") appliquer(m.cle, m.val);
+}
+/* changement d'hôte en cours de partie : le nouvel hôte reprend les décisions en attente */
+function changerHote(nouveau){
+  const M = G && G.multi; if(!M) return;
+  M.hoteId = nouveau; const etait = M.hote; M.hote = nouveau === M.moi;
+  if(M.hote && !etait){
+    for(const cle of M.attentes.keys()){
+      if(M.decides.has(cle)) continue;
+      M.tranchees.delete(cle);
+      const x = M.meta.get(cle); if(!x) continue;
+      if(x.proprio === "hote"){ Promise.resolve().then(x.invite).then(v => decider(cle, v)).catch(() => {}); continue; }
+      if(M.propositions.has(cle)) decider(cle, M.propositions.get(cle));
+      else surveiller(cle, x.proprio, x.defaut, x.delai);
+    }
+    for(const [cle, v] of M.propositions) if(!M.decides.has(cle)) decider(cle, v);
+  } else if(!M.hote) for(const [cle, v] of M.propositions) M.envoyer({t:"act", cle, val:v});
+}
+/* toutes les décisions déjà prises (pour un joueur qui revient) */
+const journalMulti = () => G && G.multi ? [...G.multi.decides] : [];
+function appliquerJournal(decs){
+  const M = G && G.multi; if(!M || !Array.isArray(decs)) return;
+  for(const [cle, v] of decs) if(typeof cle === "string" && !M.decides.has(cle)){ if(M.hote) M.tranchees.add(cle); appliquer(cle, v); }
+}
+/* reprise : l'appli rejoue à toute vitesse les coups déjà joués, puis la partie continue normalement */
+function finRattrapage(){ G.rattrape = false; if(G.sonAvant != null){ Son.actif = G.sonAvant; G.sonAvant = null; } const v = $("#rattrapage"); if(v) v.remove(); majJoueurs(); dessinerPions(); }
+/* présence : chacun voit quand l'IA prend le relais d'un joueur, et quand il revient */
+function surveillerPresence(){
+  const g = G, vus = new Map(G.joueurs.map(j => [j.id, true]));
+  const iv = setInterval(() => {
+    if(G !== g || !G.multi){ clearInterval(iv); return; }
+    let chg = false;
+    for(const j of G.joueurs){
+      if(j.id === G.multi.moi || j.arrive || j.horsJeu) continue;
+      const p = !!G.multi.present(j.id);
+      if(p !== vus.get(j.id)){ vus.set(j.id, p); chg = true;
+        if(!G.rattrape){ const t = p ? TM.retour(j.nom) : TM.deconnecte(j.nom); toast(t, 4000); journal(j, t); } }
+    }
+    if(chg) majJoueurs();
+  }, 1000);
 }
 async function demarrerMulti(opt){
   // opt : {graine, joueurs:[{id, pseudo, couleur}], moi, hote, hoteId, envoyer, present, quitter, retour}
@@ -351,8 +394,15 @@ async function demarrerMulti(opt){
   G = { joueurs, ordre:[], idx:0, caches:true, rapideIA:false, rapide:false, arrivees:[], deja:new Set(), journal:[], dernier:null, tours:0, courant:null,
         rnd:aleaGraine(opt.graine), n:0,
         multi:{moi:opt.moi, hote:opt.hote, hoteId:opt.hoteId, envoyer:opt.envoyer, present:opt.present, quitter:opt.quitter, retour:opt.retour,
-               attentes:new Map(), decides:new Map(), tranchees:new Set(), ouvertes:new Map()} };
+               attentes:new Map(), decides:new Map(), tranchees:new Set(), ouvertes:new Map(), meta:new Map(), propositions:new Map()} };
   ecranPlateau();
+  if(opt.decs && opt.decs.length){   // retour dans une partie en cours
+    G.rattrape = true; G.sonAvant = Son.actif; Son.actif = false;   // (rejeu muet)
+    for(const [cle, v] of opt.decs){ G.multi.decides.set(cle, v); if(opt.hote) G.multi.tranchees.add(cle); }
+    const v = document.createElement("div"); v.id = "rattrapage"; v.className = "voile"; v.innerHTML = `<div class="panneau-jeu" style="text-align:center"><b style="font:400 26px var(--f-titre); color:var(--or)">${TM.rattrapage}</b></div>`;
+    document.body.appendChild(v);
+  }
+  surveillerPresence();
   try{
     await tirerOrdre();
     await boucle();
@@ -896,7 +946,7 @@ async function jouerCarteMulti(j, niv){
   const r = await decision("carte", j, () => carteHumaine(j, c), {proposition:null}, (N.temps + 25)*1000, {c});
   const prop = r && typeof r.proposition === "string" ? r.proposition.slice(0, 20) : null;
   const mot = prop ? (chercherMot(c, prop) || null) : null;
-  if(estLocal(j) && typeof Progres !== "undefined") Progres.carte({niv, reussi:!!mot, nbTrouves:mot ? 1 : 0, nbSol:2});
+  if(estLocal(j) && !G.rattrape && typeof Progres !== "undefined") Progres.carte({niv, reussi:!!mot, nbTrouves:mot ? 1 : 0, nbSol:2});
   if(mot){
     if(vue) vue.fermer();
     j.reussies++;
@@ -1423,7 +1473,7 @@ return {
   config,
   stop(){ if(G){ const m = G.multi; G = null; $$(".voile").forEach(v=>v.remove()); composeurActif = null; if(m && m.quitter) m.quitter(); } },
   arreter(){ if(G){ G = null; $$(".voile").forEach(v=>v.remove()); composeurActif = null; } },   // (multijoueur : arrêt sans prévenir le salon)
-  demarrerMulti, recevoirMulti, enCours:() => !!(G && G.multi),
+  demarrerMulti, recevoirMulti, changerHote, journalMulti, appliquerJournal, enCours:() => !!(G && G.multi),
   _etat: () => G, _noeuds: NOEUDS, _destinations: destinations, _fin: () => finPartie(),   // (pour les tests)
 };
 })();

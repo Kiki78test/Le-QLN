@@ -36,10 +36,23 @@ h += sec("Décisions à prendre", [
     ("dec", "<b>Nom définitif</b> : présélection Qlinn, Anagold, Wordheist, Lexipot (voir « Choisir le nom du jeu »)."),
     ("vous", "<b>Relire les séries de langue</b> : tableur « Séries en espagnol, allemand, italien » (mots à retirer)."),
     ("vous", "<b>Relire les thèmes</b> : tableur « Thèmes des séries » (mettre un x pour retirer un mot, proposer des ajouts)."),
-    ("dec", "<b>Règles</b> : propositions en attente (document « Propositions de règles »), vidéos récompense touchant aux règles."),
-    ("dec", "<b>Multijoueur</b> : valider les choix techniques (remplacement d'un joueur absent, arrêt si l'hôte quitte, pas de reprise après coupure)."),
+    ("dec", "<b>Sons</b> : ajout éventuel de nouveaux sons (ambiance, dé, enchères, victoire…)."),
     ("dec", "<b>Dictionnaire anglais</b> : l'agrandir (environ 530 cartes aujourd'hui), voir les options proposées."),
     ("dec", "<b>Mots douteux</b> : tableur à relire (gardés par défaut)."),
+])
+h += sec("Règles à décider (document « Propositions de règles »)", [
+    ("dec", "<b>R1 (prioritaire) — La série remplace « rejouer »</b> : après une réussite, piocher jusqu'à 3 cartes sur la même case, ou s'arrêter ; un échec termine le tour."),
+    ("dec", "<b>R2 — Durée au choix</b> : partie rapide (dé 1-6) ou longue (dé 1-1-2-2-3-3)."),
+    ("dec", "<b>R3 — Cases CD multicolores</b> : le joueur choisit la couleur de sa carte."),
+    ("dec", "<b>R4 — Argent négatif</b> : permis (dette envers la banque) ; pas d'enchère ni de caution sans les fonds."),
+    ("dec", "<b>R5 — Mauvaise réponse</b> : les autres peuvent quand même enchérir."),
+    ("dec", "<b>R6 — Case Passe</b> : on passe son prochain tour."),
+    ("dec", "<b>R7 — Enchère acceptée</b> : on encaisse, mais on ne rejoue pas."),
+    ("dec", "<b>R8 — Garant de prison</b> : il touche tous les gains positifs des 2 tours ; les malus restent au joueur libéré."),
+    ("dec", "<b>R9 — Égalité</b> : départage par l'ordre d'arrivée."),
+    ("dec", "<b>R10 — Dernier en lice</b> : 3 tours pour arriver (au lieu de 5 minutes)."),
+    ("dec", "<b>R11 — Maître du Jeu</b> : dans l'appli, c'est le jeu ; pas de bonus de 50 €."),
+    ("dec", "Vidéos récompense touchant aux règles."),
 ])
 h += sec("Prochaines étapes de Claude", [
     ("todo", "Brancher <b>AdMob</b> (Android puis iOS) dès les identifiants reçus : consentement RGPD, ATT sur iPhone, app-ads.txt, repli hors ligne sur des créations locales."),
@@ -49,6 +62,7 @@ h += sec("Prochaines étapes de Claude", [
     ("todo", "Changer le nom partout dès qu'il est choisi (action « Changer le nom »)."),
 ])
 h += sec("Fait", [
+    ("ok", "<b>10/11</b> — multijoueur : si l'hôte part, un autre joueur prend la main ; un joueur parti ou coupé est remplacé par l'IA (tout le monde est prévenu) et peut revenir (« Reprendre la partie en cours ») ; salons filtrables par langue (langue de l'appli par défaut)."),
     ("ok", "<b>10/11</b> — dépôt rangé : le jeu dans <code>app/</code>, publié par l'action « Publication du site » à la même adresse (réglage Pages « GitHub Actions » fait)."),
     ("ok", "<b>10/11</b> — <b>multijoueur synchronisé sur le plateau</b> : mêmes règles que contre l'IA, cartes vues en direct par les autres, enchères simultanées, prison et garant entre joueurs, remplacement automatique d'un joueur absent ; parties complètes testées à deux (local et serveur)."),
     ("ok", "<b>10/11</b> — séries du Défi en <b>espagnol, allemand, italien</b> (débloquées aux niveaux 5, 6, 7), drapeaux, définitions sur le Wiktionnaire de chaque langue, jouables hors ligne."),

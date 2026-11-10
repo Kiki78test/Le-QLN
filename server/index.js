@@ -1,7 +1,8 @@
 /* Le-QLN — serveur relais multijoueur (Node + ws)
    - Annuaire des salons ouverts (publié par l'hôte, visible par tous)
    - Relais des messages d'un salon à ses membres (l'hôte reste autoritaire)
-   Aucune donnée persistée : tout est en mémoire, un salon disparaît avec son hôte. */
+   Aucune donnée persistée : tout est en mémoire. Si l'hôte part, le premier joueur restant devient l'hôte
+   (message « hote-change ») ; le salon ne disparaît que lorsqu'il est vide. */
 "use strict";
 const http = require("http");
 const { WebSocketServer } = require("ws");
@@ -41,9 +42,12 @@ function quitterSalon(ws){
   const s = salons.get(code); ws.salon = null;
   if(!s) return;
   s.membres.delete(ws);
-  if(s.hote === ws){ // l'hôte part : le salon est fermé pour tous
-    for(const m of s.membres) envoyer(m, {t:"ferme", code, de:"serveur"});
-    salons.delete(code); diffuserAnnuaire();
+  if(s.hote === ws){ // l'hôte part : le premier joueur restant prend la main ; salon vide = salon fermé
+    const suivant = [...s.membres].find(m => m.readyState === 1 && m.id);
+    if(!suivant){ salons.delete(code); diffuserAnnuaire(); return; }
+    s.hote = suivant;
+    for(const m of s.membres) envoyer(m, {t:"hote-change", code, de:"serveur", ancien:ws.id || null, nouveau:suivant.id});
+    diffuserAnnuaire();
   } else {
     // prévenir l'hôte (il retirera le joueur de son état)
     envoyer(s.hote, {t:"quitter", code, de:ws.id});

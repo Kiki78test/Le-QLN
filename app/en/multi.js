@@ -27,7 +27,7 @@ const TXT = {
   joueurs:"Players", hote:"host", vous:"you", pret:"Ready", pasPret:"Not ready yet", jeSuisPret:"I'm ready", plusPret:"Not ready",
   attente:"Waiting for players…", attenteHote:"The host starts the game once everyone is ready.",
   lancer:"Start the game", lancerAide:n=>n<2 ? "At least 2 players are needed." : "All players must be ready.",
-  quitter:"Leave the room", quitterQ:"Leave the room?", quitterHoteQ:"You are the host: the room will close for everyone.", oui:"Leave", non:"Stay",
+  quitter:"Leave the room", quitterQ:"Leave the room?", quitterHoteQ:"You are the host: another player will take over.", oui:"Leave", non:"Stay",
   salonFerme:"The host closed the room.", introuvable:"No room with this code. Check the code, and that the host still has the room open.",
   plein:"This room is full (6 players).", enCours:"This room's game has already started.", couleurPrise:"Another player already has that pawn: the colour was adjusted.",
   rejoint:n=>`${n} joined the room.`, parti:n=>`${n} left the room.`, connexion:"Connecting to the room…",
@@ -43,6 +43,8 @@ const TXT = {
   rapideCree:"No lobby waiting: yours is open. The game starts as soon as other players arrive.", rapideEchec:"Could not find a lobby right now, please try again.",
   enAttente:"Waiting lobbies", placesLibres:n=>`${n} open seat${n>1?"s":""}`, enLigneN:n=>`${n} player${n>1?"s":""} online`,
   decompte:s=>`The game starts in ${s} s`, autoAide:"Quick match: the game starts by itself as soon as 2 players are here.", lancerMaintenant:"Start now",
+  nouvelHote:n=>`${n} is now the room host.`, vousHote:"You are now the room host.", reconnexion:"Connection lost: reconnecting… (the AI plays for you meanwhile)",
+  reprendre:"Resume the current game", reprendreDesc:c=>`Room ${c}: the AI played for you while you were away.`, langue:"Language", toutes:"All", nomsLangues:{fr:"Français", en:"English"},
   version:"This room plays in another language or with another version of the game. Update the app, or create your own room.", avecCode:"With a code", objectif:"Goal: finish the richest. Finishing 1st only pays +€100.", horsLigne:"Offline: multiplayer comes back as soon as the network does. The other modes remain playable.",
 };
 
@@ -107,6 +109,9 @@ css.textContent = `
 .m-objectif{display:flex; align-items:center; justify-content:center; gap:8px; padding:8px 12px; border-radius:12px; text-align:center; font:700 14.5px var(--f-ui); color:#3a2a00; background:linear-gradient(180deg,#fff3c0,#ffd95e); box-shadow:inset 0 0 0 1.5px rgba(160,110,0,.35)} .m-objectif i{font-style:normal; font-size:17px}
 .m-choix .m-rapide{width:100%; margin:2px 0; grid-column:1/-1; min-height:0; padding:16px 44px 16px 16px; gap:14px}
 .m-rapide .ico{flex:none} .m-rapide[disabled]{opacity:.75}
+.m-langues{display:flex; gap:6px; flex-wrap:wrap}
+.m-langues button{border:0; border-radius:999px; padding:6px 12px; font:700 14px var(--f-ui); color:var(--brume); background:rgba(255,255,255,.07); box-shadow:inset 0 0 0 1px rgba(255,255,255,.12); cursor:pointer}
+.m-langues button[aria-pressed="true"]{color:#1b1400; background:var(--or-grad); box-shadow:0 0 12px rgba(255,207,58,.4)}
 .m-en-ligne{font:600 13px var(--f-ui); color:var(--brume-2); display:flex; align-items:center; gap:7px} .m-en-ligne i{width:8px; height:8px; border-radius:50%; background:#9be15d; box-shadow:0 0 8px #9be15d}
 @media (min-width:700px){ .m-grille{display:grid; grid-template-columns:1fr 1fr; gap:16px; align-items:start} }
 `;
@@ -217,7 +222,7 @@ const Annuaire = {
   ecouter(fn){
     this.arreter(); this.fn = fn; this.carte.clear();
     if(enLigne()){
-      this.off = Socket.ecouter(m => { if(m.t === "__ouvert") Socket.envoyer({t:"annuaire"}); else if(m.t === "salons") fn((m.liste || []).filter(r => !r.lang || r.lang === LANGUE_JEU), "ligne", m.en_ligne); else if(m.t === "__coupe") fn(null, "coupe"); });
+      this.off = Socket.ecouter(m => { if(m.t === "__ouvert") Socket.envoyer({t:"annuaire"}); else if(m.t === "salons") fn(m.liste || [], "ligne", m.en_ligne); else if(m.t === "__coupe") fn(null, "coupe"); });
       if(Socket.etat === "ouvert") Socket.envoyer({t:"annuaire"});
     } else {
       this.bc = new BroadcastChannel("qln-annuaire");
@@ -227,7 +232,7 @@ const Annuaire = {
       this.pousser();
     }
   },
-  pousser(){ if(this.fn) this.fn([...this.carte.values()].filter(r => r.phase === "attente" && (!r.lang || r.lang === LANGUE_JEU)), "local"); },
+  pousser(){ if(this.fn) this.fn([...this.carte.values()].filter(r => r.phase === "attente"), "local"); },
   arreter(){ if(this.off){ if(Socket.etat === "ouvert") Socket.envoyer({t:"annuaire-stop"}); this.off(); this.off = null; } if(this.bc){ this.bc.close(); this.bc = null; } clearInterval(this.timer); this.fn = null; },
   // côté hôte
   publier(resume){ if(enLigne()) Socket.envoyer({t:"publier", resume}); else { try{ this.canalPub().postMessage({t:"publier", resume}); }catch(e){} } },
@@ -250,6 +255,7 @@ const fermerSalon = () => { if(!S) return; if(typeof PlateauIA !== "undefined" &
 const onglet = () => { try{ let o = sessionStorage.getItem("qln-onglet"); if(!o){ o = Math.random().toString(36).slice(2,8); sessionStorage.setItem("qln-onglet", o); } return o; }catch(e){ return "x"; } };
 // langue et version du dictionnaire : la partie est rejouée à l'identique sur chaque appareil, il faut les mêmes cartes partout
 const LANGUE_JEU = document.documentElement.lang === "en" ? "en" : "fr";
+const DRAP = {fr:"🇫🇷", en:"🇬🇧"};
 const signatureDico = () => { try{ return Object.keys(DICO).map(k => DICO[k].length).join("."); }catch(e){ return ""; } };
 function joueurDepuisCompte(){ const c = Compte.get(); return {id:c.id+":"+onglet(), pseudo:c.pseudo, couleur:c.couleur, pret:false, vu:Date.now(), lang:LANGUE_JEU, dico:signatureDico()}; }
 function couleurLibre(souhait){
@@ -286,6 +292,7 @@ function autoTick(){
 function rejoindreSalon(code, opt = {}){
   Annuaire.arreter();
   const j = joueurDepuisCompte();
+  if(opt.reprise) j.id = opt.reprise;   // retour dans une partie en cours : même identité qu'avant
   S = {code, hote:false, moi:j, joueurs:[], canal:null, timers:{}, phase:"connexion", rendu:null, dernierEtat:0, essais:0, rapide:!!opt.rapide, auto:false, reste:null, resteT:0};
   S.timers.aff = setInterval(() => { if(S && S.auto) majMsg(); }, 1000);
   S.canal = ouvrirCanal(code, false, j.id); S.canal.recevoir = recevoir;
@@ -317,8 +324,14 @@ function tick(){
 }
 
 function recevoir(m){
-  if(m && m.t === "__coupe" && S){ if(S.canal.type === "ligne"){ fermerSalon(); ecranMulti(); toast(TXT.coupe, 5000); } return; }
-  if(m && m.t === "__ouvert" && S){ if(!estHote()) envoyer({t:"bonjour", joueur:S.moi}); return; }
+  if(m && m.t === "__coupe" && S){
+    if(S.canal.type !== "ligne") return;
+    if(S.phase === "jeu" && typeof PlateauIA !== "undefined" && PlateauIA.enCours()){ toast(TXT.reconnexion, 5000); return; }   // la partie continue : on se reconnecte
+    fermerSalon(); ecranMulti(); toast(TXT.coupe, 5000); return; }
+  if(m && m.t === "__ouvert" && S){
+    if(!estHote()) envoyer({t:"bonjour", joueur:S.moi});
+    if(S.phase === "jeu") envoyer({t:"resync"});   // décisions manquées pendant la coupure
+    return; }
   if(!S || !m || m.code !== S.code || m.de === S.moi.id) return;
   let j = S.joueurs.find(x => x.id === m.de);
   // pendant la partie, un joueur retiré pour silence (appli en arrière-plan…) qui se manifeste reprend sa place
@@ -327,14 +340,22 @@ function recevoir(m){
     if(p){ j = {...p, pret:true, vu:Date.now(), hote:false}; S.joueurs.push(j); diffuserEtat(); }
   }
   if(m.de === "serveur"){
+    if(m.t === "hote-change"){ changerHote(m.nouveau, m.ancien); return; }
     if(m.t === "ferme"){ fermerSalon(); ecranMulti(); toast(TXT.salonFerme); }
     else if(m.t === "refus" && m.pour === S.moi.id){ echecRejoindre(TXT[m.raison] || TXT.introuvable); }
     return;
   }
+  if(m.t === "hote-change"){ changerHote(m.nouveau, m.ancien); return; }
+  if(m.t === "etat" && estHote() && m.de !== S.moi.id) changerHote(m.de, null);   // (j'étais coupé : un autre joueur est devenu l'hôte)
   if(estHote()){
     switch(m.t){
+      case "resync": if(S.phase === "jeu" && typeof PlateauIA !== "undefined") envoyer({t:"journal", pour:m.de, decs:PlateauIA.journalMulti()}); break;
       case "bonjour": {
-        if(j){ j.vu = Date.now(); diffuserEtat(); break; }
+        if(j){ j.vu = Date.now(); diffuserEtat(); if(S.phase === "jeu" && typeof PlateauIA !== "undefined") envoyer({t:"reprise", pour:m.de, graine:S.graine, partie:S.partie, decs:PlateauIA.journalMulti()}); break; }
+        if(S.phase === "jeu" && S.partie && S.partie.some(x => x.id === m.de)){   // un joueur de la partie revient (appli relancée)
+          const p = S.partie.find(x => x.id === m.de);
+          S.joueurs.push({...p, pret:true, vu:Date.now(), hote:false}); diffuserEtat();
+          envoyer({t:"reprise", pour:m.de, graine:S.graine, partie:S.partie, decs:typeof PlateauIA !== "undefined" ? PlateauIA.journalMulti() : []}); break; }
         if(S.phase !== "attente"){ envoyer({t:"refus", pour:m.de, raison:"enCours"}); break; }
         if(S.joueurs.length >= MAX){ envoyer({t:"refus", pour:m.de, raison:"plein"}); break; }
         if((m.joueur.lang || "fr") !== LANGUE_JEU || (m.joueur.dico && m.joueur.dico !== signatureDico())){ envoyer({t:"refus", pour:m.de, raison:"version"}); break; }
@@ -365,11 +386,39 @@ function recevoir(m){
       case "chat": bulle(m.auteur, m.emoji); break;
       case "demarrer": S.phase = "jeu"; S.graine = m.graine; S.partie = m.partie; ecranDepart(); break;
       case "dec": if(typeof PlateauIA !== "undefined") PlateauIA.recevoirMulti(m); break;   // décision validée par l'hôte
+      case "journal": if(m.pour === S.moi.id && typeof PlateauIA !== "undefined") PlateauIA.appliquerJournal(m.decs); break;
+      case "reprise": if(m.pour === S.moi.id){
+        S.phase = "jeu"; S.graine = m.graine; S.partie = m.partie; S.dernierEtat = Date.now();
+        if(typeof PlateauIA !== "undefined" && PlateauIA.enCours()) PlateauIA.appliquerJournal(m.decs);
+        else { S.decsReprise = m.decs; if(S.partieLancee !== S.graine) ecranDepart(); } }
+        break;
       case "ferme": fermerSalon(); ecranMulti(); toast(TXT.salonFerme); break;
     }
   }
 }
 
+/* l'hôte est parti : le joueur désigné (par le serveur, ou par l'ancien hôte en mode local) prend la main */
+function changerHote(nouveau, ancien){
+  if(!S || !nouveau) return;
+  if(ancien) S.joueurs = S.joueurs.filter(j => j.id !== ancien);
+  S.joueurs.forEach(j => j.hote = j.id === nouveau);
+  const devient = nouveau === S.moi.id && !S.hote;
+  S.hote = nouveau === S.moi.id; S.moi.hote = S.hote; S.dernierEtat = Date.now();
+  if(devient){
+    clearInterval(S.timers.tick); S.timers.tick = setInterval(tick, 2500);
+    if(S.auto && S.phase === "attente"){ clearInterval(S.timers.auto); S.timers.auto = setInterval(autoTick, 1000); }
+    if(!S.joueurs.some(j => j.id === S.moi.id)) S.joueurs.unshift({...S.moi, hote:true, vu:Date.now()});
+    toast(TXT.vousHote, 3500); diffuserEtat(); publierSalon();
+  } else { const n = S.joueurs.find(j => j.id === nouveau); if(n) toast(TXT.nouvelHote(n.pseudo), 3500); }
+  if(typeof PlateauIA !== "undefined" && PlateauIA.enCours()) PlateauIA.changerHote(nouveau);
+  rafraichir();
+}
+/* départ de l'hôte : en mode local il désigne lui-même son successeur (en ligne, c'est le serveur) */
+function passerLaMain(){
+  if(!S || !estHote() || S.canal.type !== "local") return;
+  const suivant = (S.partie || S.joueurs).map(j => j.id).find(id => id !== S.moi.id && S.joueurs.some(j => j.id === id));
+  if(suivant) envoyer({t:"hote-change", ancien:S.moi.id, nouveau:suivant});
+}
 function bulle(id, emoji){
   const el = $(`.m-joueur[data-id="${id}"]`); if(!el) return;
   $$(".bulle", el).forEach(b => b.remove());
@@ -387,7 +436,7 @@ function quitterSalon(){
   const v = panneau({classe:"c-orange", titre:TXT.quitterQ, corps:`<p class="texte-centre">${estHote() ? TXT.quitterHoteQ : ""}</p>
     <div class="duo"><button class="bouton piece c-noir" id="q-non">${TXT.non}</button><button class="bouton piece c-rouge" id="q-oui">${TXT.oui}</button></div>`});
   $("#q-non", v).onclick = () => v.remove();
-  $("#q-oui", v).onclick = () => { v.remove(); if(estHote()) envoyer({t:"ferme"}); else envoyer({t:"quitter"}); fermerSalon(); ecranMulti(); };
+  $("#q-oui", v).onclick = () => { v.remove(); if(estHote()) passerLaMain(); else envoyer({t:"quitter"}); fermerSalon(); ecranMulti(); };
 }
 function lancer(){
   if(!estHote()) return;
@@ -413,7 +462,7 @@ function chercherSalons(ms){
   });
 }
 function choisirSalon(liste){
-  const dispo = liste.filter(r => r.phase === "attente" && r.nb < r.max);
+  const dispo = liste.filter(r => r.phase === "attente" && r.nb < r.max && (!r.lang || r.lang === LANGUE_JEU));
   if(!dispo.length) return null;
   const maxNb = Math.max(...dispo.map(r => r.nb));
   const top = dispo.filter(r => r.nb === maxNb);
@@ -451,6 +500,7 @@ function ecranMulti(){
       <div style="display:flex; align-items:center; gap:12px; min-width:0">${c ? jetonSVG(pions()[c.couleur % pions().length].c, "") : ""}<div style="min-width:0"><span class="lbl">${TXT.profil}</span><div style="font:700 20px var(--f-ui); color:#fff; overflow:hidden; text-overflow:ellipsis; white-space:nowrap">${c ? esc(c.pseudo) : "—"}</div></div></div>
       <button class="bouton-plat" id="m-profil">${c ? TXT.modifier : TXT.creerProfil}</button>
     </div>
+    <div id="m-reprise"></div>
     <div class="m-choix">
       <button class="mode large piece c-jaune m-rapide" id="m-rapide"><span class="chev" aria-hidden="true"></span><span class="ico">${ICO.eclair || ICO.groupe}</span><span><span class="nom">${TXT.rapide}</span><span class="desc">${TXT.rapideDesc}</span></span></button>
       <button class="mode piece c-multi" id="m-creer"><span class="ico">${ICO.groupe}</span><span><span class="nom">${TXT.creerSalon}</span><span class="desc">${TXT.creerSalonDesc}</span></span></button>
@@ -458,6 +508,7 @@ function ecranMulti(){
     </div>
     <div class="m-carte">
       <span class="lbl">${TXT.enAttente} <span id="m-nb-ouverts"></span><span class="m-en-ligne" id="m-en-ligne" hidden></span></span>
+      <div class="m-langues" role="group" aria-label="${TXT.langue}">${["fr", "en", "toutes"].map(l => `<button data-lg="${l}" aria-pressed="${l === LANGUE_JEU}">${l === "toutes" ? TXT.toutes : DRAP[l] + " " + TXT.nomsLangues[l]}</button>`).join("")}</div>
       <div class="m-liste" id="m-ouverts"><div class="m-vide"><i></i>${enLigne() ? TXT.serveurAttente : TXT.aucunSalon}</div></div>
     </div>
     <div class="m-carte" id="m-zone-code" hidden>
@@ -484,20 +535,33 @@ function ecranMulti(){
   $("#m-code").addEventListener("keydown", e => { if(e.key === "Enter") go(); });
   const code = new URLSearchParams(location.search).get("salon");
   if(code && normCode(code).length === 5){ history.replaceState(null, "", location.pathname); $("#m-zone-code").hidden = false; $("#m-code").value = normCode(code); }
-  Annuaire.ecouter((liste, mode, enLigneN) => {
+  // partie en cours quittée (appli fermée, coupure) : on propose d'y revenir
+  const pm = store.get("partieMulti", null);
+  if(pm && pm.code && Date.now() - pm.t < 3*3600e3 && !!pm.ligne === enLigne()){
+    $("#m-reprise").innerHTML = `<button class="mode large piece c-vert" id="m-reprendre"><span class="ico">${ICO.groupe}</span><span><span class="nom">${TXT.reprendre}</span><span class="desc">${TXT.reprendreDesc(pm.code)}</span></span></button>`;
+    $("#m-reprendre").onclick = () => avecProfil(() => rejoindreSalon(pm.code, {reprise:pm.id}));
+  }
+  let filtre = LANGUE_JEU, derniere = null;
+  $$(".m-langues button").forEach(b => b.onclick = () => { filtre = b.dataset.lg; $$(".m-langues button").forEach(x => x.setAttribute("aria-pressed", x === b)); if(derniere) afficher(...derniere); });
+  const afficher = (liste, mode, enLigneN) => {
     const el = $("#m-ouverts"); if(!el){ Annuaire.arreter(); return; }
     if(liste === null){ el.innerHTML = `<div class="m-vide"><i></i>${TXT.coupe}</div>`; return; }
     const ne = $("#m-en-ligne"); if(ne){ if(enLigneN > 0){ ne.hidden = false; ne.innerHTML = `<i></i>${TXT.enLigneN(enLigneN)}`; } else ne.hidden = true; }
-    liste = liste.filter(r => r.nb < r.max && (!r.phase || r.phase === "attente")).sort((a,b) => (b.nb - a.nb) || ((b.t||0) - (a.t||0)));
+    liste = liste.filter(r => r.nb < r.max && (!r.phase || r.phase === "attente") && (filtre === "toutes" || (r.lang || "fr") === filtre)).sort((a,b) => (b.nb - a.nb) || ((b.t||0) - (a.t||0)));
     $("#m-nb-ouverts").textContent = liste.length ? liste.length : "";
     el.innerHTML = liste.length ? liste.map((r,i) => {
         const js = (r.joueurs && r.joueurs.length ? r.joueurs : [{couleur:r.couleur||0}]);
         const pions_ = js.map(j => jetonSVG(pions()[(j.couleur||0) % pions().length].c)).join("");
         return `<div class="m-joueur m-salon" data-code="${r.code}" style="animation-delay:${i*40}ms"><span class="m-pions">${pions_}</span>
-        <span class="nom">${esc(TXT.salonDe(r.hote))}<small>${r.nb}/${r.max} · ${TXT.placesLibres(r.max - r.nb)}${r.auto ? ` <small class="rap">${TXT.rapide}</small>` : ""}</small></span>
+        <span class="nom">${DRAP[r.lang || "fr"]} ${esc(TXT.salonDe(r.hote))}<small>${r.nb}/${r.max} · ${TXT.placesLibres(r.max - r.nb)}${r.auto ? ` <small class="rap">${TXT.rapide}</small>` : ""}</small></span>
         <button class="bouton-plat" data-code="${r.code}">${TXT.rejoindreBtn} ›</button></div>`; }).join("") : `<div class="m-vide"><i></i>${TXT.aucunSalon}</div>`;
-    $$("#m-ouverts button").forEach(b => b.onclick = () => avecProfil(() => rejoindreSalon(b.dataset.code)));
-  });
+    $$("#m-ouverts button").forEach(b => b.onclick = () => {
+      const r = liste.find(x => x.code === b.dataset.code);
+      // salon d'une autre langue : on ouvre l'appli dans cette langue, code déjà saisi
+      if(r && (r.lang || "fr") !== LANGUE_JEU){ try{ localStorage.setItem("qln-lang", r.lang); }catch(e){} location.href = (LANGUE_JEU === "en" ? "../" : "en/") + "?salon=" + r.code; return; }
+      avecProfil(() => rejoindreSalon(b.dataset.code)); });
+  };
+  Annuaire.ecouter((liste, mode, enLigneN) => { if(liste !== null) derniere = [liste, mode, enLigneN]; afficher(liste, mode, enLigneN); });
 }
 
 // lien d'invitation : adresse du site, même depuis l'appli iOS où le jeu est servi par l'appli elle-même
@@ -554,6 +618,7 @@ function rafraichir(){
   const bl = $("#m-lancer"); if(bl) bl.onclick = lancer;
 }
 
+const oublierPartie = () => { try{ store.set("partieMulti", null); }catch(e){} };
 function ecranDepart(){
   if(!S || S.graine == null || !S.partie) return;
   if(S.partieLancee === S.graine) return;          // (une seule fois par partie, même si l'état est rediffusé)
@@ -570,11 +635,13 @@ function ecranDepart(){
   </section>`;
   if(typeof confettis === "function") setTimeout(() => confettis(120), 300);
   const graine = S.graine;
+  try{ store.set("partieMulti", {code:S.code, id:S.moi.id, graine, t:Date.now(), ligne:S.canal.type === "ligne"}); }catch(e){}
   setTimeout(() => {
     if(!S || S.partieLancee !== graine) return;
     PlateauIA.demarrerMulti({graine, joueurs:S.partie, moi:S.moi.id, hote:estHote(), hoteId,
       envoyer, present:id => !!S && S.joueurs.some(j => j.id === id),
-      quitter:() => { if(!S) return; if(estHote()) envoyer({t:"ferme"}); else envoyer({t:"quitter"}); fermerSalon(); },
+      quitter:() => { if(!S) return; oublierPartie(); if(estHote()) passerLaMain(); else envoyer({t:"quitter"}); fermerSalon(); },
+      decs:S.decsReprise || null,
       retour:() => { if(!S) return ecranMulti(); S.phase = "attente"; S.joueurs.forEach(j => j.pret = false); S.rendu = null; if(estHote()){ diffuserEtat(); publierSalon(); } ecranSalon(); }});
   }, 1800 * (window.QLN_TEST_VITE || 1));
 }
@@ -582,7 +649,8 @@ function ecranDepart(){
 // Lien direct ?salon=CODE → ouvre l'écran multijoueur avec le code pré-rempli
 function lienDirect(){ const code = new URLSearchParams(location.search).get("salon"); if(code && normCode(code).length === 5){ ecranMulti(); return true; } return false; }
 
-addEventListener("pagehide", () => { if(S){ if(estHote()) envoyer({t:"ferme"}); else envoyer({t:"quitter"}); } });
+addEventListener("pagehide", () => { if(S){ if(estHote()) passerLaMain(); else if(S.phase !== "jeu") envoyer({t:"quitter"}); } });   // (en partie : on peut revenir ; l'IA joue en attendant)
+addEventListener("online", () => { if(Socket.abonnes.size){ Socket.tentatives = 0; Socket.ouvrir(); } });
 
 return { ecran:ecranMulti, profil:ecranProfil, compte:() => Compte.get(), chipProfil, lienDirect, dispo:canalDispo, TXT, stop:fermerSalon, etat:() => S };
 })();
