@@ -11,7 +11,7 @@ from wordfreq import top_n_list, zipf_frequency
 import simplemma
 
 RACINE = pathlib.Path(__file__).resolve().parent.parent
-SORTIE = RACINE / "data" / "langues"
+SORTIE = RACINE / "app" / "data" / "langues"
 LANGUES = ["es", "de", "it"]
 ACCEPTE, COURANT = 2.5, 3.2      # Zipf : mot accepté / mot « courant » (cible d'une carte)
 # mots grossiers ou choquants écartés (liste volontairement large)

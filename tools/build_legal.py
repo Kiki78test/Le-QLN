@@ -10,6 +10,7 @@ sys.path.insert(0, str(ROOT / "tools"))
 import legal_texte as L
 
 M = json.loads((ROOT / "marque.json").read_text(encoding="utf-8"))
+APP = ROOT / "app" if (ROOT / "app" / "index.html").exists() else ROOT   # le jeu est dans app/
 D = {lang: L.contenu(lang, M) for lang in ("fr", "en")}
 esc = html.escape
 
@@ -62,7 +63,7 @@ function lienDirect(){
 return {ecran, lienDirect, libelles: () => DATA[LG].libelles};
 })();
 """ % json.dumps({lang: {k: ({"titre": v["titre"], "maj": v["maj"], "intro": v["intro"], "sections": [[s[0], s[-1]] for s in v["sections"]]} if k != "libelles" else v) for k, v in D[lang].items()} for lang in D}, ensure_ascii=False)
-(ROOT / "legal.js").write_text(JS, encoding="utf-8")
+(APP / "legal.js").write_text(JS, encoding="utf-8")
 
 # ------------------------------------------------------------------ pages web publiques
 CSS = """body{margin:0; background:#071634; color:#dfe7fb; font:16px/1.55 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
@@ -85,11 +86,11 @@ def page(lang, cle, chemin_app, autre_fichier, lien_lang):
 {corps}
 </main></body></html>
 """
-(ROOT / "confidentialite.html").write_text(page("fr", "confidentialite", "./", "mentions-legales.html", ("en/privacy.html", "English")), encoding="utf-8")
-(ROOT / "mentions-legales.html").write_text(page("fr", "mentions", "./", "confidentialite.html", ("en/legal-notice.html", "English")), encoding="utf-8")
-(ROOT / "en").mkdir(exist_ok=True)
-(ROOT / "en" / "privacy.html").write_text(page("en", "confidentialite", "./", "legal-notice.html", ("../confidentialite.html", "Français")), encoding="utf-8")
-(ROOT / "en" / "legal-notice.html").write_text(page("en", "mentions", "./", "privacy.html", ("../mentions-legales.html", "Français")), encoding="utf-8")
+(APP / "confidentialite.html").write_text(page("fr", "confidentialite", "./", "mentions-legales.html", ("en/privacy.html", "English")), encoding="utf-8")
+(APP / "mentions-legales.html").write_text(page("fr", "mentions", "./", "confidentialite.html", ("en/legal-notice.html", "English")), encoding="utf-8")
+(APP / "en").mkdir(exist_ok=True)
+(APP / "en" / "privacy.html").write_text(page("en", "confidentialite", "./", "legal-notice.html", ("../confidentialite.html", "Français")), encoding="utf-8")
+(APP / "en" / "legal-notice.html").write_text(page("en", "mentions", "./", "privacy.html", ("../mentions-legales.html", "Français")), encoding="utf-8")
 
 # ------------------------------------------------------------------ PDF (facultatif)
 def pdf():

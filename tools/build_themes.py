@@ -32,8 +32,9 @@ def construire(lang, listes, dico_path, out_path):
     out_path.write_text(json.dumps({"themes": sortie, "min": MIN_CARTES}, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
     return sortie, bilan
 res = {}
-for lang, listes, dp, op in [("fr", FR, ROOT / "data" / "fr.json", ROOT / "data" / "themes-fr.json"),
-                             ("en", EN, ROOT / "en" / "data" / "en.json", ROOT / "en" / "data" / "themes-en.json")]:
+APP = ROOT / "app" if (ROOT / "app" / "index.html").exists() else ROOT   # le jeu est dans app/
+for lang, listes, dp, op in [("fr", FR, APP / "data" / "fr.json", APP / "data" / "themes-fr.json"),
+                             ("en", EN, APP / "en" / "data" / "en.json", APP / "en" / "data" / "themes-en.json")]:
     s, b = construire(lang, listes, dp, op); res[lang] = s
     print(lang, len(s), "thèmes gardés")
     for cle, n, par in b: print(f"   {cle:10} {n:4}  v{par['v']} b{par['b']} r{par['r']} n{par['n']}" + ("" if n >= MIN_CARTES else "  (trop peu : non proposé)"))

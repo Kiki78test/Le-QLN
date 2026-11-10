@@ -48,7 +48,8 @@ jobs:
           PORT: 8790
         run: |
           (cd server && nohup node index.js > ../serveur.log 2>&1 &)
-          nohup python3 -m http.server 8765 > /dev/null 2>&1 &
+          python3 tools/site.py
+          (cd _site && nohup python3 -m http.server 8765 > /dev/null 2>&1 &)
           for i in $(seq 1 30); do curl -sf http://localhost:8790/sante | grep -q '"api":true' && break; sleep 1; done
           curl -sf http://localhost:8790/sante
       - name: Tests du serveur

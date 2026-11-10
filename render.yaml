@@ -1,6 +1,6 @@
 # Le-QLN — serveur (multijoueur + comptes + classements) sur Render.
 # Mise en place unique : Render → New → Blueprint → dépôt Kiki78test/Le-QLN → Apply (la base dédiée est créée et branchée toute seule).
-# Ensuite, chaque modification poussée dans server/ (ou analyse.js) est redéployée automatiquement,
+# Ensuite, chaque modification poussée dans server/ (ou app/analyse.js, app/data) est redéployée automatiquement,
 # et seulement si les tests GitHub sont passés (autoDeployTrigger: checksPass).
 services:
   - type: web
@@ -8,7 +8,7 @@ services:
     runtime: node
     region: frankfurt          # proche des joueurs français
     plan: free                 # passer en "starter" (7 $/mois) à l'ouverture au public : pas de mise en veille
-    # pas de rootDir : le serveur lit aussi ../analyse.js (mêmes règles que l'appli pour les mots contestés)
+    # pas de rootDir : le serveur lit aussi app/analyse.js (mêmes règles que l'appli pour les mots contestés) et les dictionnaires
     buildCommand: cd server && npm install --omit=dev
     startCommand: cd server && npm start
     healthCheckPath: /sante
@@ -16,9 +16,9 @@ services:
     buildFilter:
       paths:
         - server/**
-        - analyse.js
-        - data/**
-        - en/data/**
+        - app/analyse.js
+        - app/data/**
+        - app/en/data/**
     envVars:
       - key: DATABASE_URL        # base dédiée ci-dessous, branchée automatiquement (adresse interne)
         fromDatabase:

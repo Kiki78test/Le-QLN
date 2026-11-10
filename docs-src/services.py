@@ -33,13 +33,14 @@ h += B("Règles d'or", "", [
     "Ne jamais renommer les clés de stockage <code>qln:</code> / <code>qln-en:</code> de l'appli, même en changeant le nom du jeu : les joueurs perdraient leur progression."], cls="hl")
 
 h += "<h2>1. GitHub — code, site et automatismes</h2>"
-h += B("Dépôt et site", "Dépôt <b>Kiki78test/Le-QLN</b> (public), branche <code>main</code>. GitHub Pages publie la racine du dépôt : <code>https://kiki78test.github.io/Le-QLN/</code> (anglais : <code>/en/</code>).", [
-    "Séries à thème : listes dans <code>tools/themes_listes.py</code>, construites par <code>python3 tools/build_themes.py</code> en <code>data/themes-fr.json</code> et <code>en/data/themes-en.json</code> (+ tableur de relecture dans docs/).",
-    "Fichiers du jeu à la racine : <code>index.html</code>, <code>plateau.js</code>, <code>multi.js</code>, <code>series.js</code>, <code>barre.js</code>, <code>compte.js</code>, <code>progres.js</code>, <code>pub.js</code>, <code>infos.js</code>, <code>legal.js</code>, <code>analyse.js</code>, <code>config.js</code>, <code>sw.js</code> ; dictionnaires <code>data/fr.json</code> et <code>en/data/en.json</code>.",
-    "Version anglaise <b>générée</b> : <code>python3 tools/build_en.py</code> (tables FR→EN dans <code>tools/en_*.py</code>). Ne pas modifier <code>en/*.js</code> à la main.",
+h += B("Dépôt et site", "Dépôt <b>Kiki78test/Le-QLN</b> (public), branche <code>main</code>. Le jeu est dans <code>app/</code> ; l'action « Publication du site » (<code>pages.yml</code>) assemble <code>app/</code> + <code>docs/</code> (<code>tools/site.py</code>) et publie sur GitHub Pages, à la même adresse : <code>https://kiki78test.github.io/Le-QLN/</code> (anglais : <code>/en/</code>). Réglage Pages : Source « GitHub Actions ».", [
+    "Séries à thème : listes dans <code>tools/themes_listes.py</code>, construites par <code>python3 tools/build_themes.py</code> en <code>app/data/themes-fr.json</code> et <code>app/en/data/themes-en.json</code> ; séries en espagnol, allemand, italien : <code>python3 tools/build_dict_langues.py</code> → <code>app/data/langues/</code> (+ tableur de relecture dans docs/).",
+    "Fichiers du jeu dans <code>app/</code> : <code>index.html</code>, <code>plateau.js</code>, <code>multi.js</code>, <code>series.js</code>, <code>barre.js</code>, <code>compte.js</code>, <code>progres.js</code>, <code>pub.js</code>, <code>infos.js</code>, <code>legal.js</code>, <code>analyse.js</code>, <code>config.js</code>, <code>sw.js</code> ; dictionnaires <code>app/data/fr.json</code> et <code>app/en/data/en.json</code>. À la racine : <code>marque.json</code>, <code>docs/</code>, <code>docs-src/</code>, <code>tools/</code>, <code>tests/</code>, <code>server/</code>, <code>mobile/</code>, <code>store/</code>.",
+    "Version anglaise <b>générée</b> : <code>python3 tools/build_en.py</code> (tables FR→EN dans <code>tools/en_*.py</code>). Ne pas modifier <code>app/en/*.js</code> à la main.",
     "Pages juridiques <b>générées</b> : <code>python3 tools/build_legal.py</code> depuis <code>tools/legal_texte.py</code> et <code>marque.json</code>.",
-    "Service worker : à chaque version, incrémenter <code>VERSION</code> dans <code>sw.js</code> et la paire correspondante dans <code>tools/build_en.py</code>."])
+    "Service worker : à chaque version, incrémenter <code>VERSION</code> dans <code>app/sw.js</code> et la paire correspondante dans <code>tools/build_en.py</code>."])
 h += "<h3>Actions (onglet Actions)</h3>" + T([
+    ["Publication du site", "envoi touchant app/ ou docs/", "Assemble le jeu et la documentation (<code>tools/site.py</code>) et publie sur GitHub Pages"],
     ["Tests", "chaque envoi", "Tests serveur (PostgreSQL 16 de test) + appli dans Chromium : FR/EN, téléphone/ordinateur, partie rapide, hors ligne, comptes, anti-triche, pages juridiques"],
     ["Version en ligne", "après chaque publication du site + toutes les 6 h", "Mêmes tests sur le site publié et le vrai serveur (<code>/sante</code>, <code>/api/sante-api</code>)"],
     ["Sécurité", "chaque semaine", "Audit des dépendances (<code>npm audit</code>)"],
@@ -131,7 +132,7 @@ h += "<h2>6. Applis mobiles (dossier <code>mobile/</code>, Capacitor 8)</h2>" + 
 
 h += "<h2>7. Tests en local</h2>" + L([
     "Serveur : <code>cd server &amp;&amp; DATABASE_URL=postgresql://…?sslmode=disable PORT=8790 node index.js</code> puis <code>cd tests &amp;&amp; QLN_TEST_URL=http://localhost:8790 node --test serveur.test.js</code>.",
-    "Appli : servir la racine (<code>python3 -m http.server 8765</code>) puis <code>QLN_SITE=http://localhost:8765 node --test --test-concurrency=1 appli.test.js</code> (ajouter <code>QLN_TEST_URL</code> pour les tests avec serveur).",
+    "Appli : assembler le site (<code>python3 tools/site.py</code>) et servir <code>_site/</code> (<code>cd _site && python3 -m http.server 8765</code>) puis <code>QLN_SITE=http://localhost:8765 node --test --test-concurrency=1 appli.test.js</code> (ajouter <code>QLN_TEST_URL</code> pour les tests avec serveur).",
     "Les tests remplacent toujours <code>config.js</code> : ils ne touchent jamais au vrai serveur."])
 
 h += "<h2>8. Coûts et échéances</h2>" + T([

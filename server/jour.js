@@ -9,7 +9,8 @@
 const fs = require("fs"), path = require("path");
 
 const RACINE = path.join(__dirname, "..");
-const FICHIERS = {fr:path.join(RACINE, "data", "fr.json"), en:path.join(RACINE, "en", "data", "en.json")};
+const APP = path.join(RACINE, "app");   // le jeu (et ses dictionnaires) est dans app/
+const FICHIERS = {fr:path.join(APP, "data", "fr.json"), en:path.join(APP, "en", "data", "en.json")};
 const NIVEAUX = {v:{gain:20}, b:{gain:50}, r:{gain:100}, n:{gain:200}};
 const PARCOURS_DEFI = ["v","v","v","b","b","b","r","r","n","n"];
 const EVENEMENTS = [2, 1.5, 1.5, 1.25, 1, 1];   // multiplicateurs, dans l'ordre de l'appli (double, éclair, masque, miroir, temps, vie)
