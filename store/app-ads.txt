@@ -1,0 +1,4 @@
+# Modèle du fichier app-ads.txt (AdMob) : remplacer pub-0000000000000000 par votre identifiant d'éditeur AdMob
+# (AdMob → Paramètres → Informations sur le compte), puis le placer à la RACINE du site déclaré comme « site du développeur »
+# dans les fiches Play Store / App Store (ex. https://votre-domaine.fr/app-ads.txt).
+google.com, pub-0000000000000000, DIRECT, f08c47fec0942fa0

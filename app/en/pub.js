@@ -8,7 +8,9 @@
    - la vidéo « récompense » est toujours à l'initiative du joueur ;
    - les bandeaux ne vivent que sur les écrans calmes : accueil, fin de partie (grand format), plateau et salon ;
    - en mode No Pub, rien ne s'affiche.
-   Pour passer en réel : remplacer jouerSpot() et bandeau() par le kit d'une régie (AdSense, AdMob…).
+   Vraies publicités (applis Android / iOS) : Google AdMob, branché ci-dessous (« Régie »). Il s'active seul dans
+   l'appli quand config.js contient QLN_ADMOB avec actif:true ; sinon (site web, identifiants absents, hors ligne,
+   annonce indisponible) la simulation ci-dessous prend le relais. Mêmes emplacements et mêmes règles dans les deux cas.
    ========================================================================= */
 "use strict";
 const Pub = (() => {
@@ -96,7 +98,53 @@ majBarre();
    (autopromotion, « Sans pub »). Les affichages hors ligne sont comptés à part. */
 function compter(k){ stats[k] = (stats[k]||0)+1; if(navigator.onLine === false) stats.horsLigne = (stats.horsLigne||0)+1; store.set("pubStats", stats); majBarre(); }
 
-/* ----- spot vidéo plein écran ----- */
+/* ----- Régie réelle : Google AdMob (module @capacitor-community/admob des applis) ----- */
+const Regie = (() => {
+  // lu au moment de l'usage : config.js est chargé après ce fichier
+  const conf = () => {
+    const C = window.Capacitor, cfg = window.QLN_ADMOB || {};
+    const natif = !!(C && C.isNativePlatform && C.isNativePlatform());
+    const plateforme = natif && C.getPlatform ? C.getPlatform() : "web";
+    const P = natif && C.Plugins ? C.Plugins.AdMob : null, ids = cfg[plateforme] || {};
+    return {cfg, plateforme, P, ids, pret:!!(cfg.actif && P && ids.interstitiel)};
+  };
+  let init = null;
+  // au premier besoin : initialisation, consentement RGPD (formulaire Google « UMP »), puis demande de suivi Apple (ATT)
+  function demarrer(){
+    if(init) return init;
+    const {cfg, P, plateforme} = conf();
+    init = (async () => {
+      await P.initialize({initializeForTesting:!!cfg.test, tagForUnderAgeOfConsent:false, maxAdContentRating:"Teen"});
+      let info = await P.requestConsentInfo();
+      if(info && info.isConsentFormAvailable && info.status === "REQUIRED") info = await P.showConsentForm();
+      if(plateforme === "ios"){ try{ const t = await P.trackingAuthorizationStatus(); if(t && t.status === "notDetermined") await P.requestTrackingAuthorization(); }catch(e){} }
+      return !info || info.canRequestAds !== false;
+    })().catch(() => false);
+    return init;
+  }
+  async function interstitiel(){
+    const {cfg, P, ids, pret} = conf();
+    if(!pret || navigator.onLine === false || !(await demarrer())) return false;
+    try{ await P.prepareInterstitial({adId:ids.interstitiel, isTesting:!!cfg.test}); await P.showInterstitial(); return true; }catch(e){ return false; }
+  }
+  // renvoie true si la récompense est acquise, false si la vidéo est fermée avant la fin, null si aucune annonce (repli démonstration)
+  async function recompense(){
+    const {cfg, P, ids, pret} = conf();
+    if(!pret || !ids.recompense || navigator.onLine === false || !(await demarrer())) return null;
+    try{ await P.prepareRewardVideoAd({adId:ids.recompense, isTesting:!!cfg.test}); const r = await P.showRewardVideoAd(); return !!(r && (r.amount != null || r.type)); }catch(e){ return null; }
+  }
+  // menu « Choix publicitaires » (RGPD : changer d'avis à tout moment)
+  async function choix(){ const {P, pret} = conf(); if(!pret) return; await demarrer(); try{ await P.showPrivacyOptionsForm(); }catch(e){ toast(EN ? "Ad choices are not available right now." : "Les choix publicitaires ne sont pas disponibles pour l'instant."); } }
+  return {pret:() => conf().pret, plateforme:() => conf().plateforme, interstitiel, recompense, choix};
+})();
+// entrée du menu « Choix publicitaires » : seulement dans l'appli, avec la vraie régie (après le chargement de config.js)
+addEventListener("DOMContentLoaded", () => {
+  if(!Regie.pret()) return;
+  const b = document.getElementById("ti-pubchoix");
+  if(b){ b.hidden = false; b.onclick = () => { const f = document.getElementById("ti-fermer"); if(f) f.click(); Regie.choix(); }; }
+});
+
+/* ----- spot vidéo plein écran (simulation, ou repli quand la régie n'a pas d'annonce) ----- */
 function jouerSpot({passerApres = 3, recompense = false, titre = "Advertisement"} = {}){
   return new Promise(res => {
     const s = SPOTS[idx++ % SPOTS.length];
@@ -125,7 +173,7 @@ const libre = () => dernier === 0 || performance.now() - dernier > DELAI_MS;
 async function avantPartie(){
   parties++;
   if(!actif || parties === 1 || !libre()){ if(dernier === 0) dernier = performance.now(); return; }
-  await jouerSpot({passerApres:3, titre:"Advertisement before the game"});
+  if(!(await Regie.interstitiel())) await jouerSpot({passerApres:3, titre:"Advertisement before the game"});
   dernier = performance.now(); compter("videos");
 }
 /* appelé entre deux cartes, sablier arrêté : une vidéo toutes les 5 cartes au plus, et pas plus d'une toutes les 3 min */
@@ -134,12 +182,13 @@ async function entreCartes(){
   cartesVues++;
   if(cartesVues < CARTES_ENTRE || !libre()) return;
   cartesVues = 0;
-  await jouerSpot({passerApres:3, titre:"Advertisement"});
+  if(!(await Regie.interstitiel())) await jouerSpot({passerApres:3, titre:"Advertisement"});
   dernier = performance.now(); compter("videos");
 }
 async function recompenseVideo(){
   if(!actif) return false;
-  const ok = await jouerSpot({passerApres:3, recompense:true, titre:"Reward advertisement"});
+  const reel = await Regie.recompense();
+  const ok = reel === null ? await jouerSpot({passerApres:3, recompense:true, titre:"Reward advertisement"}) : reel;
   if(ok) compter("recompenses");
   return ok;
 }
@@ -147,7 +196,8 @@ function actifOui(){ return actif; }
 
 /* ----- bandeau discret, pendant les sabliers ----- */
 /* bandeau : format "grand" (type 300×250) sur l'écran de fin, format discret ailleurs ; rotation toutes les 20 s */
-function bandeau(format = ""){ return actif ? `<div class="pub-bandeau ${format === "grand" ? "grand" : ""}" role="complementary" aria-label="Advertisement"></div>` : ""; }
+// avec la vraie régie : pas de bandeau (interstitiels et vidéos récompense seulement, choix plus discret)
+function bandeau(format = ""){ return actif && !Regie.pret() ? `<div class="pub-bandeau ${format === "grand" ? "grand" : ""}" role="complementary" aria-label="Advertisement"></div>` : ""; }
 function animerBandeau(){
   $$(".pub-bandeau").forEach(el => {
     if(el.dataset.anime) return; el.dataset.anime = "1";
@@ -165,5 +215,5 @@ function animerBandeau(){
     const it = setInterval(montrer, 20000); montrer();
   });
 }
-return { avantPartie, entreCartes, recompenseVideo, bandeau, animerBandeau, actif: actifOui };
+return { avantPartie, entreCartes, recompenseVideo, bandeau, animerBandeau, actif: actifOui, regie: () => ({pret:Regie.pret(), plateforme:Regie.plateforme()}) };
 })();

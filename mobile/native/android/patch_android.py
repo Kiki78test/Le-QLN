@@ -13,6 +13,15 @@ for root, dirs, files in os.walk(res):
         os.makedirs(os.path.dirname(dst), exist_ok=True); shutil.copy(os.path.join(root, f), dst)
 man = os.path.join(app, 'src', 'main', 'AndroidManifest.xml'); s = open(man).read()
 perms = ['INTERNET', 'VIBRATE', 'WAKE_LOCK', 'ACCESS_NETWORK_STATE']
+# publicité AdMob : identifiant d'appli (obligatoire dès que le module est présent), lu dans app/config.js (QLN_ADMOB)
+racine = os.path.normpath(os.path.join(here, '..', '..', '..'))
+cfg = open(os.path.join(racine, 'app', 'config.js'), encoding='utf-8').read()
+import json as _json
+admob = _json.loads(re.search(r'QLN_ADMOB\s*=\s*(\{.*?\n\});', cfg, re.S).group(1))
+if 'com.google.android.gms.ads.APPLICATION_ID' not in s:
+    s = s.replace('</application>', '        <meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="%s" />\n    </application>' % admob['android']['appli'], 1)
+if 'com.google.android.gms.permission.AD_ID' not in s:
+    s = s.replace('</manifest>', '    <uses-permission android:name="com.google.android.gms.permission.AD_ID" />\n</manifest>')
 add = ''.join('    <uses-permission android:name="android.permission.%s" />\n' % p for p in perms if 'android.permission.%s"' % p not in s)
 s = s.replace('</manifest>', add + '</manifest>')
 # le jeu se joue en portrait (comme la PWA)

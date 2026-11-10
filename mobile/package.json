@@ -2,12 +2,13 @@
   "name": "le-qln-mobile",
   "version": "0.1.0",
   "private": true,
-  "description": "Applis Android et iOS de Le-QLN (Capacitor). Android : enveloppe autour du site en ligne. iOS : jeu embarqué dans l'appli (exigence Apple), comptes et classements via le serveur.",
+  "description": "Applis Android et iOS de Le-QLN (Capacitor). Android : enveloppe autour du site en ligne. iOS : jeu embarqué dans l'appli (exigence Apple), comptes et classements via le serveur. Publicité : Google AdMob (@capacitor-community/admob), identifiants dans app/config.js (QLN_ADMOB).",
   "dependencies": {
     "@capacitor/android": "^8.4.0",
     "@capacitor/app": "^8.0.0",
     "@capacitor/core": "^8.4.0",
-    "@capacitor/ios": "^8.4.0"
+    "@capacitor/ios": "^8.4.0",
+    "@capacitor-community/admob": "^8.3.0"
   },
   "devDependencies": {
     "@capacitor/cli": "^8.4.0"

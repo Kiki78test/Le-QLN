@@ -331,3 +331,29 @@ test("ordinateur : barre du bas (règles, classement de la partie, paramètres, 
   const tel = await ouvrir("fr", "telephone");
   assert.equal(await tel.p.isVisible("#barre-bas"), false, "pas de barre sur téléphone"); await tel.ctx.close();
 });
+
+/* Applis : vraie régie AdMob (module simulé) — consentement, vidéo récompense, menu « Choix publicitaires » ; repli si pas d'annonce */
+test("applis : régie AdMob (module simulé) et repli sur la démonstration", async () => {
+  const ctx = await navigateur.newContext({viewport:{width:400, height:860}, serviceWorkers:"block"});
+  const p = await ctx.newPage(); const erreurs = []; p.on("pageerror", e => erreurs.push(e.message));
+  await p.addInitScript(() => {
+    localStorage.setItem("qln:progres", JSON.stringify({tuto:"fait"}));
+    window.appels = [];
+    const f = (nom, val) => (...a) => { window.appels.push(nom); return Promise.resolve(typeof val === "function" ? val(...a) : val); };
+    window.Capacitor = {isNativePlatform:() => true, getPlatform:() => "android", Plugins:{AdMob:{
+      initialize:f("initialize"), requestConsentInfo:f("requestConsentInfo", {status:"REQUIRED", isConsentFormAvailable:true}), showConsentForm:f("showConsentForm", {status:"OBTAINED", canRequestAds:true}),
+      prepareInterstitial:f("prepareInterstitial", {}), showInterstitial:f("showInterstitial"), prepareRewardVideoAd:f("prepareRewardVideoAd", {}),
+      showRewardVideoAd:f("showRewardVideoAd", () => window.sansAnnonce ? Promise.reject(new Error("no fill")) : {type:"coin", amount:1}), showPrivacyOptionsForm:f("showPrivacyOptionsForm")}}};
+  });
+  await p.route(/\/config\.js(\?|$)/, r => r.fulfill({contentType:"application/javascript", body:`window.QLN_API_URL="";window.QLN_WS_URL="";window.QLN_ADMOB={actif:true,test:true,android:{appli:"a~1",interstitiel:"a/2",recompense:"a/3"}};`}));
+  await p.goto(`${SITE}/index.html`); await p.waitForSelector("#b-defi");
+  assert.equal(await p.evaluate(() => Pub.regie().pret), true, "régie prête dans l'appli");
+  assert.equal(await p.evaluate(() => document.getElementById("ti-pubchoix").hidden), false, "menu « Choix publicitaires » visible");
+  assert.equal(await p.evaluate(() => Pub.recompenseVideo()), true, "récompense acquise par la vraie régie");
+  assert.deepEqual(await p.evaluate(() => window.appels.slice(0, 5)), ["initialize", "requestConsentInfo", "showConsentForm", "prepareRewardVideoAd", "showRewardVideoAd"]);
+  assert.equal(await p.evaluate(() => document.querySelectorAll(".pub-bandeau").length), 0, "pas de bandeau avec la vraie régie");
+  // pas d'annonce disponible : la démonstration prend le relais (le joueur a sa récompense)
+  await p.evaluate(() => { window.sansAnnonce = true; window.__r = Pub.recompenseVideo(); });
+  await p.waitForSelector(".pub-voile", {timeout:5000});
+  sansErreur(erreurs); await ctx.close();
+});

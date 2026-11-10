@@ -130,7 +130,7 @@ h += "<h2>6. Applis mobiles (dossier <code>mobile/</code>, Capacitor 8)</h2>" + 
     ["Android", "enveloppe qui ouvre le site (<code>server.url</code> dans <code>capacitor.config.json</code>) : chaque mise à jour du jeu arrive sans réinstaller ; réglages dans <code>native/android/patch_android.py</code>"],
     ["iOS", "jeu embarqué dans l'appli (exigence Apple) ; réglages dans <code>native/ios/patch_ios.py</code> ; origine <code>capacitor://localhost</code> autorisée par le serveur"],
     ["Connexion", "e-mail + mot de passe uniquement (pas de Google dans les applis)"],
-    ["Publicité", "AdMob à brancher quand les comptes sont validés : identifiants d'appli et de blocs, consentement RGPD (et ATT sur iPhone), fichier app-ads.txt à la racine d'un domaine"]],
+    ["Publicité", "Google AdMob prêt dans les applis : module <code>@capacitor-community/admob</code>, identifiants dans <code>app/config.js</code> (<code>QLN_ADMOB</code>, lus aussi par <code>patch_android.py</code> et <code>patch_ios.py</code>), consentement UMP, ATT iOS, repli de démonstration ; politique de confidentialité basculée par <code>marque.json</code> → <code>pub_reelle</code>. Valeurs actuelles : annonces de test."]],
     ["", ""])
 
 h += "<h2>7. Tests en local</h2>" + L([

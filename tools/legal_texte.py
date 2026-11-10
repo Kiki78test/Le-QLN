@@ -13,6 +13,20 @@ def _v(M, cle, lang):
     return (M.get(cle) or "").strip() or A_COMPLETER[lang]
 
 
+# Publicité réelle (applis, Google AdMob) : texte utilisé quand marque.json contient "pub_reelle": true
+PUB_FR = ("Dans les applis Android et iOS, les publicités sont fournies par Google AdMob (Google Ireland Limited). Au premier lancement, "
+          "une fenêtre vous demande votre consentement ; vous pouvez le modifier à tout moment (Menu → Choix publicitaires). Avec votre accord, "
+          "Google peut utiliser l'identifiant publicitaire de l'appareil, l'adresse IP (position approximative), des informations techniques sur "
+          "l'appareil et vos interactions avec les annonces pour les personnaliser et les mesurer ; sans accord, les annonces ne sont pas personnalisées. "
+          "Sur iPhone, l'autorisation de suivi est aussi demandée par la fenêtre d'Apple. Les publicités n'apparaissent jamais pendant un sablier ; "
+          "le site web n'affiche que des publicités de démonstration, sans aucune donnée envoyée. Politique de Google : policies.google.com/technologies/ads.")
+PUB_EN = ("In the Android and iOS apps, ads are provided by Google AdMob (Google Ireland Limited). On first launch, a window asks for your consent; "
+          "you can change it at any time (Menu → Ad choices). With your consent, Google may use the device's advertising identifier, the IP address "
+          "(approximate location), technical device information and your interactions with ads to personalise and measure them; without consent, ads "
+          "are not personalised. On iPhone, tracking permission is also requested through Apple's window. Ads never appear during a timer; the website "
+          "only shows demonstration ads and sends no data. Google's policy: policies.google.com/technologies/ads.")
+
+
 def contenu(lang, M):
     nom = M["nom"]
     ed, adr, mail = _v(M, "editeur", lang), _v(M, "adresse", lang), _v(M, "contact_email", lang)
@@ -52,7 +66,7 @@ def contenu(lang, M):
                         "Dans les classements, les autres joueurs voient votre pseudo, votre pion, votre pays (si renseigné) et votre score. Jamais votre e-mail. Choisissez un pseudo qui ne vous identifie pas.",
                     ]),
                     ("Publicité", [
-                        "À la date de cette version, les publicités du jeu sont des simulations : aucune donnée n'est envoyée à une régie publicitaire. Si de vraies publicités sont activées (par exemple Google AdSense ou AdMob), le fournisseur pourra utiliser des identifiants publicitaires ou des cookies. Avant cela, un bandeau vous demandera votre consentement (refus possible, retrait à tout moment), et cette page sera mise à jour.",
+                        PUB_FR if M.get("pub_reelle") else "À la date de cette version, les publicités du jeu sont des simulations : aucune donnée n'est envoyée à une régie publicitaire. Si de vraies publicités sont activées (par exemple Google AdSense ou AdMob), le fournisseur pourra utiliser des identifiants publicitaires ou des cookies. Avant cela, un bandeau vous demandera votre consentement (refus possible, retrait à tout moment), et cette page sera mise à jour.",
                     ]),
                     ("Qui reçoit des données ?", [
                         "Nous ne vendons aucune donnée. Nous faisons appel à des prestataires techniques :",
@@ -162,7 +176,7 @@ def contenu(lang, M):
                     "On leaderboards, other players can see your nickname, pawn, country (if provided) and score. Never your email. Pick a nickname that does not identify you.",
                 ]),
                 ("Advertising", [
-                    "As of this version, the game's ads are simulations: no data is sent to any ad network. If real ads are enabled (for example Google AdSense or AdMob), the provider may use advertising identifiers or cookies. Before that, a banner will ask for your consent (you can refuse and withdraw at any time), and this page will be updated.",
+                    PUB_EN if M.get("pub_reelle") else "As of this version, the game's ads are simulations: no data is sent to any ad network. If real ads are enabled (for example Google AdSense or AdMob), the provider may use advertising identifiers or cookies. Before that, a banner will ask for your consent (you can refuse and withdraw at any time), and this page will be updated.",
                 ]),
                 ("Who receives data?", [
                     "We do not sell any data. We use technical providers:",

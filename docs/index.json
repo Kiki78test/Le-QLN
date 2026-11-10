@@ -1,5 +1,11 @@
 [
   {
+    "titre": "Vraies publicités (AdMob)",
+    "fichier": "publicite-admob.pdf",
+    "date": "2026-11-10",
+    "description": "Publicité réelle AdMob dans les applis Android et iOS : module, consentement RGPD, ATT sur iPhone, repli de démonstration, identifiants dans config.js, étapes dans AdMob, app-ads.txt."
+  },
+  {
     "titre": "Publier sur Google Play",
     "fichier": "publication-google-play.pdf",
     "date": "2026-11-10",

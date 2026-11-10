@@ -39,6 +39,12 @@ def reglages():
     pl["ITSAppUsesNonExemptEncryption"] = False             # HTTPS standard uniquement : pas de déclaration d'export
     pl["CFBundleDevelopmentRegion"] = "fr"
     pl["CFBundleLocalizations"] = ["fr", "en"]
+    # publicité AdMob : identifiant d'appli, explication de la demande de suivi (ATT), réseaux publicitaires (SKAdNetwork)
+    cfg = open(os.path.join(APP, "config.js"), encoding="utf-8").read()
+    admob = json.loads(re.search(r"QLN_ADMOB\s*=\s*(\{.*?\n\});", cfg, re.S).group(1))
+    pl["GADApplicationIdentifier"] = admob["ios"]["appli"]
+    pl["NSUserTrackingUsageDescription"] = "Votre accord permet d'afficher des publicités plus adaptées et de financer le jeu gratuit. Sans accord, vous voyez quand même des publicités, moins ciblées."
+    pl["SKAdNetworkItems"] = [{"SKAdNetworkIdentifier": "cstr6suwn9.skadnetwork"}]   # Google ; d'autres réseaux s'ajoutent ici si la médiation est activée
     n = os.environ.get("GITHUB_RUN_NUMBER")
     if n: pl["CFBundleVersion"] = n; pl["CFBundleShortVersionString"] = "0.1.%s" % n
     plistlib.dump(pl, open(pl_p, "wb"))

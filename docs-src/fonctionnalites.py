@@ -110,6 +110,7 @@ st+=ul(["Bascule <b>Pub / No Pub</b> en haut de l'écran avec compteur de revenu
  "Jamais de publicité pendant un sablier ni sur l'écran de carte ; aucune vidéo à la 1re partie, puis au plus une toutes les 3 min, entre deux parties ou toutes les 5 cartes ; bandeaux sur les écrans calmes, grand format en fin de partie ; vidéo récompense facultative (+1 indice).",
  "<b>Hors ligne</b> : même rythme et mêmes emplacements, les créations étant en cache sur l'appareil ; les affichages hors ligne sont comptés à part. Avec une vraie régie : annonces préchargées tant que le réseau est là, puis repli sur des créations locales (autopromotion, « Sans pub ») — une régie ne rémunère pas un affichage hors ligne.",
  "Étude détaillée et décisions à prendre : document « Monétisation publicitaire »."])
+st+=ul(["<b>Vraies publicités (applis)</b> : Google AdMob prêt dans les applis Android et iOS (interstitiel entre deux parties ou toutes les 5 cartes, vidéo récompense), consentement RGPD au premier lancement et menu « Choix publicitaires », demande de suivi Apple (ATT) sur iPhone, repli sur la démonstration hors ligne ou sans annonce. S'active en saisissant les identifiants AdMob dans config.js (QLN_ADMOB) ; d'ici là, démonstration."])
 
 st.append(Paragraph("8. Documentation intégrée",H))
 st+=ul(["Onglet Documentation (accueil) : PDF et tableurs datés — choix du nom, textes juridiques, mise en ligne du serveur, publicité réelle, idées de noms, monétisation publicitaire, propositions de règles, mots douteux, dictionnaire anglais, et ce document."])
@@ -122,7 +123,8 @@ st+=ul(["Multijoueur : reprendre une partie après une coupure (rejeu depuis l'h
  "Hébergement : base Render à passer en Basic avant le 10/12/2026, serveur en Starter à l'ouverture au public ; domaine (Cloudflare) quand le nom est choisi.",
  "Décisions en attente : vidéos récompense touchant aux règles, propositions de règles, mots douteux, nom définitif."])
 st.append(Paragraph("Historique des versions",H))
-st+=ul(["<b>10 nov. 2026 (soir)</b> — définitions vérifiées au Wiktionnaire pour tout le dictionnaire français : 98 % des 8 156 mots en ont une (115 sans, liste dans « Cartes écartées de l'appli ») ; action GitHub « Définitions (Wiktionnaire) ».",
+st+=ul(["<b>10 nov. 2026 (nuit)</b> — appli Android à publier (.aab signé, clé d'envoi chiffrée) ; vraies publicités AdMob prêtes dans les applis (consentement RGPD, ATT, menu « Choix publicitaires »).",
+ "<b>10 nov. 2026 (soir)</b> — définitions vérifiées au Wiktionnaire pour tout le dictionnaire français : 98 % des 8 156 mots en ont une (115 sans, liste dans « Cartes écartées de l'appli ») ; action GitHub « Définitions (Wiktionnaire) ».",
  "<b>10 nov. 2026 (soir)</b> — dictionnaire français corrigé après audit externe : sigles, noms propres et mots familiers retirés des réponses (SFIO, BAES, PETA, RÉAC, NERAC, PETRO, PETROS, ESPORT, LOIRET, PERSO), fautes de frappe du tableau d'origine retirées (CAROSSIER, SERPIERE, CROLATES, ENTONOIR) ; 3 228 cartes (outil tools/corrections_fr.py).",
  "<b>10 nov. 2026 (soir)</b> — dictionnaire anglais agrandi : 911 cartes au lieu de 534 (formes de base seulement, mots un peu moins courants acceptés), 12 thèmes anglais au lieu de 9 ; tableur de relecture « Dictionnaire anglais ».",
  "<b>10 nov. 2026 (nuit)</b> — nouveau fond bleu roi (faisceaux de lumière, étincelles dorées, grandes lettres fantômes, filet doré en bas) sur l'interface et le plateau ; flèches des tuiles de l'accueil sur le bord droit ; infobulles placées pour ne jamais cacher les lettres.",

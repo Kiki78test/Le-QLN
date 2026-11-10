@@ -1,5 +1,5 @@
 // Le-QLN (EN) — service worker: playable offline after the first visit.
-const VERSION = "qln-en-v35";
+const VERSION = "qln-en-v36";
 const FICHIERS = [
   "./", "index.html", "plateau.js", "multi.js", "../legal.js", "series.js", "barre.js", "progres.js", "compte.js", "../analyse.js", "../config.js", "pub.js", "infos.js", "manifest.webmanifest", "data/en.json", "data/themes-en.json", "../data/fr.json", "../data/langues/es.json", "../data/langues/de.json", "../data/langues/it.json",
   "pubs/spot1.jpg", "pubs/spot2.jpg", "pubs/spot3.jpg", "pubs/spot1.mp4", "pubs/spot2.mp4", "pubs/spot3.mp4", "../fonts/barlow-condensed-latin-500-normal.woff2", "../fonts/barlow-condensed-latin-600-normal.woff2", "../fonts/barlow-condensed-latin-700-normal.woff2", "../fonts/barlow-condensed-latin-800-italic.woff2", "../fonts/barlow-condensed-latin-800-normal.woff2", "../fonts/barlow-latin-400-normal.woff2", "../fonts/barlow-latin-500-normal.woff2", "../fonts/barlow-latin-600-normal.woff2", "../fonts/barlow-latin-700-normal.woff2", "icons/icon-192.png", "icons/icon-512.png", "icons/apple-touch-icon.png",

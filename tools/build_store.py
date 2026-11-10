@@ -269,7 +269,7 @@ def pdf():
         "Nom définitif choisi et <code>marque.json</code> complété (éditeur, adresse, e-mail de contact) : les textes, images et pages juridiques se mettent à jour d'un coup.",
         "Vérifier que la politique de confidentialité en ligne est à jour (elle l'est : même source que ces réponses).",
         "Le jour où les vraies publicités arrivent : cocher « Contient des annonces », ajouter les lignes « AdMob » ci-dessus, mettre à jour la politique.",
-        "Retirer de l'appli publiée la barre de démonstration « Pub / No Pub » (Claude le fait en branchant AdMob)."], classe="warn")
+        "Envoyer à Claude les identifiants AdMob (tout le reste est prêt : document « Vraies publicités (AdMob) »)."], classe="warn")
     document("fiches-des-stores.pdf", "Fiches des stores", "Google Play et App Store : textes FR/EN, captures, bannière, questionnaires.", h,
              description="Textes à copier (FR/EN, longueurs vérifiées), captures Google Play et iPhone, bannière, icône, réponses Sécurité des données et Confidentialité Apple, classification. Fichiers prêts dans store/.")
 

@@ -26,7 +26,7 @@ h += sec("Échéances", [
 h += sec("En cours chez vous", [
     ("vous", "<b>Google Play Console</b> : validation d'identité en attente (statut « non professionnel » pour l'instant) ; puis confirmer l'accès à un appareil Android et le numéro de téléphone."),
     ("vous", "<b>Google Play — clé d'envoi</b> : créer le secret GitHub <code>ANDROID_KEYSTORE_PASSWORD</code> (20 caractères et plus, à garder précieusement), puis lancer l'action « Appli Android (Google Play) » ; prévoir 12 testeurs pendant 14 jours (document « Publier sur Google Play »)."),
-    ("vous", "<b>AdMob</b> : compte créé, validation d'identité en attente. Ensuite : ajouter l'appli Android (puis iOS), créer les blocs d'annonces, envoyer les identifiants à Claude."),
+    ("vous", "<b>AdMob</b> : compte créé, validation d'identité en attente. Ensuite : ajouter l'appli Android (puis iOS), créer 2 blocs (interstitiel, avec récompense) et le message RGPD, puis m'envoyer les identifiants (document « Vraies publicités (AdMob) »)."),
     ("vous", "<b>Cloudflare</b> : prêt à créer ; acheter le domaine quand le nom est choisi."),
     ("vous", "<b>Apple Developer</b> (99 €/an) : quand le nom est choisi ; puis clé API App Store Connect et 4 secrets GitHub (voir « Version Apple »)."),
     ("vous", "<b>Fiches des stores</b> : à copier dans la Play Console et App Store Connect le moment venu (document « Fiches des stores »)."),
@@ -57,12 +57,12 @@ h += sec("Règles à décider (document « Propositions de règles »)", [
     ("dec", "Vidéos récompense touchant aux règles."),
 ])
 h += sec("Prochaines étapes de Claude", [
-    ("todo", "Brancher <b>AdMob</b> (Android puis iOS) dès les identifiants reçus : consentement RGPD, ATT sur iPhone, app-ads.txt, repli hors ligne sur des créations locales."),
+    ("todo", "Saisir les identifiants <b>AdMob</b> dès réception (tout le reste est prêt), activer le texte « publicité réelle » de la politique de confidentialité, relancer les applis."),
     ("todo", "<b>Mot de passe oublié</b> (Resend) après l'achat du domaine."),
-    ("todo", "Retirer de l'appli publiée la barre de démonstration « Pub / No Pub » (en branchant AdMob)."),
     ("todo", "Changer le nom partout dès qu'il est choisi (action « Changer le nom »)."),
 ])
 h += sec("Fait", [
+    ("ok", "<b>10/11</b> — AdMob prêt dans les applis (module, consentement RGPD, ATT iPhone, menu « Choix publicitaires », repli de démonstration, texte de confidentialité prêt) ; barre « Pub / No Pub » conservée."),
     ("ok", "<b>10/11</b> — fabrication de l'appli Android à publier (.aab signé, clé d'envoi créée et chiffrée automatiquement, version croissante) ; document « Publier sur Google Play »."),
     ("ok", "<b>10/11</b> — dictionnaire anglais agrandi (option D1) : 911 cartes au lieu de 534, 12 thèmes anglais au lieu de 9."),
     ("ok", "<b>10/11</b> — multijoueur : si l'hôte part, un autre joueur prend la main ; un joueur parti ou coupé est remplacé par l'IA (tout le monde est prévenu) et peut revenir (« Reprendre la partie en cours ») ; salons filtrables par langue (langue de l'appli par défaut)."),
