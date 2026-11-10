@@ -616,6 +616,10 @@ h1.logo{margin:0; font-weight:inherit}
 /* =====================  DESIGN V10 — « jeu télévisé premium » : contours fins, ombres discrètes, or réservé à l'important  ===================== */
 :root{--emeraude-a:#0f9f6e; --emeraude-b:#3fd99b; --emeraude-o:#06573c; --filet-or:rgba(255,214,90,.55); --ombre-douce:0 10px 24px rgba(0,0,0,.32)}
 body::after{opacity:.28}
+/* carte : liseré doré lumineux ; titre du plateau encadré de filets dorés */
+.table-carte .carte{box-shadow:0 0 0 2px rgba(255,220,120,.85), 0 0 0 5px rgba(255,255,255,.05), 0 0 34px rgba(255,196,70,.32), 0 18px 36px rgba(0,0,0,.45)!important}
+.p-hud h1 small::before,.p-hud h1 small::after{content:""; display:inline-block; vertical-align:middle; width:min(46px,9vw); height:2px; margin:0 10px 2px; border-radius:2px; background:linear-gradient(90deg, transparent, #f2c230)}
+.p-hud h1 small::after{background:linear-gradient(270deg, transparent, #f2c230)}
 #scene::before{content:""; position:absolute; inset:-15%; pointer-events:none; filter:blur(22px);
   background:linear-gradient(118deg, transparent 26%, rgba(80,140,255,.20) 39%, rgba(170,205,255,.07) 44%, transparent 55%),
              linear-gradient(104deg, transparent 60%, rgba(60,120,255,.17) 72%, transparent 84%),

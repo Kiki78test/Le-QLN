@@ -105,7 +105,8 @@ css.textContent = `
 .m-salon .nom small.rap{display:inline-block; background:linear-gradient(#ffe066,#e0a800); color:#1b1a05; padding:2px 8px; border-radius:999px; font:800 11px var(--f-ui); letter-spacing:.08em; text-transform:uppercase}
 .m-salon{grid-template-columns:auto 1fr auto; gap:10px}
 .m-objectif{display:flex; align-items:center; justify-content:center; gap:8px; padding:8px 12px; border-radius:12px; text-align:center; font:700 14.5px var(--f-ui); color:#3a2a00; background:linear-gradient(180deg,#fff3c0,#ffd95e); box-shadow:inset 0 0 0 1.5px rgba(160,110,0,.35)} .m-objectif i{font-style:normal; font-size:17px}
-.m-rapide{width:100%; margin:2px 0; grid-column:1/-1} .m-rapide[disabled]{opacity:.75}
+.m-choix .m-rapide{width:100%; margin:2px 0; grid-column:1/-1; min-height:0; padding:16px 44px 16px 16px; gap:14px}
+.m-rapide .ico{flex:none} .m-rapide[disabled]{opacity:.75}
 .m-en-ligne{font:600 13px var(--f-ui); color:var(--brume-2); display:flex; align-items:center; gap:7px} .m-en-ligne i{width:8px; height:8px; border-radius:50%; background:#9be15d; box-shadow:0 0 8px #9be15d}
 @media (min-width:700px){ .m-grille{display:grid; grid-template-columns:1fr 1fr; gap:16px; align-items:start} }
 `;
@@ -437,7 +438,7 @@ function ecranMulti(){
       <button class="bouton-plat" id="m-profil">${c ? TXT.modifier : TXT.creerProfil}</button>
     </div>
     <div class="m-choix">
-      <button class="mode piece c-jaune m-rapide" id="m-rapide"><span class="ico">${ICO.eclair || ICO.groupe}</span><span><span class="nom">${TXT.rapide}</span><span class="desc">${TXT.rapideDesc}</span></span></button>
+      <button class="mode large piece c-jaune m-rapide" id="m-rapide"><span class="chev" aria-hidden="true"></span><span class="ico">${ICO.eclair || ICO.groupe}</span><span><span class="nom">${TXT.rapide}</span><span class="desc">${TXT.rapideDesc}</span></span></button>
       <button class="mode piece c-multi" id="m-creer"><span class="ico">${ICO.groupe}</span><span><span class="nom">${TXT.creerSalon}</span><span class="desc">${TXT.creerSalonDesc}</span></span></button>
       <button class="mode piece c-bleu" id="m-rejoindre"><span class="ico">${ICO.cible || ICO.groupe}</span><span><span class="nom">${TXT.rejoindre}</span><span class="desc">${TXT.rejoindreDesc}</span></span></button>
     </div>
