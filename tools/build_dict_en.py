@@ -12,7 +12,7 @@ from lemminflect import getAllLemmas
 from better_profanity import profanity
 
 OUT = sys.argv[1]
-ACCEPT, COMMON = 2.3, 3.0   # Zipf thresholds : answer accepted / counts as "common"
+ACCEPT, COMMON = 2.3, 2.5   # Zipf thresholds : answer accepted / counts as "common" (2.5 since 10/11/2026: ~910 cards instead of 534, base forms only — option D1)
 profanity.load_censor_words()
 EXTRA_BLOCK = set("""anal anus arse arses boner boob boobs butt butts cock cocks cunt dick dicks dildo fuck fucks fucker
 whore whores slut sluts bitch bitches bastard bastards damn crap piss pissed rape raped raping rapist porn porno
@@ -29,7 +29,7 @@ def base_form(w):
 def level(n): return "v" if n <= 5 else "b" if n <= 7 else "r" if n <= 9 else "n"
 
 from wordfreq import top_n_list
-extra = {w for w in top_n_list("en", 60000) if w.isalpha() and w.isascii() and w.islower() and zipf_frequency(w,"en") >= 3.3 and getAllLemmas(w)}
+extra = {w for w in top_n_list("en", 100000) if w.isalpha() and w.isascii() and w.islower() and zipf_frequency(w,"en") >= 3.0 and getAllLemmas(w)}
 words = {}
 for w in web2 | extra:
     if len(w) < 4 or len(w) > 13: continue

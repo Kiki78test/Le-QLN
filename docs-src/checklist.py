@@ -37,7 +37,7 @@ h += sec("Décisions à prendre", [
     ("vous", "<b>Relire les séries de langue</b> : tableur « Séries en espagnol, allemand, italien » (mots à retirer)."),
     ("vous", "<b>Relire les thèmes</b> : tableur « Thèmes des séries » (mettre un x pour retirer un mot, proposer des ajouts)."),
     ("dec", "<b>Sons</b> : ajout éventuel de nouveaux sons (ambiance, dé, enchères, victoire…)."),
-    ("dec", "<b>Dictionnaire anglais</b> : l'agrandir (environ 530 cartes aujourd'hui), voir les options proposées."),
+    ("vous", "<b>Relire le dictionnaire anglais</b> : tableur « Dictionnaire anglais (relecture) », 377 nouvelles cartes marquées."),
     ("dec", "<b>Mots douteux</b> : tableur à relire (gardés par défaut)."),
 ])
 h += sec("Règles à décider (document « Propositions de règles »)", [
@@ -62,6 +62,7 @@ h += sec("Prochaines étapes de Claude", [
     ("todo", "Changer le nom partout dès qu'il est choisi (action « Changer le nom »)."),
 ])
 h += sec("Fait", [
+    ("ok", "<b>10/11</b> — dictionnaire anglais agrandi (option D1) : 911 cartes au lieu de 534, 12 thèmes anglais au lieu de 9."),
     ("ok", "<b>10/11</b> — multijoueur : si l'hôte part, un autre joueur prend la main ; un joueur parti ou coupé est remplacé par l'IA (tout le monde est prévenu) et peut revenir (« Reprendre la partie en cours ») ; salons filtrables par langue (langue de l'appli par défaut)."),
     ("ok", "<b>10/11</b> — dépôt rangé : le jeu dans <code>app/</code>, publié par l'action « Publication du site » à la même adresse (réglage Pages « GitHub Actions » fait)."),
     ("ok", "<b>10/11</b> — <b>multijoueur synchronisé sur le plateau</b> : mêmes règles que contre l'IA, cartes vues en direct par les autres, enchères simultanées, prison et garant entre joueurs, remplacement automatique d'un joueur absent ; parties complètes testées à deux (local et serveur)."),
@@ -69,7 +70,7 @@ h += sec("Fait", [
     ("ok", "<b>10/11</b> — fiches des stores prêtes (dossier <code>store/</code> + PDF « Fiches des stores ») : textes FR/EN, 8 captures Play et iPhone, bannière, icône, réponses Sécurité des données / Confidentialité Apple ; appli iOS réservée à l'iPhone pour la 1re version ; suppression du compte sans l'appli décrite dans la politique."),
     ("ok", "<b>10/11</b> — documentation : signature visuelle commune, règles du jeu illustrées (appli + PDF), étapes déjà faites marquées « Fait » (Render, comptes, applis)."),
     ("ok", "<b>10/11</b> — « le plus riche gagne » rendu évident (rappel, bandeau, bonus d'arrivée, podium détaillé) ; design rapproché des maquettes (dé 3D doré, cadre lumineux)."),
-    ("ok", "<b>10/11</b> — séries du Défi : 16 thèmes FR / 9 EN, série dans l'autre langue, design par thème, déblocage par niveau, sans classement ; vibrations plus douces, lueur de validation."),
+    ("ok", "<b>10/11</b> — séries du Défi : 16 thèmes FR / 9 EN (12 depuis), série dans l'autre langue, design par thème, déblocage par niveau, sans classement ; vibrations plus douces, lueur de validation."),
     ("ok", "<b>10/11</b> — version Apple préparée (fabrication sur Mac GitHub, simulateur OK ; TestFlight dès le compte Apple) ; note « Services externes »."),
     ("ok", "<b>10/11</b> — jeu complet hors ligne (scores en attente, pubs en cache, démarrage rapide sur réseau lent, multi signalé)."),
     ("ok", "<b>10/11</b> — accueil multi (salons en attente) + Partie rapide ; anti-triche des classements ; confidentialité et mentions légales ; aide au choix du nom."),
