@@ -141,3 +141,54 @@ for(const lang of ["fr", "en"]) test(`${lang} : confidentialité et mentions lé
   sansErreur(erreurs); await ctx.close();
   for(const f of lang === "fr" ? ["confidentialite.html", "mentions-legales.html"] : ["en/privacy.html", "en/legal-notice.html"]) assert.ok(fs.readFileSync(path.join(RACINE, f), "utf8").includes("<h2>"), f);
 });
+
+/* Hors ligne (avion) : après une première visite, l'appli démarre et se joue sans réseau ; le multijoueur le dit clairement. */
+test("hors ligne : démarrage, partie, pubs et multijoueur", async () => {
+  const ctx = await navigateur.newContext({viewport:{width:400, height:860}, isMobile:true, hasTouch:true});
+  await ctx.route(/\/config\.js(\?|$)/, r => r.fulfill({contentType:"application/javascript", body:'window.QLN_API_URL="https://exemple.invalid";window.QLN_WS_URL="wss://exemple.invalid/ws";window.QLN_GOOGLE_CLIENT_ID="";'}));
+  await ctx.addInitScript(() => { try{ localStorage.setItem("qln:progres", JSON.stringify({tuto:"fait"})); }catch(e){} });
+  const p = await ctx.newPage(); p.setDefaultTimeout(10000);
+  const erreurs = []; p.on("pageerror", e => erreurs.push(e.message));
+  await p.goto(`${SITE}/index.html`); await p.waitForSelector("#b-defi");
+  await p.evaluate(async () => { await navigator.serviceWorker.ready; });
+  await p.reload(); await p.waitForFunction(() => !!navigator.serviceWorker.controller);
+  await p.waitForTimeout(1500);   // le cache se remplit
+  await ctx.setOffline(true);
+  const t0 = Date.now();
+  await p.reload(); await p.waitForSelector("#b-defi"); await p.waitForFunction(() => DICO && DICO.v && DICO.v.length > 0);
+  assert.ok(Date.now() - t0 < 9000, "démarrage hors ligne rapide");
+  // une carte jouée hors ligne
+  const mot = await p.evaluate(() => { const g = DICO.v.find(x => x.length >= 2 && norm(x[1]).length === norm(x[0]).length); window.QLN_CARTE_FORCEE = {niv:"v", origine:g[0], mots:g, cle:"t"}; demarrerPartie("entrainement", "v", {}); return norm(g[1]); });
+  await p.waitForTimeout(600); await p.keyboard.type(mot, {delay:20}); await p.keyboard.press("Enter");
+  await p.waitForFunction(() => P && P.m && P.m.trouves.length === 1, null, {timeout:4000});
+  // les vidéos de pub sont en cache
+  assert.ok(await p.evaluate(async () => !!(await caches.match("pubs/spot1.mp4"))), "spot vidéo disponible hors ligne");
+  // multijoueur : message clair, boutons désactivés
+  await p.evaluate(() => { ecranAccueil(); document.querySelector("#b-multi").click(); });
+  await p.waitForSelector("#m-rapide[disabled]");
+  assert.match(await p.textContent("#m-ouverts"), /Hors connexion/);
+  assert.deepEqual(erreurs, []);
+  await ctx.close();
+});
+
+test("hors ligne : un score du défi du jour attend le réseau puis part (avec serveur)", {skip: !SERVEUR && "pas de serveur (QLN_TEST_URL)"}, async () => {
+  const {p, ctx, erreurs} = await ouvrir("fr", "telephone", {api:SERVEUR});
+  const email = `avion-${Date.now().toString(36)}@test.fr`;
+  await p.evaluate(() => Compte.ecranCompte("inscription"));
+  await p.fill("#ct-pseudo", "Voyageur"); await p.fill("#ct-email", email); await p.fill("#ct-mdp", "motdepasse-avion");
+  await p.click("#ct-ok"); await p.waitForFunction(() => Compte.connecte(), null, {timeout:8000});
+  await ctx.setOffline(true);
+  await p.evaluate(async () => {
+    demarrerPartie("jour", null, {}); await new Promise(r => setTimeout(r, 300));
+    P.historique = P.cartes.slice(0, 2).map(c => ({niv:c.niv, origine:c.origine, trouves:solutionsDe(c).slice(0, 1).map(w => w.toUpperCase())}));
+    document.dispatchEvent(new CustomEvent("qln:fin-partie", {detail:{mode:"jour", total:40}}));
+    await new Promise(r => setTimeout(r, 800));
+  });
+  assert.equal(await p.evaluate(() => store.get("scoresEnAttente", []).length), 1, "score gardé sur l'appareil");
+  await ctx.setOffline(false);
+  await p.waitForFunction(() => store.get("scoresEnAttente", []).length === 0, null, {timeout:10000});
+  await p.evaluate(() => Compte.ecranClassements());
+  await p.waitForFunction(() => document.querySelector("#app").textContent.includes("Voyageur"), null, {timeout:8000});
+  await p.evaluate(async () => { const s = Compte.session(); await fetch(window.QLN_API_URL + "/api/moi", {method:"DELETE", headers:{Authorization:"Bearer " + s.jeton}}); });
+  assert.deepEqual(erreurs.filter(e => !/Failed to fetch|NetworkError|ERR_INTERNET/i.test(e)), []); await ctx.close();
+});

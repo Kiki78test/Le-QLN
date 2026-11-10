@@ -1,8 +1,8 @@
 // Le-QLN (EN) — service worker: playable offline after the first visit.
-const VERSION = "qln-en-v21";
+const VERSION = "qln-en-v22";
 const FICHIERS = [
   "./", "index.html", "plateau.js", "multi.js", "../legal.js", "progres.js", "compte.js", "../analyse.js", "../config.js", "pub.js", "infos.js", "manifest.webmanifest", "data/en.json",
-  "pubs/spot1.jpg", "pubs/spot2.jpg", "pubs/spot3.jpg", "../fonts/barlow-condensed-latin-500-normal.woff2", "../fonts/barlow-condensed-latin-600-normal.woff2", "../fonts/barlow-condensed-latin-700-normal.woff2", "../fonts/barlow-condensed-latin-800-italic.woff2", "../fonts/barlow-condensed-latin-800-normal.woff2", "../fonts/barlow-latin-400-normal.woff2", "../fonts/barlow-latin-500-normal.woff2", "../fonts/barlow-latin-600-normal.woff2", "../fonts/barlow-latin-700-normal.woff2", "icons/icon-192.png", "icons/icon-512.png", "icons/apple-touch-icon.png",
+  "pubs/spot1.jpg", "pubs/spot2.jpg", "pubs/spot3.jpg", "pubs/spot1.mp4", "pubs/spot2.mp4", "pubs/spot3.mp4", "../fonts/barlow-condensed-latin-500-normal.woff2", "../fonts/barlow-condensed-latin-600-normal.woff2", "../fonts/barlow-condensed-latin-700-normal.woff2", "../fonts/barlow-condensed-latin-800-italic.woff2", "../fonts/barlow-condensed-latin-800-normal.woff2", "../fonts/barlow-latin-400-normal.woff2", "../fonts/barlow-latin-500-normal.woff2", "../fonts/barlow-latin-600-normal.woff2", "../fonts/barlow-latin-700-normal.woff2", "icons/icon-192.png", "icons/icon-512.png", "icons/apple-touch-icon.png",
 ];
 
 self.addEventListener("install", e => {
@@ -26,7 +26,11 @@ self.addEventListener("fetch", e => {
   const code = /\.(js|json|html|webmanifest)(\?|$)/.test(new URL(req.url).pathname) && new URL(req.url).origin === location.origin;
   if (req.mode === "navigate" || req.url.includes("/docs/") || code) {
     e.respondWith(
-      fetch(req, {cache:"no-cache"}).then(r => { const copie = r.clone(); caches.open(VERSION).then(c => c.put(req, copie)); return r; })
+      // réseau d'abord, mais 3 s au plus quand une copie existe : un réseau qui traîne (avion, métro) ne bloque pas le jeu
+      Promise.race([
+        fetch(req, {cache:"no-cache"}).then(r => { if(r.ok){ const copie = r.clone(); caches.open(VERSION).then(c => c.put(req, copie)); } return r; }),
+        new Promise((_, ko) => setTimeout(() => caches.match(req).then(c => c ? ko("lent") : null), 3000)),
+      ])
         .catch(() => caches.match(req).then(r => r || (req.mode === "navigate" ? caches.match("index.html") : Response.error())))
     );
     return;

@@ -91,7 +91,10 @@ function majBarre(){
   });
 }
 majBarre();
-function compter(k){ stats[k] = (stats[k]||0)+1; store.set("pubStats", stats); majBarre(); }
+/* Hors ligne (avion…) : même rythme et mêmes emplacements ; les créations sont en cache sur l'appareil.
+   Avec une vraie régie : annonces préchargées tant que le réseau est là, puis repli sur des créations locales
+   (autopromotion, « Sans pub »). Les affichages hors ligne sont comptés à part. */
+function compter(k){ stats[k] = (stats[k]||0)+1; if(navigator.onLine === false) stats.horsLigne = (stats.horsLigne||0)+1; store.set("pubStats", stats); majBarre(); }
 
 /* ----- spot vidéo plein écran ----- */
 function jouerSpot({passerApres = 3, recompense = false, titre = "Advertisement"} = {}){

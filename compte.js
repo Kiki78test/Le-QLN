@@ -91,10 +91,35 @@ document.addEventListener("qln:fin-partie", async e => {
   // les mots trouvés accompagnent le score : le serveur vérifie qu'ils sont réels et que le score est possible (anti-triche)
   let historique;
   try{ if((m === "jour" || m === "defi") && typeof P !== "undefined" && P && Array.isArray(P.historique)) historique = P.historique.filter(h => !h.special && h.origine).map(h => ({niv:h.niv, origine:h.origine, trouves:h.trouves || []})); }catch(x){}
-  try{ if(m) await api("/scores", {methode:"POST", corps:{mode:m, langue:TXT.langue, score:total || 0, jour: m === "jour" ? dateISO() : undefined, detail:historique ? {historique} : undefined}}); }catch(x){}
+  if(m) attente.ajouter({mode:m, langue:TXT.langue, score:total || 0, jour: m === "jour" ? dateISO() : undefined, detail:historique ? {historique} : undefined});
+  await attente.vider();
   synchroniser(true);
 });
-addEventListener("online", () => synchroniser(true));
+/* Hors ligne (avion, métro…) : les scores attendent sur l'appareil et partent dès le retour du réseau.
+   Un refus du serveur (score invalide, défi fermé) les retire ; une panne réseau les garde. */
+const attente = {
+  liste(){ return store.get("scoresEnAttente", []); },
+  ajouter(s){ const l = this.liste(); l.push({...s, t:Date.now()}); store.set("scoresEnAttente", l.slice(-30)); },
+  enCours:null,
+  vider(){
+    if(this.enCours) return this.enCours;
+    this.enCours = (async () => {
+      try{
+        if(!actif() || !connecte()) return;
+        let l = this.liste();
+        while(l.length){
+          const s = l[0]; const {t, ...corps} = s;
+          try{ await api("/scores", {methode:"POST", corps}); }
+          catch(e){ if(!e.status || e.status === 429 || e.status >= 500) break; }   // réseau ou serveur indisponible : on réessaiera
+          l = this.liste().filter(x => x.t !== s.t); store.set("scoresEnAttente", l);
+        }
+      } finally { this.enCours = null; }
+    })();
+    return this.enCours;
+  },
+};
+addEventListener("online", () => { attente.vider(); synchroniser(true); });
+setTimeout(() => attente.vider(), 4000);
 
 /* =========================================================================
    Écran « Mon compte »

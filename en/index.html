@@ -1010,7 +1010,9 @@ const Contestation = (() => {
   async function charger(){
     const loc = store.get("motsAjoutes", {}); integrer(Object.values(loc).flat());
     if(typeof Compte !== "undefined" && Compte.actif()){
-      try{ const r = await fetch(String(window.QLN_API_URL).replace(/\/$/, "") + "/api/mots?langue=" + LANGUE); const d = await r.json(); if(d.mots) integrer(d.mots.map(x => x.mot)); }catch(e){}
+      // en arrière-plan, 4 s au plus : un réseau lent (wifi d'avion, portail captif) ne doit jamais bloquer le démarrage
+      const ctl = typeof AbortController !== "undefined" ? new AbortController() : null; const tm = setTimeout(() => ctl && ctl.abort(), 4000);
+      fetch(String(window.QLN_API_URL).replace(/\/$/, "") + "/api/mots?langue=" + LANGUE, ctl ? {signal:ctl.signal} : {}).then(r => r.json()).then(d => { if(d.mots) integrer(d.mots.map(x => x.mot)); }).catch(() => {}).finally(() => clearTimeout(tm));
     }
   }
   return { proposer, contester, charger, integrer };
@@ -2210,7 +2212,7 @@ window.addEventListener("resize", () => { const s=$(".ecran[style*='--tw']"); if
 /* ---------- Installation (PWA) ---------- */
 let installEvt = null;
 window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); installEvt = e; const b=$("#b-install"); if(b){ b.hidden=false; b.onclick=()=>{ installEvt.prompt(); installEvt=null; b.hidden=true; }; } });
-if("serviceWorker" in navigator && location.protocol==="https:" && !location.hostname.endsWith("claude.ai") && !location.hostname.includes("claudeusercontent")){
+if("serviceWorker" in navigator && (location.protocol==="https:" || location.hostname==="localhost") && !location.hostname.endsWith("claude.ai") && !location.hostname.includes("claudeusercontent")){
   navigator.serviceWorker.register("sw.js").catch(()=>{});
 }
 </script>

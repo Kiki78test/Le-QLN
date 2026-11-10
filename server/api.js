@@ -94,6 +94,13 @@ const PAYS = /^[A-Z]{2}$/;
 const nettoiePseudo = p => String(p || "").replace(/[\u0000-\u001f<>]/g, "").trim().slice(0, 14);
 const emailValide = e => /^[^\s@]{1,64}@[^\s@]{1,190}\.[^\s@]{2,}$/.test(e);
 const verif = require("./jour");
+// mots ajoutés après contestation : acceptés aussi par l'anti-triche (cache 1 min)
+const _mots = {};
+async function motsAjoutes(langue){
+  const c = _mots[langue]; if(c && Date.now() - c.t < 60e3) return c.s;
+  const {rows} = await pool.query("select mot from qln_mots where langue=$1", [langue]);
+  const s = new Set(rows.map(r => verif.norm(r.mot))); _mots[langue] = {t:Date.now(), s}; return s;
+}
 const MODES = {jour:{max:20000}, defi:{max:20000}, braquage:{max:400}, festival:{max:20000}};
 const LANGUES = new Set(["fr", "en"]);
 const public_ = j => ({id:j.id, pseudo:j.pseudo, couleur:j.couleur, pays:j.pays, email:j.email || null, google:!!j.google_sub});
@@ -236,7 +243,8 @@ const ROUTES = {
       if(ecart > 36*3600e3) throw erreur(400, "Ce défi du jour n'est plus ouvert.");
     }
     // anti-triche : le serveur refait le tirage du jour et vérifie les mots annoncés (voir jour.js)
-    const motif = mode === "jour" ? verif.verifierJour(langue, jour, corps.detail, score) : mode === "defi" ? verif.verifierDefi(langue, corps.detail, score) : null;
+    const extra = mode === "jour" || mode === "defi" ? await motsAjoutes(langue) : null;
+    const motif = mode === "jour" ? verif.verifierJour(langue, jour, corps.detail, score, extra) : mode === "defi" ? verif.verifierDefi(langue, corps.detail, score, extra) : null;
     if(motif) throw erreur(400, motif);
     const detail = corps.detail && typeof corps.detail === "object" ? JSON.parse(JSON.stringify(corps.detail).slice(0, 2000) || "{}") : null;
     // défi du jour : seul le premier essai compte (comme dans l'appli)

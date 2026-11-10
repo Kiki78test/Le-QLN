@@ -151,3 +151,16 @@ test("nettoyage : suppression des comptes de test", async () => {
   for(const x of [A, B]) assert.equal((await api("/api/moi", {methode:"DELETE", jeton:x.jeton})).d.supprime, true);
   assert.equal((await api("/api/moi", {jeton:A.jeton})).status, 401);
 });
+
+test("anti-triche : un mot ajouté après contestation est accepté (et seulement s'il est une anagramme)", () => {
+  const j = jourUTC(), {J} = partieDuJour(j), c = J.cartes[0];
+  // mot fictif formé des mêmes lettres que la carte, absent du dictionnaire
+  const lettres = JOUR.norm(c.origine).split(""), faux = [...lettres].reverse().join("");
+  const extra = new Set([faux]);
+  const h = [{niv:c.niv, origine:c.origine, trouves:[faux]}];
+  if(!c.mots.some(w => JOUR.norm(w) === faux) && faux !== JOUR.norm(c.origine)){
+    assert.notEqual(JOUR.verifierJour("fr", j, {historique:h}, 10), null, "refusé sans la liste des mots ajoutés");
+    assert.equal(JOUR.verifierJour("fr", j, {historique:h}, 10, extra), null, "accepté avec la liste");
+  }
+  assert.notEqual(JOUR.verifierJour("fr", j, {historique:[{niv:c.niv, origine:c.origine, trouves:["ZZZZ"]}]}, 10, new Set(["ZZZZ"])), null, "pas une anagramme : refusé");
+});

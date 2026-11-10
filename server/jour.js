@@ -59,11 +59,16 @@ function jourDe(langue, cle){
   return {cartes, evts, coffres, legendaire};
 }
 
-const motsDe = (carte, trouves) => {
+// extra : mots ajoutés au dictionnaire après contestation (validés par le serveur, table qln_mots), en forme norm()
+const motsDe = (carte, trouves, extra) => {
   if(!Array.isArray(trouves) || trouves.length > 40) return null;
-  const sol = new Set(carte.mots.map(norm)); sol.delete(norm(carte.origine));
+  const sol = new Set(carte.mots.map(norm)), ori = norm(carte.origine), cle = cleTri(carte.origine); sol.delete(ori);
   const vus = new Set();
-  for(const w of trouves){ const n = norm(w); if(typeof w !== "string" || !sol.has(n) || vus.has(n)) return null; vus.add(n); }
+  for(const w of trouves){
+    if(typeof w !== "string") return null;
+    const n = norm(w), ok = sol.has(n) || (extra && extra.has(n) && n !== ori && cleTri(n) === cle);
+    if(!ok || vus.has(n)) return null; vus.add(n);
+  }
   return vus.size;
 };
 /** Gain maximal d'une carte : 1er mot avec bonus de rapidité, mots bonus, tous les multiplicateurs possibles. */
@@ -72,7 +77,7 @@ const maxCarte = (niv, nb, mult) => nb ? Math.ceil((NIVEAUX[niv].gain*(1 + BONUS
 const historiqueValide = h => Array.isArray(h) && h.length >= 1 && h.length <= 12 && h.every(e => e && typeof e === "object" && typeof e.origine === "string" && e.origine.length <= 40 && e.niv in NIVEAUX);
 
 /** Défi du jour : renvoie null si tout est cohérent, sinon le motif du refus. */
-function verifierJour(langue, jour, detail, score){
+function verifierJour(langue, jour, detail, score, extra){
   if(!disponible(langue)) return null;                      // dictionnaire absent (ne doit pas arriver) : on ne bloque pas les joueurs
   const h = detail && detail.historique;
   if(!historiqueValide(h) || h.length > PARCOURS_DEFI.length) return "Partie incomplète : mettez l'appli à jour pour apparaître au classement.";
@@ -83,14 +88,14 @@ function verifierJour(langue, jour, detail, score){
     const leg = i === LEG_POS && J.legendaire && norm(e.origine) === norm(J.legendaire.origine) && norm(e.origine) !== norm(J.cartes[i].origine);
     const carte = leg ? J.legendaire : J.cartes[i];
     if(norm(e.origine) !== norm(carte.origine)) return "Ces cartes ne sont pas celles du défi du jour.";
-    const nb = motsDe(carte, e.trouves || []); if(nb === null) return "Un mot annoncé n'est pas une solution de sa carte.";
+    const nb = motsDe(carte, e.trouves || [], extra); if(nb === null) return "Un mot annoncé n'est pas une solution de sa carte.";
     max += maxCarte(carte.niv, nb, SERIE_MAX * (leg ? 3 : (J.evts[i] || 1)));
   }
   for(const pos of COFFRE_POS) if(h.length > pos) max += J.coffres[pos] || 0;
   return score > max + 5 ? "Score supérieur au maximum possible avec ces mots." : null;
 }
 /** Défi (cartes libres) : mots valides pour leurs cartes, score borné (série ×2, événement ×2 ou légendaire ×3, coffres, cases bonus). */
-function verifierDefi(langue, detail, score){
+function verifierDefi(langue, detail, score, extra){
   if(!disponible(langue)) return null;
   const h = detail && detail.historique, D = dico(langue);
   if(!historiqueValide(h)) return score === 0 ? null : "Partie incomplète : mettez l'appli à jour pour apparaître au classement.";
@@ -99,7 +104,7 @@ function verifierDefi(langue, detail, score){
     const groupe = D.index[e.niv].get(cleTri(e.origine));
     if(!groupe || !groupe.some(w => norm(w) === norm(e.origine))) return "Carte inconnue.";
     const carte = {origine:e.origine, mots:groupe};
-    const nb = motsDe(carte, e.trouves || []); if(nb === null) return "Un mot annoncé n'est pas une solution de sa carte.";
+    const nb = motsDe(carte, e.trouves || [], extra); if(nb === null) return "Un mot annoncé n'est pas une solution de sa carte.";
     max += maxCarte(e.niv, nb, SERIE_MAX * 3) + 100;     // +100 : case bonus ou coffre au passage
   }
   return score > max + 5 ? "Score supérieur au maximum possible avec ces mots." : null;

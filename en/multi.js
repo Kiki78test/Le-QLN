@@ -43,7 +43,7 @@ const TXT = {
   rapideCree:"No lobby waiting: yours is open. The game starts as soon as other players arrive.", rapideEchec:"Could not find a lobby right now, please try again.",
   enAttente:"Waiting lobbies", placesLibres:n=>`${n} open seat${n>1?"s":""}`, enLigneN:n=>`${n} player${n>1?"s":""} online`,
   decompte:s=>`The game starts in ${s} s`, autoAide:"Quick match: the game starts by itself as soon as 2 players are here.", lancerMaintenant:"Start now",
-  avecCode:"With a code",
+  avecCode:"With a code", horsLigne:"Offline: multiplayer comes back as soon as the network does. The other modes remain playable.",
 };
 
 /* ---------- Styles ---------- */
@@ -453,6 +453,12 @@ function ecranMulti(){
   </section>`;
   $("#b-retour").onclick = () => { Annuaire.arreter(); ecranAccueil(); };
   $("#m-profil").onclick = () => ecranProfil(() => ecranMulti());
+  if(enLigne() && navigator.onLine === false){   // avion, métro : on le dit tout de suite, plutôt que d'attendre un délai de connexion
+    ["#m-rapide","#m-creer","#m-rejoindre"].forEach(s => { const b = $(s); if(b) b.disabled = true; });
+    $("#m-ouverts").innerHTML = `<div class="m-vide"><i></i>${TXT.horsLigne}</div>`;
+    addEventListener("online", () => { if($("#m-rapide")) ecranMulti(); }, {once:true});
+    return;
+  }
   $("#m-rapide").onclick = () => avecProfil(() => partieRapide());
   $("#m-creer").onclick = () => avecProfil(() => creerSalon());
   $("#m-rejoindre").onclick = () => { const z = $("#m-zone-code"); z.hidden = !z.hidden; if(!z.hidden){ $("#m-code").focus(); z.scrollIntoView({behavior:"smooth", block:"center"}); } };

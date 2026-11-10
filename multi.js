@@ -43,7 +43,7 @@ const TXT = {
   rapideCree:"Aucun salon en attente : le vôtre est ouvert. La partie démarre dès que d'autres joueurs arrivent.", rapideEchec:"Impossible de trouver un salon pour l'instant, réessayez.",
   enAttente:"Salons en attente", placesLibres:n=>`${n} place${n>1?"s":""} libre${n>1?"s":""}`, enLigneN:n=>`${n} joueur${n>1?"s":""} en ligne`,
   decompte:s=>`La partie démarre dans ${s} s`, autoAide:"Partie rapide : la partie démarre toute seule dès que 2 joueurs sont là.", lancerMaintenant:"Lancer maintenant",
-  avecCode:"Avec un code",
+  avecCode:"Avec un code", horsLigne:"Hors connexion : le multijoueur revient dès que le réseau est de retour. Les autres modes restent jouables.",
 };
 
 /* ---------- Styles ---------- */
@@ -453,6 +453,12 @@ function ecranMulti(){
   </section>`;
   $("#b-retour").onclick = () => { Annuaire.arreter(); ecranAccueil(); };
   $("#m-profil").onclick = () => ecranProfil(() => ecranMulti());
+  if(enLigne() && navigator.onLine === false){   // avion, métro : on le dit tout de suite, plutôt que d'attendre un délai de connexion
+    ["#m-rapide","#m-creer","#m-rejoindre"].forEach(s => { const b = $(s); if(b) b.disabled = true; });
+    $("#m-ouverts").innerHTML = `<div class="m-vide"><i></i>${TXT.horsLigne}</div>`;
+    addEventListener("online", () => { if($("#m-rapide")) ecranMulti(); }, {once:true});
+    return;
+  }
   $("#m-rapide").onclick = () => avecProfil(() => partieRapide());
   $("#m-creer").onclick = () => avecProfil(() => creerSalon());
   $("#m-rejoindre").onclick = () => { const z = $("#m-zone-code"); z.hidden = !z.hidden; if(!z.hidden){ $("#m-code").focus(); z.scrollIntoView({behavior:"smooth", block:"center"}); } };
