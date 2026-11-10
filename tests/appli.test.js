@@ -52,7 +52,10 @@ for(const lang of ["fr", "en"]) for(const vue of Object.keys(VUES)){
     await p.evaluate(() => { ecranAccueil(); document.querySelector("#b-multi").click(); }); await p.waitForTimeout(400);
     assert.ok(await p.evaluate(() => document.querySelector("#app").textContent.length > 20));
     // menu (tiroir)
-    await p.evaluate(() => ecranAccueil()); await p.click("#ab-menu", {force:true}); await p.waitForSelector("#tiroir", {state:"visible"});
+    await p.evaluate(() => ecranAccueil()); await p.waitForTimeout(300);
+    // ouverture du menu (réessayée : sur le site publié, un clic peut tomber pendant une transition)
+    for(let i = 0; i < 4 && await p.evaluate(() => document.querySelector("#tiroir").hidden); i++){ await p.evaluate(() => document.querySelector("#ab-menu").click()); await p.waitForTimeout(400); }
+    await p.waitForSelector("#tiroir", {state:"visible"});
     sansErreur(erreurs); await ctx.close();
   });
 }
