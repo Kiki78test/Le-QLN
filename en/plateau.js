@@ -18,7 +18,7 @@ css.textContent = `
 .tapis-cadre{position:relative; border-radius:22px; padding:10px; background:linear-gradient(145deg,#f6dc8a 0%,#c8922a 28%,#8a5a12 52%,#e9c25c 78%,#9a6a1a 100%); box-shadow:inset 0 2px 0 rgba(255,255,255,.55), inset 0 -3px 0 rgba(0,0,0,.3), 0 3px 0 #5a3706, 0 26px 50px rgba(0,0,0,.6)}
 .tapis-cadre::before{content:""; position:absolute; inset:10px; border-radius:14px; box-shadow:inset 0 0 0 3px rgba(0,0,0,.45), inset 0 8px 24px rgba(0,0,0,.55); pointer-events:none; z-index:2}
 .tapis-scroll{background:radial-gradient(90% 90% at 40% 20%, #1f4fa6, #0d2a66 60%, #08183f)}
-.tapis-scroll{overflow-x:auto; overflow-y:hidden; border-radius:12px; -webkit-overflow-scrolling:touch; scrollbar-width:thin}
+.tapis-scroll{overflow-x:auto; overflow-y:hidden; border-radius:12px; -webkit-overflow-scrolling:touch; scrollbar-width:none}
 #tapis{display:block; width:100%; min-width:660px; height:auto}
 #tapis .case-g{transition:filter .2s} #tapis .case-g:not(.cible):hover{filter:brightness(1.08)}
 #tapis .lueur{animation:lueur 2.6s ease-in-out infinite} @keyframes lueur{50%{opacity:.55}}
@@ -151,7 +151,7 @@ css.textContent = `
   .plateau-ecran .tapis-cadre{width:min(100%, calc(var(--hp) * 1.79)); margin:0 auto}
   .plateau-ecran #tapis{min-width:0}
   .plateau-ecran .tapis-scroll{overflow:hidden}
-  .plateau-ecran .p-cote{position:static; max-height:var(--hp); overflow:auto; scrollbar-width:thin; padding-right:2px}
+  .plateau-ecran .p-cote{position:static; max-height:var(--hp); overflow-y:auto; overflow-x:hidden; scrollbar-width:none; padding-right:2px; overscroll-behavior:contain}
   .plateau-ecran .journal ol{max-height:120px}
   .plateau-ecran .joueurs{grid-template-columns:repeat(2,minmax(0,1fr))}
 }

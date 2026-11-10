@@ -31,7 +31,7 @@
 
 /* Le-QLN — feuille de style consolidée (anciennes couches V1→V8 fusionnées ; rendu identique) */
 :root{color-scheme:dark; --tapis:#0b1d49; --tapis-2:#132f6c; --tapis-3:#1d4594; --tapis-bord:#06122f; --ivoire:#f8f2e4; --ivoire-2:#ece2cb; --ivoire-3:#d9cba9; --sombre:#15171d; --gris:#5b6070; --encre:#f4f7ff; --brume:#a9b8de; --brume-2:#7486b5; --or:#ffcf3a; --or-2:#ffe68f; --or-o:#a87400; --vert-a:#1e6a29; --vert-b:#8fca42; --vert-o:#0e3f16; --bleu-a:#1b47a3; --bleu-b:#62a4ec; --bleu-o:#0f2b67; --rouge-a:#7e0c14; --rouge-b:#ea3039; --rouge-o:#46050a; --noir-a:#0b0b0d; --noir-b:#43454b; --noir-o:#000; --orange-a:#e46d16; --orange-b:#fbad38; --orange-o:#8c3f06; --violet-a:#3b1c70; --violet-b:#7444bd; --violet-o:#200d42; --jaune-a:#e3d51b; --jaune-b:#fff47a; --jaune-o:#8f8607; --ok:#8fca42; --ko:#ff5c63; --f-titre:"QLN Titre", "Barlow Condensed", "Arial Narrow", Impact, sans-serif; --f-ui:"Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif; --f-texte:"Barlow", "Segoe UI", Roboto, Helvetica, Arial, sans-serif; --rayon:12px; --or-grad:linear-gradient(180deg,#fff6c2 0%,#ffd84a 45%,#d99a00 100%); --or-grad-2:linear-gradient(135deg,#fff3b0 0%,#ffd84a 35%,#e0a614 60%,#ffe68f 100%); --verre:rgba(10,22,58,.55); --verre-bord:rgba(255,255,255,.1)}
-*{box-sizing:border-box; scrollbar-width:thin; scrollbar-color:rgba(255,214,10,.45) transparent}
+*{box-sizing:border-box; scrollbar-width:none}   /* barres de défilement masquées partout (le défilement reste possible) */
 [hidden]{display:none !important}
 html,body{height:100%}
 body{margin:0; color:var(--encre); font-family:var(--f-texte); font-size:16px; line-height:1.4; background-color:var(--tapis); -webkit-tap-highlight-color:transparent; overscroll-behavior:none}
@@ -493,8 +493,8 @@ body::before{content:""; position:fixed; inset:0; pointer-events:none; z-index:1
 .logo{position:relative}
 .logo::before{content:""; position:absolute; inset:-30% -10%; background:radial-gradient(closest-side, rgba(255,214,10,.22), transparent); filter:blur(14px); z-index:-1; animation:halo 4s ease-in-out infinite}
 @keyframes halo{50%{opacity:.55; transform:scale(1.08)}}
-::-webkit-scrollbar{height:8px; width:8px}
-::-webkit-scrollbar-thumb{background:rgba(255,214,10,.45); border-radius:8px}
+::-webkit-scrollbar{display:none; width:0; height:0}
+::-webkit-scrollbar-thumb{background:transparent}
 .pub-bandeau{box-shadow:inset 0 0 0 1px rgba(255,255,255,.12), inset 0 1px 0 rgba(255,255,255,.18), 0 10px 22px rgba(0,0,0,.35) !important}
 .dock{position:relative}
 .dock::before{content:""; position:absolute; left:14%; right:14%; top:-2px; height:3px; border-radius:3px; background:linear-gradient(90deg, transparent, #ffd84a, transparent)}
