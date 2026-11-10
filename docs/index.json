@@ -1,5 +1,17 @@
 [
   {
+    "titre": "Mise en ligne du serveur",
+    "fichier": "mise-en-ligne-serveur.pdf",
+    "date": "2026-11-10",
+    "description": "Procédure pas à pas : Render (service web + base), connexion Google, Cloudflare (domaine), Resend (mot de passe oublié), vérifications et budget mensuel."
+  },
+  {
+    "titre": "Publicité réelle",
+    "fichier": "publicite-reelle.pdf",
+    "date": "2026-11-10",
+    "description": "Passer de la simulation à de vraies annonces : web (AdSense H5) ou Android (AdMob), procédure, consentement RGPD, régies et médiation, thèmes à bloquer, calendrier."
+  },
+  {
     "titre": "Fonctionnalités",
     "fichier": "fonctionnalites.pdf",
     "date": "2026-11-10",
