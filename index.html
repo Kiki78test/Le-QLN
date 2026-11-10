@@ -1453,6 +1453,7 @@ function ecranAccueil(){
     ${Pub.bandeau()}
     <div class="pied"><button class="bouton-plat" id="b-regles">Règles du jeu</button><button class="bouton-plat" id="b-docs">Documentation</button><button class="bouton-plat" id="b-install" hidden>Installer l'appli</button></div>
     <p class="credit">Dictionnaire construit à partir de Lexique 3.83 (licence CC BY-SA 4.0).</p>
+    <p class="credit"><button class="bouton-plat" id="b-conf">${Legal.libelles().confidentialite}</button> <button class="bouton-plat" id="b-mentions">${Legal.libelles().mentions}</button></p>
     </div>
   </section>`;
   $("#b-defi").onclick = ecranSolo;
@@ -1462,6 +1463,7 @@ function ecranAccueil(){
   if(typeof Multi !== "undefined"){ $("#b-multi").onclick = Multi.ecran; const bp = $("#b-profil"); if(bp) bp.onclick = () => Multi.profil(); }
   $("#b-regles").onclick = $("#b-regles-h").onclick = ecranRegles;
   $("#b-docs").onclick = ecranDocs;
+  $("#b-conf").onclick = () => Legal.ecran("confidentialite", ecranAccueil); $("#b-mentions").onclick = () => Legal.ecran("mentions", ecranAccueil);
   brancherSon(); Pub.animerBandeau();
   if(installEvt){ const b=$("#b-install"); b.hidden=false; b.onclick=()=>{ installEvt.prompt(); installEvt=null; b.hidden=true; }; }
   demarrerVitrine();
@@ -2214,10 +2216,11 @@ if("serviceWorker" in navigator && location.protocol==="https:" && !location.hos
 <script src="analyse.js"></script>
 <script src="config.js"></script>
 <script src="multi.js"></script>
+<script src="legal.js"></script>
 <script src="progres.js"></script>
 <script src="compte.js"></script>
 <script>
-chargerDico().then(() => Contestation.charger()).then(() => (typeof Multi !== "undefined" && Multi.lienDirect()) || ecranAccueil()).catch(() => {
+chargerDico().then(() => Contestation.charger()).then(() => (typeof Legal !== "undefined" && Legal.lienDirect()) || (typeof Multi !== "undefined" && Multi.lienDirect()) || ecranAccueil()).catch(() => {
   app.innerHTML = `<p class="chargement">Impossible de charger le dictionnaire. Vérifiez votre connexion puis rechargez la page.</p>`;
 });
 </script>

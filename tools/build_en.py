@@ -38,7 +38,7 @@ for fn, mod in FILES.items():
                 seen.add(t1); print(f"[{fn}] {t1}")
 # service worker + manifest
 sw = (APP/"sw.js").read_text(encoding="utf-8").replace("qln-v29","qln-en-v21").replace("data/fr.json","data/en.json").replace('"pubs/spot1.jpg", "pubs/spot2.jpg", "pubs/spot3.jpg", "icons/icon-192.png", "icons/icon-512.png", "icons/apple-touch-icon.png"','"../pubs/spot1.jpg", "../pubs/spot2.jpg", "../pubs/spot3.jpg", "../icons/icon-192.png", "../icons/icon-512.png", "../icons/apple-touch-icon.png"')
-sw = sw.replace('"config.js", ','"../config.js", ').replace('"analyse.js", ','"../analyse.js", ').replace('"fonts/','"../fonts/')
+sw = sw.replace('"config.js", ','"../config.js", ').replace('"legal.js", ','"../legal.js", ').replace('"analyse.js", ','"../analyse.js", ').replace('"fonts/','"../fonts/')
 sw = sw.replace(NOM+" — service worker : jeu jouable hors connexion après la première visite.",NOM+" (EN) — service worker: playable offline after the first visit.")
 (EN/"sw.js").write_text(sw, encoding="utf-8")
 import json

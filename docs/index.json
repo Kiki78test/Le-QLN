@@ -1,5 +1,11 @@
 [
   {
+    "titre": "Textes juridiques",
+    "fichier": "textes-juridiques.pdf",
+    "date": "2026-11-10",
+    "description": "Politique de confidentialité et mentions légales (texte complet) + liste de ce qu'il faut compléter avant la publication (éditeur, adresse, contact, publicité)."
+  },
+  {
     "titre": "Mise en ligne du serveur",
     "fichier": "mise-en-ligne-serveur.pdf",
     "date": "2026-11-10",

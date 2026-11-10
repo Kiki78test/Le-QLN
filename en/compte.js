@@ -13,7 +13,7 @@ const TXT = {
   langue:"en",
   compte:"My account", classements:"Leaderboards", bientotT:"Coming soon",
   bientot:"Online accounts and world leaderboards arrive with the game server. Meanwhile, your progress stays saved on this device.",
-  connexion:"Sign in", inscription:"Create an account", email:"Email address", mdp:"Password", mdpAide:"At least 8 characters.",
+  connexion:"Sign in", inscription:"Create an account", email:"Email address", mdp:"Password", mdpAide:"At least 8 characters.", accepteLegal:"By creating an account, you confirm you are at least 15 (or have a parent's consent) and accept the",  politique:"privacy policy",
   pseudo:"Nickname", pays:"Country", paysAucun:"Prefer not to say", seConnecter:"Sign in", creer:"Create my account", google:"Continue with Google",
   ou:"or", dejaCompte:"I already have an account", pasCompte:"No account yet?",
   avantages:["Your progress on all your devices", "Your name on the leaderboards", "Podiums by country"],
@@ -88,7 +88,10 @@ document.addEventListener("qln:fin-partie", async e => {
   if(!actif() || !connecte()) return;
   const {mode, total, braquageOk} = e.detail || {};
   const m = mode === "jour" ? "jour" : mode === "defi" ? "defi" : mode === "braquage" && braquageOk ? "braquage" : null;
-  try{ if(m) await api("/scores", {methode:"POST", corps:{mode:m, langue:TXT.langue, score:total || 0, jour: m === "jour" ? dateISO() : undefined}}); }catch(x){}
+  // les mots trouvés accompagnent le score : le serveur vérifie qu'ils sont réels et que le score est possible (anti-triche)
+  let historique;
+  try{ if((m === "jour" || m === "defi") && typeof P !== "undefined" && P && Array.isArray(P.historique)) historique = P.historique.filter(h => !h.special && h.origine).map(h => ({niv:h.niv, origine:h.origine, trouves:h.trouves || []})); }catch(x){}
+  try{ if(m) await api("/scores", {methode:"POST", corps:{mode:m, langue:TXT.langue, score:total || 0, jour: m === "jour" ? dateISO() : undefined, detail:historique ? {historique} : undefined}}); }catch(x){}
   synchroniser(true);
 });
 addEventListener("online", () => synchroniser(true));
@@ -113,7 +116,7 @@ function ecranCompte(onglet = "connexion"){
       <label class="lbl" for="ct-pays">${TXT.pays}</label><select class="champ" id="ct-pays"><option value="">${TXT.paysAucun}</option>${opt}</select>` : ""}
       <label class="lbl" for="ct-email">${TXT.email}</label><input class="champ" id="ct-email" type="email" autocomplete="email" inputmode="email" required>
       <label class="lbl" for="ct-mdp">${TXT.mdp}</label><input class="champ" id="ct-mdp" type="password" autocomplete="${onglet === "inscription" ? "new-password" : "current-password"}" minlength="8" required>
-      ${onglet === "inscription" ? `<div class="m-aide">${TXT.mdpAide}</div>` : ""}
+      ${onglet === "inscription" ? `<div class="m-aide">${TXT.mdpAide}</div><div class="m-aide">${TXT.accepteLegal} <button type="button" class="bouton-plat" id="ct-politique">${TXT.politique}</button>.</div>` : ""}
       <p class="ct-erreur" id="ct-erreur" role="alert" hidden></p>
       <button class="bouton piece c-jaune" type="submit" id="ct-ok">${onglet === "inscription" ? TXT.creer : TXT.seConnecter}</button>
       ${window.QLN_GOOGLE_CLIENT_ID ? `<div class="ct-ou"><span>${TXT.ou}</span></div><div id="ct-google" class="ct-google"></div>` : ""}
@@ -123,6 +126,7 @@ function ecranCompte(onglet = "connexion"){
   </section>`;
   const sel = $("#ct-pays"); if(sel){ const lg = (navigator.language || "").split("-")[1]; if(lg && PAYS.some(([c]) => c === lg.toUpperCase())) sel.value = lg.toUpperCase(); }
   $("#b-retour").onclick = ecranAccueil;
+  const bpol = $("#ct-politique"); if(bpol) bpol.onclick = () => Legal.ecran("confidentialite", () => ecranCompte("inscription"));
   $$(".ct-onglets button").forEach(b => b.onclick = () => ecranCompte(b.dataset.o));
   $("#ct-form").onsubmit = async ev => {
     ev.preventDefault();

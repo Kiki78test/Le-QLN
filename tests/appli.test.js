@@ -127,3 +127,14 @@ async function rapide(lang, api){
 }
 for(const lang of ["fr", "en"]) test(`${lang} · multijoueur : partie rapide à deux (local)`, async () => { await rapide(lang, ""); });
 test("multijoueur : partie rapide à deux (serveur)", {skip: !SERVEUR && "pas de serveur (QLN_TEST_URL)"}, async () => { await rapide("fr", SERVEUR); });
+
+for(const lang of ["fr", "en"]) test(`${lang} : confidentialité et mentions légales (écrans + pages web)`, async () => {
+  const {p, ctx, erreurs} = await ouvrir(lang, "telephone");
+  await p.evaluate(() => document.querySelector("#b-conf").click());
+  await p.waitForFunction(() => document.querySelector(".legal h2"), null, {timeout:4000});
+  assert.ok((await p.textContent(".legal")).length > 1500, "politique complète");
+  await p.evaluate(() => document.querySelector("#lg-autre").click());
+  await p.waitForFunction(() => /Hébergement|Hosting/.test(document.querySelector(".legal").textContent), null, {timeout:4000});
+  sansErreur(erreurs); await ctx.close();
+  for(const f of lang === "fr" ? ["confidentialite.html", "mentions-legales.html"] : ["en/privacy.html", "en/legal-notice.html"]) assert.ok(fs.readFileSync(path.join(RACINE, f), "utf8").includes("<h2>"), f);
+});

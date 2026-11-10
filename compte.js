@@ -13,7 +13,7 @@ const TXT = {
   langue:"fr",
   compte:"Mon compte", classements:"Classements", bientotT:"Bientôt disponible",
   bientot:"Les comptes en ligne et les classements mondiaux arrivent avec le serveur du jeu. En attendant, votre progression reste enregistrée sur cet appareil.",
-  connexion:"Connexion", inscription:"Créer un compte", email:"Adresse e-mail", mdp:"Mot de passe", mdpAide:"8 caractères minimum.",
+  connexion:"Connexion", inscription:"Créer un compte", email:"Adresse e-mail", mdp:"Mot de passe", mdpAide:"8 caractères minimum.", accepteLegal:"En créant un compte, vous confirmez avoir au moins 15 ans (ou l'accord d'un parent) et acceptez la",  politique:"politique de confidentialité",
   pseudo:"Pseudo", pays:"Pays", paysAucun:"Ne pas indiquer", seConnecter:"Se connecter", creer:"Créer mon compte", google:"Continuer avec Google",
   ou:"ou", dejaCompte:"J'ai déjà un compte", pasCompte:"Pas encore de compte ?",
   avantages:["Votre progression sur tous vos appareils", "Votre nom dans les classements", "Les podiums par pays"],
@@ -116,7 +116,7 @@ function ecranCompte(onglet = "connexion"){
       <label class="lbl" for="ct-pays">${TXT.pays}</label><select class="champ" id="ct-pays"><option value="">${TXT.paysAucun}</option>${opt}</select>` : ""}
       <label class="lbl" for="ct-email">${TXT.email}</label><input class="champ" id="ct-email" type="email" autocomplete="email" inputmode="email" required>
       <label class="lbl" for="ct-mdp">${TXT.mdp}</label><input class="champ" id="ct-mdp" type="password" autocomplete="${onglet === "inscription" ? "new-password" : "current-password"}" minlength="8" required>
-      ${onglet === "inscription" ? `<div class="m-aide">${TXT.mdpAide}</div>` : ""}
+      ${onglet === "inscription" ? `<div class="m-aide">${TXT.mdpAide}</div><div class="m-aide">${TXT.accepteLegal} <button type="button" class="bouton-plat" id="ct-politique">${TXT.politique}</button>.</div>` : ""}
       <p class="ct-erreur" id="ct-erreur" role="alert" hidden></p>
       <button class="bouton piece c-jaune" type="submit" id="ct-ok">${onglet === "inscription" ? TXT.creer : TXT.seConnecter}</button>
       ${window.QLN_GOOGLE_CLIENT_ID ? `<div class="ct-ou"><span>${TXT.ou}</span></div><div id="ct-google" class="ct-google"></div>` : ""}
@@ -126,6 +126,7 @@ function ecranCompte(onglet = "connexion"){
   </section>`;
   const sel = $("#ct-pays"); if(sel){ const lg = (navigator.language || "").split("-")[1]; if(lg && PAYS.some(([c]) => c === lg.toUpperCase())) sel.value = lg.toUpperCase(); }
   $("#b-retour").onclick = ecranAccueil;
+  const bpol = $("#ct-politique"); if(bpol) bpol.onclick = () => Legal.ecran("confidentialite", () => ecranCompte("inscription"));
   $$(".ct-onglets button").forEach(b => b.onclick = () => ecranCompte(b.dataset.o));
   $("#ct-form").onsubmit = async ev => {
     ev.preventDefault();

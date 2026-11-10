@@ -98,7 +98,7 @@ def main():
     if sigle: marque["sigle"] = sigle
     mf.write_text(json.dumps(marque, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(f"{total} remplacements : {ancien} → {nouveau}")
-    if (ROOT / "tools" / "build_en.py").exists(): subprocess.run([sys.executable, str(ROOT / "tools" / "build_en.py")], check=True, stdout=subprocess.DEVNULL)
+    if (ROOT / "tools" / "build_en.py").exists(): (subprocess.run([sys.executable, str(ROOT / "tools" / "build_legal.py")], check=True, stdout=subprocess.DEVNULL), subprocess.run([sys.executable, str(ROOT / "tools" / "build_en.py")], check=True, stdout=subprocess.DEVNULL))
     if sigle: icones(sigle); android()
     if len(nouveau) > 10: print("Attention : nom long (> 10 caractères) — vérifier le logo en haut de l'écran.")
 
