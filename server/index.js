@@ -26,7 +26,15 @@ const wss = new WebSocketServer({ server, path:"/ws", verifyClient: ({origin}) =
 
 const envoyer = (ws, m) => { if(ws.readyState === 1) ws.send(JSON.stringify(m)); };
 const liste = () => [...salons.values()].filter(s => s.resume && s.resume.phase === "attente").map(s => s.resume);
-const diffuserAnnuaire = () => { const m = {t:"salons", liste:liste()}; for(const ws of annuaire) envoyer(ws, m); };
+const enLigneN = () => [...wss.clients].filter(w => w.readyState === 1).length;
+const diffuserAnnuaire = () => { const m = {t:"salons", liste:liste(), en_ligne:enLigneN()}; for(const ws of annuaire) envoyer(ws, m); };
+let _dA = null; const diffuserBientot = () => { if(_dA) return; _dA = setTimeout(() => { _dA = null; diffuserAnnuaire(); }, 800); };
+// résumé public d'un salon : on ne garde que des champs simples et bornés (le client est hors de confiance)
+const nettoyerResume = (r, code) => {
+  const t = (v, n) => String(v == null ? "" : v).slice(0, n);
+  return {code, hote:t(r.hote, 24), couleur:Number(r.couleur)|0, nb:Math.min(6, Number(r.nb)|0), max:Math.min(6, Number(r.max)|0 || 6), phase:t(r.phase, 10), auto:!!r.auto,
+    joueurs:(Array.isArray(r.joueurs) ? r.joueurs : []).slice(0, 6).map(j => ({pseudo:t(j && j.pseudo, 24), couleur:Number(j && j.couleur)|0})), t:Date.now()};
+};
 
 function quitterSalon(ws){
   const code = ws.salon; if(!code) return;
@@ -43,13 +51,13 @@ function quitterSalon(ws){
 }
 
 wss.on("connection", ws => {
-  ws.vivant = true; ws.on("pong", () => ws.vivant = true);
+  ws.vivant = true; ws.on("pong", () => ws.vivant = true); diffuserBientot();
   ws.on("message", data => {
     let m; try{ m = JSON.parse(data); }catch(e){ return; }
     if(!m || typeof m.t !== "string") return;
     if(m.de) ws.id = String(m.de).slice(0,80);
     switch(m.t){
-      case "annuaire": annuaire.add(ws); envoyer(ws, {t:"salons", liste:liste()}); return;
+      case "annuaire": annuaire.add(ws); envoyer(ws, {t:"salons", liste:liste(), en_ligne:enLigneN()}); return;
       case "annuaire-stop": annuaire.delete(ws); return;
       case "entrer": { // rejoint (ou crée) le canal d'un salon
         const code = String(m.code||"").toUpperCase().slice(0,5); if(code.length !== 5) return;
@@ -57,7 +65,7 @@ wss.on("connection", ws => {
         let s = salons.get(code);
         if(!s){ if(!m.hote) return envoyer(ws, {t:"refus", code, pour:ws.id, raison:"introuvable", de:"serveur"}); s = {resume:null, hote:ws, membres:new Set(), vu:Date.now()}; salons.set(code, s); }
         s.membres.add(ws); ws.salon = code; return; }
-      case "publier": { const s = salons.get(ws.salon); if(s && s.hote === ws){ s.resume = {...m.resume, code:ws.salon}; s.vu = Date.now(); diffuserAnnuaire(); } return; }
+      case "publier": { const s = salons.get(ws.salon); if(s && s.hote === ws){ s.resume = nettoyerResume(m.resume || {}, ws.salon); s.vu = Date.now(); diffuserAnnuaire(); } return; }
       case "sortir": quitterSalon(ws); return;
       default: { // relais aux autres membres du salon
         const s = salons.get(m.code || ws.salon); if(!s || !s.membres.has(ws)) return;
@@ -67,7 +75,7 @@ wss.on("connection", ws => {
       }
     }
   });
-  ws.on("close", () => { annuaire.delete(ws); quitterSalon(ws); });
+  ws.on("close", () => { annuaire.delete(ws); quitterSalon(ws); diffuserBientot(); });
 });
 
 // nettoyage : clients muets et salons abandonnés

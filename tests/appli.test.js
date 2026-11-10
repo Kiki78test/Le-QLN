@@ -87,3 +87,37 @@ test("comptes et classements de bout en bout (avec serveur)", {skip: !SERVEUR &&
   await p.evaluate(async () => { const s = Compte.session(); await fetch(window.QLN_API_URL + "/api/moi", {method:"DELETE", headers:{Authorization:"Bearer " + s.jeton}}); });
   sansErreur(erreurs); await ctx.close();
 });
+
+/* Partie rapide : le 1er joueur ouvre un salon automatique, le 2e le trouve et rejoint ; la partie démarre toute seule. */
+async function rapide(lang, api){
+  const pre = lang === "en" ? "-en" : "";
+  const un = await ouvrir(lang, "telephone", {api});
+  // le 2e joueur : même navigateur (mode local, BroadcastChannel) ou autre contexte (mode serveur)
+  let deux;
+  if(api) deux = await ouvrir(lang, "telephone", {api});
+  else { const p2 = await un.ctx.newPage(); p2.setDefaultTimeout(8000); const er = []; p2.on("pageerror", e => er.push(e.message)); deux = {p:p2, ctx:null, erreurs:er}; }
+  await un.p.evaluate(`localStorage.setItem("qln${pre}:compte", JSON.stringify({id:"t-Ana", pseudo:"Ana", couleur:0, cree:1}))`);
+  if(api) await deux.p.evaluate(`localStorage.setItem("qln${pre}:compte", JSON.stringify({id:"t-Bob", pseudo:"Bob", couleur:1, cree:1}))`);
+  else { await deux.p.route(/\/config\.js(\?|$)/, r => r.fulfill({contentType:"application/javascript", body:'window.QLN_API_URL="";window.QLN_WS_URL="";window.QLN_GOOGLE_CLIENT_ID="";'})); await deux.p.addInitScript(() => { try{ localStorage.setItem("qln:progres", JSON.stringify({tuto:"fait"})); localStorage.setItem("qln:pub", "false"); localStorage.setItem("qln-en:progres", JSON.stringify({tuto:"fait"})); localStorage.setItem("qln-en:pub", "false"); }catch(e){} }); await deux.p.goto(`${SITE}/${lang === "en" ? "en/" : ""}index.html`); await deux.p.waitForSelector("#b-defi"); }
+  for(const j of [un, deux]) await j.p.evaluate(() => { window.QLN_RAPIDE_DELAI = 2; });
+  if(!api) await deux.p.evaluate(`localStorage.setItem("qln${pre}:compte", JSON.stringify({id:"t-Ana", pseudo:"Bob", couleur:1, cree:1}))`);
+  // 1er joueur : aucun salon en attente → il en ouvre un
+  await un.p.evaluate(() => { document.querySelector("#b-multi").click(); });
+  await un.p.waitForSelector("#m-rapide"); await un.p.click("#m-rapide", {force:true});
+  await un.p.waitForFunction(() => Multi.etat() && Multi.etat().code, null, {timeout:12000});
+  const code = await un.p.evaluate(() => Multi.etat().code);
+  assert.equal(await un.p.evaluate(() => Multi.etat().auto), true, "salon automatique");
+  // 2e joueur : voit le salon dans la liste (avec ses places libres) puis lance « Partie rapide »
+  await deux.p.evaluate(() => { document.querySelector("#b-multi").click(); });
+  await deux.p.waitForSelector(`#m-ouverts [data-code="${code}"]`, {timeout:12000});
+  assert.match(await deux.p.textContent("#m-ouverts"), /1\/6/);
+  await deux.p.click("#m-rapide", {force:true});
+  // la partie démarre toute seule, chez les deux
+  await un.p.waitForFunction(() => Multi.etat() && Multi.etat().phase === "jeu", null, {timeout:15000});
+  await deux.p.waitForFunction(() => Multi.etat() && Multi.etat().phase === "jeu", null, {timeout:15000});
+  assert.equal(await un.p.evaluate(() => Multi.etat().joueurs.length), 2);
+  sansErreur(un.erreurs); sansErreur(deux.erreurs);
+  await un.ctx.close(); if(deux.ctx) await deux.ctx.close();
+}
+for(const lang of ["fr", "en"]) test(`${lang} · multijoueur : partie rapide à deux (local)`, async () => { await rapide(lang, ""); });
+test("multijoueur : partie rapide à deux (serveur)", {skip: !SERVEUR && "pas de serveur (QLN_TEST_URL)"}, async () => { await rapide("fr", SERVEUR); });

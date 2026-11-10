@@ -39,6 +39,11 @@ const TXT = {
   reglesSalon:"Same rules as \u201cVs AI\u201d: full board, bidding, prison.",
   ouverts:"Open rooms", aucunSalon:"No open room right now: create yours!", salonDe:n=>`${n}'s room`, rejoindreBtn:"Join",
   coupe:"Connection to the server lost.", serveurAttente:"Connecting to the server… (the first wake-up can take 30 s)",
+  rapide:"Quick match", rapideDesc:"Join a random lobby as fast as possible.", rapideRecherche:"Looking for a lobby…",
+  rapideCree:"No lobby waiting: yours is open. The game starts as soon as other players arrive.", rapideEchec:"Could not find a lobby right now, please try again.",
+  enAttente:"Waiting lobbies", placesLibres:n=>`${n} open seat${n>1?"s":""}`, enLigneN:n=>`${n} player${n>1?"s":""} online`,
+  decompte:s=>`The game starts in ${s} s`, autoAide:"Quick match: the game starts by itself as soon as 2 players are here.", lancerMaintenant:"Start now",
+  avecCode:"With a code",
 };
 
 /* ---------- Styles ---------- */
@@ -95,6 +100,12 @@ css.textContent = `
 .m-sieges{display:flex; gap:10px; flex-wrap:wrap; justify-content:center}
 .m-sieges span{display:grid; justify-items:center; gap:4px; font:700 13px var(--f-ui); color:#fff}
 .m-sieges .pion-svg{width:34px; height:48px; filter:drop-shadow(0 4px 4px rgba(0,0,0,.6))}
+.m-pions{display:flex; align-items:flex-end; min-width:40px} .m-pions .pion-svg{width:20px; height:28px; margin-right:-8px; filter:drop-shadow(0 2px 2px rgba(0,0,0,.6))}
+.m-salon .nom small{display:block; background:none; padding:0; color:var(--brume); font:600 13px var(--f-ui); letter-spacing:.03em; text-transform:none}
+.m-salon .nom small.rap{display:inline-block; background:linear-gradient(#ffe066,#e0a800); color:#1b1a05; padding:2px 8px; border-radius:999px; font:800 11px var(--f-ui); letter-spacing:.08em; text-transform:uppercase}
+.m-salon{grid-template-columns:auto 1fr auto; gap:10px}
+.m-rapide{width:100%; margin:2px 0; grid-column:1/-1} .m-rapide[disabled]{opacity:.75}
+.m-en-ligne{font:600 13px var(--f-ui); color:var(--brume-2); display:flex; align-items:center; gap:7px} .m-en-ligne i{width:8px; height:8px; border-radius:50%; background:#9be15d; box-shadow:0 0 8px #9be15d}
 @media (min-width:700px){ .m-grille{display:grid; grid-template-columns:1fr 1fr; gap:16px; align-items:start} }
 `;
 document.head.appendChild(css);
@@ -204,7 +215,7 @@ const Annuaire = {
   ecouter(fn){
     this.arreter(); this.fn = fn; this.carte.clear();
     if(enLigne()){
-      this.off = Socket.ecouter(m => { if(m.t === "__ouvert") Socket.envoyer({t:"annuaire"}); else if(m.t === "salons") fn(m.liste, "ligne"); else if(m.t === "__coupe") fn(null, "coupe"); });
+      this.off = Socket.ecouter(m => { if(m.t === "__ouvert") Socket.envoyer({t:"annuaire"}); else if(m.t === "salons") fn(m.liste, "ligne", m.en_ligne); else if(m.t === "__coupe") fn(null, "coupe"); });
       if(Socket.etat === "ouvert") Socket.envoyer({t:"annuaire"});
     } else {
       this.bc = new BroadcastChannel("qln-annuaire");
@@ -221,7 +232,7 @@ const Annuaire = {
   depublier(code){ if(!enLigne()){ try{ this.canalPub().postMessage({t:"depublier", code}); }catch(e){} } },
   canalPub(){ if(!this.pub){ this.pub = new BroadcastChannel("qln-annuaire"); this.pub.onmessage = e => { if(e.data && e.data.t === "demande" && S && estHote()) publierSalon(); }; } return this.pub; },
 };
-function resumeSalon(){ const h = S.joueurs.find(j => j.hote) || S.moi; return {code:S.code, hote:h.pseudo, couleur:h.couleur, nb:S.joueurs.length, max:MAX, phase:S.phase, t:Date.now()}; }
+function resumeSalon(){ const h = S.joueurs.find(j => j.hote) || S.moi; return {code:S.code, hote:h.pseudo, couleur:h.couleur, nb:S.joueurs.length, max:MAX, phase:S.phase, auto:!!S.auto, joueurs:S.joueurs.slice(0, MAX).map(j => ({pseudo:j.pseudo, couleur:j.couleur})), t:Date.now()}; }
 function publierSalon(){ if(S && estHote()) Annuaire.publier(resumeSalon()); }
 
 /* =========================================================================
@@ -231,7 +242,7 @@ let S = null; // {code, hote, moi, joueurs:[{id,pseudo,couleur,pret,vu,hote}], c
 const moi = () => S && S.joueurs.find(j => j.id === S.moi.id);
 const estHote = () => S && S.hote;
 const envoyer = m => S && S.canal.envoyer({...m, de:S.moi.id, code:S.code});
-const fermerSalon = () => { if(!S) return; clearInterval(S.timers.tick); if(estHote()) Annuaire.depublier(S.code); S.canal.fermer(); S = null; };
+const fermerSalon = () => { if(!S) return; clearInterval(S.timers.tick); clearInterval(S.timers.auto); clearInterval(S.timers.aff); if(estHote()) Annuaire.depublier(S.code); S.canal.fermer(); S = null; };
 
 // Identité dans le salon = compte + onglet (permet de tester à plusieurs onglets dans un même navigateur)
 const onglet = () => { try{ let o = sessionStorage.getItem("qln-onglet"); if(!o){ o = Math.random().toString(36).slice(2,8); sessionStorage.setItem("qln-onglet", o); } return o; }catch(e){ return "x"; } };
@@ -242,27 +253,47 @@ function couleurLibre(souhait){
   for(let i=0;i<pions().length;i++) if(!prises.has(i)) return i;
   return souhait;
 }
-function diffuserEtat(){ if(!estHote()) return; envoyer({t:"etat", joueurs:S.joueurs.map(({id,pseudo,couleur,pret,hote})=>({id,pseudo,couleur,pret,hote})), phase:S.phase}); }
+const delaiAuto = n => n >= MAX ? 3 : (window.QLN_RAPIDE_DELAI || 10);
+function resteAuto(){ return S && S.auto && S.depart ? Math.max(0, Math.ceil((S.depart - Date.now())/1000)) : null; }
+function diffuserEtat(){ if(!estHote()) return; envoyer({t:"etat", joueurs:S.joueurs.map(({id,pseudo,couleur,pret,hote})=>({id,pseudo,couleur,pret,hote})), phase:S.phase, auto:!!S.auto, reste:resteAuto()}); }
 
-function creerSalon(){
+function creerSalon(opt = {}){
   Annuaire.arreter();
-  const j = {...joueurDepuisCompte(), hote:true};
-  S = {code:codeAleatoire(), hote:true, moi:j, joueurs:[j], canal:null, timers:{}, phase:"attente", rendu:null};
+  const j = {...joueurDepuisCompte(), hote:true, pret:!!opt.auto};
+  S = {code:codeAleatoire(), hote:true, moi:j, joueurs:[j], canal:null, timers:{}, phase:"attente", rendu:null, auto:!!opt.auto, depart:null, nbAvant:1};
   S.canal = ouvrirCanal(S.code, true, j.id); S.canal.recevoir = recevoir;
   S.timers.tick = setInterval(tick, 2500);
+  if(S.auto) S.timers.auto = setInterval(autoTick, 1000);
   publierSalon();
   ecranSalon();
+  if(S.auto) toast(TXT.rapideCree, 4500);
 }
-function rejoindreSalon(code){
+/* partie rapide : l'hôte lance tout seul, quelques secondes après l'arrivée du 2e joueur (3 s si le salon est plein) */
+function autoTick(){
+  if(!S || !estHote() || !S.auto || S.phase !== "attente") return;
+  const n = S.joueurs.length;
+  if(n < 2){ if(S.depart){ S.depart = null; diffuserEtat(); } S.nbAvant = n; majMsg(); return; }
+  if(!S.depart || n !== S.nbAvant){ S.depart = Date.now() + delaiAuto(n)*1000; S.nbAvant = n; diffuserEtat(); }
+  if(Date.now() >= S.depart){ S.joueurs.forEach(j => j.pret = true); lancer(); return; }
+  majMsg();
+}
+function rejoindreSalon(code, opt = {}){
   Annuaire.arreter();
   const j = joueurDepuisCompte();
-  S = {code, hote:false, moi:j, joueurs:[], canal:null, timers:{}, phase:"connexion", rendu:null, dernierEtat:0, essais:0};
+  S = {code, hote:false, moi:j, joueurs:[], canal:null, timers:{}, phase:"connexion", rendu:null, dernierEtat:0, essais:0, rapide:!!opt.rapide, auto:false, reste:null, resteT:0};
+  S.timers.aff = setInterval(() => { if(S && S.auto) majMsg(); }, 1000);
   S.canal = ouvrirCanal(code, false, j.id); S.canal.recevoir = recevoir;
   if(S.canal.type === "local" || Socket.etat === "ouvert") envoyer({t:"bonjour", joueur:j});
   S.timers.tick = setInterval(tick, 1200);
   ecranSalon();
 }
 
+let rapideEssais = 0;
+function echecRejoindre(msg, ms = 5000){   // renvoie vrai si on retente une partie rapide au lieu d'afficher l'échec
+  const rap = S && S.rapide; fermerSalon();
+  if(rap && rapideEssais++ < 3){ partieRapide(true); return true; }
+  ecranMulti(); toast(msg, ms); return false;
+}
 function tick(){
   if(!S) return;
   const t = Date.now();
@@ -274,7 +305,7 @@ function tick(){
     diffuserEtat(); publierSalon();
   } else {
     envoyer({t:"ping"});
-    if(S.phase === "connexion"){ if(++S.essais === 3) envoyer({t:"bonjour", joueur:S.moi}); if(S.essais >= 6){ fermerSalon(); ecranMulti(); toast(TXT.introuvable, 5000); } }
+    if(S.phase === "connexion"){ if(++S.essais === 3) envoyer({t:"bonjour", joueur:S.moi}); if(S.essais >= 6){ echecRejoindre(TXT.introuvable); return; } }
     else if(t - S.dernierEtat > 8000){ fermerSalon(); ecranMulti(); toast(TXT.salonFerme); }
   }
 }
@@ -286,7 +317,7 @@ function recevoir(m){
   const j = S.joueurs.find(x => x.id === m.de);
   if(m.de === "serveur"){
     if(m.t === "ferme"){ fermerSalon(); ecranMulti(); toast(TXT.salonFerme); }
-    else if(m.t === "refus" && m.pour === S.moi.id){ fermerSalon(); ecranMulti(); toast(TXT[m.raison] || TXT.introuvable, 5000); }
+    else if(m.t === "refus" && m.pour === S.moi.id){ echecRejoindre(TXT[m.raison] || TXT.introuvable); }
     return;
   }
   if(estHote()){
@@ -296,7 +327,7 @@ function recevoir(m){
         if(S.phase !== "attente"){ envoyer({t:"refus", pour:m.de, raison:"enCours"}); break; }
         if(S.joueurs.length >= MAX){ envoyer({t:"refus", pour:m.de, raison:"plein"}); break; }
         const couleur = couleurLibre(m.joueur.couleur);
-        S.joueurs.push({...m.joueur, couleur, pret:false, vu:Date.now(), hote:false});
+        S.joueurs.push({...m.joueur, couleur, pret:!!S.auto, vu:Date.now(), hote:false});
         if(couleur !== m.joueur.couleur) envoyer({t:"info", pour:m.de, texte:"couleurPrise"});
         toast(TXT.rejoint(m.joueur.pseudo), 2200); Son.ok(); vibre(15);
         rafraichir(); diffuserEtat(); publierSalon(); break; }
@@ -309,13 +340,13 @@ function recevoir(m){
     switch(m.t){
       case "etat": {
         const premier = S.phase === "connexion";
-        S.dernierEtat = Date.now(); S.phase = m.phase;
+        S.dernierEtat = Date.now(); S.phase = m.phase; S.auto = !!m.auto; S.reste = m.reste; S.resteT = Date.now();
         S.joueurs = m.joueurs.map(x => ({...x, vu:Date.now()}));
         const me = moi(); if(me) S.moi.couleur = me.couleur;
         if(premier){ Son.ok(); vibre(15); }
         if(m.phase === "jeu" && !S.rendu?.jeu) ecranDepart(); else rafraichir();
         break; }
-      case "refus": if(m.pour === S.moi.id){ fermerSalon(); ecranMulti(); toast(TXT[m.raison] || TXT.introuvable, 5000); } break;
+      case "refus": if(m.pour === S.moi.id) echecRejoindre(TXT[m.raison] || TXT.introuvable); break;
       case "info": if(m.pour === S.moi.id) toast(TXT[m.texte] || m.texte, 3500); break;
       case "chat": bulle(m.auteur, m.emoji); break;
       case "demarrer": S.phase = "jeu"; S.graine = m.graine; ecranDepart(); break;
@@ -346,6 +377,7 @@ function quitterSalon(){
 function lancer(){
   if(!estHote()) return;
   const n = S.joueurs.length;
+  if(S.auto) S.joueurs.forEach(j => j.pret = true);
   if(n < 2 || !S.joueurs.every(j => j.pret)){ toast(TXT.lancerAide(n)); return; }
   S.phase = "jeu"; S.graine = Math.floor(Math.random()*1e9);
   envoyer({t:"demarrer", graine:S.graine}); diffuserEtat(); publierSalon();
@@ -354,12 +386,42 @@ function lancer(){
 }
 
 /* =========================================================================
+   Partie rapide : rejoindre au hasard (de préférence le salon le plus rempli), sinon en ouvrir un
+   ========================================================================= */
+function chercherSalons(ms){
+  return new Promise(res => {
+    let fini = false, t;
+    const clore = l => { if(fini) return; fini = true; clearTimeout(t); Annuaire.arreter(); res(l || []); };
+    Annuaire.ecouter((liste, mode) => { if(liste === null) return; if(mode === "ligne" || liste.length) clore(liste); });
+    t = setTimeout(() => clore(Annuaire.carte.size ? [...Annuaire.carte.values()].filter(r => r.phase === "attente") : []), ms);
+  });
+}
+function choisirSalon(liste){
+  const dispo = liste.filter(r => r.phase === "attente" && r.nb < r.max);
+  if(!dispo.length) return null;
+  const maxNb = Math.max(...dispo.map(r => r.nb));
+  const top = dispo.filter(r => r.nb === maxNb);
+  return top[Math.floor(Math.random()*top.length)];
+}
+async function partieRapide(relance){
+  if(!relance) rapideEssais = 0;
+  const bt = document.getElementById("m-rapide"); if(bt){ bt.disabled = true; const n = bt.querySelector(".nom"); if(n) n.textContent = TXT.rapideRecherche; }
+  const liste = await chercherSalons(enLigne() ? 3500 : 1200);
+  const r = choisirSalon(liste);
+  if(r) rejoindreSalon(r.code, {rapide:true}); else creerSalon({auto:true});
+}
+function majMsg(){
+  const el = document.getElementById("m-msg"); if(!el || !S || !S.auto) return;
+  const n = S.joueurs.length; let reste = null;
+  if(estHote()) reste = resteAuto(); else if(S.reste != null) reste = Math.max(0, S.reste - Math.floor((Date.now() - S.resteT)/1000));
+  const pt = `<i class="pt ${S.canal && S.canal.type==="local"?"local":""}"></i>`;
+  el.innerHTML = S.phase === "connexion" ? `<i class="pt local"></i>${TXT.connexion}` : (reste != null && n >= 2 ? `${pt}${TXT.decompte(reste)}` : `${pt}${TXT.autoAide}`);
+}
+
+/* =========================================================================
    Écrans
    ========================================================================= */
-function ecranMulti(){
-  arreterVitrue();
-}
-function arreterVitrue(){} // (remplacé ci-dessous : garde la compatibilité si arreterVitrine n'existe pas)
+function arreterVitrue(){} // compatibilité
 
 function ecranMulti(){
   if(typeof arreterVitrine === "function") arreterVitrine();
@@ -374,11 +436,12 @@ function ecranMulti(){
       <button class="bouton-plat" id="m-profil">${c ? TXT.modifier : TXT.creerProfil}</button>
     </div>
     <div class="m-choix">
+      <button class="mode piece c-jaune m-rapide" id="m-rapide"><span class="ico">${ICO.eclair || ICO.groupe}</span><span><span class="nom">${TXT.rapide}</span><span class="desc">${TXT.rapideDesc}</span></span></button>
       <button class="mode piece c-multi" id="m-creer"><span class="ico">${ICO.groupe}</span><span><span class="nom">${TXT.creerSalon}</span><span class="desc">${TXT.creerSalonDesc}</span></span></button>
       <button class="mode piece c-bleu" id="m-rejoindre"><span class="ico">${ICO.cible || ICO.groupe}</span><span><span class="nom">${TXT.rejoindre}</span><span class="desc">${TXT.rejoindreDesc}</span></span></button>
     </div>
     <div class="m-carte">
-      <span class="lbl">${TXT.ouverts} <span id="m-nb-ouverts"></span></span>
+      <span class="lbl">${TXT.enAttente} <span id="m-nb-ouverts"></span><span class="m-en-ligne" id="m-en-ligne" hidden></span></span>
       <div class="m-liste" id="m-ouverts"><div class="m-vide"><i></i>${enLigne() ? TXT.serveurAttente : TXT.aucunSalon}</div></div>
     </div>
     <div class="m-carte" id="m-zone-code" hidden>
@@ -390,7 +453,8 @@ function ecranMulti(){
   </section>`;
   $("#b-retour").onclick = () => { Annuaire.arreter(); ecranAccueil(); };
   $("#m-profil").onclick = () => ecranProfil(() => ecranMulti());
-  $("#m-creer").onclick = () => avecProfil(creerSalon);
+  $("#m-rapide").onclick = () => avecProfil(() => partieRapide());
+  $("#m-creer").onclick = () => avecProfil(() => creerSalon());
   $("#m-rejoindre").onclick = () => { const z = $("#m-zone-code"); z.hidden = !z.hidden; if(!z.hidden){ $("#m-code").focus(); z.scrollIntoView({behavior:"smooth", block:"center"}); } };
   const go = () => { const code = normCode($("#m-code").value); if(code.length < 5){ toast(TXT.codeCourt); return; } avecProfil(() => rejoindreSalon(code)); };
   $("#m-go").onclick = go;
@@ -398,14 +462,18 @@ function ecranMulti(){
   $("#m-code").addEventListener("keydown", e => { if(e.key === "Enter") go(); });
   const code = new URLSearchParams(location.search).get("salon");
   if(code && normCode(code).length === 5){ history.replaceState(null, "", location.pathname); $("#m-zone-code").hidden = false; $("#m-code").value = normCode(code); }
-  Annuaire.ecouter((liste, mode) => {
+  Annuaire.ecouter((liste, mode, enLigneN) => {
     const el = $("#m-ouverts"); if(!el){ Annuaire.arreter(); return; }
     if(liste === null){ el.innerHTML = `<div class="m-vide"><i></i>${TXT.coupe}</div>`; return; }
-    liste = liste.filter(r => r.nb < r.max).sort((a,b) => (b.t||0) - (a.t||0));
+    const ne = $("#m-en-ligne"); if(ne){ if(enLigneN > 0){ ne.hidden = false; ne.innerHTML = `<i></i>${TXT.enLigneN(enLigneN)}`; } else ne.hidden = true; }
+    liste = liste.filter(r => r.nb < r.max && (!r.phase || r.phase === "attente")).sort((a,b) => (b.nb - a.nb) || ((b.t||0) - (a.t||0)));
     $("#m-nb-ouverts").textContent = liste.length ? liste.length : "";
-    el.innerHTML = liste.length ? liste.map((r,i) => `<div class="m-joueur m-salon" data-code="${r.code}" style="animation-delay:${i*40}ms">${pionSVG(pions()[(r.couleur||0) % pions().length].c)}
-        <span class="nom">${esc(TXT.salonDe(r.hote))}<small class="vous">${r.nb}/${r.max}</small></span>
-        <button class="bouton-plat" data-code="${r.code}">${TXT.rejoindreBtn} ›</button></div>`).join("") : `<div class="m-vide"><i></i>${TXT.aucunSalon}</div>`;
+    el.innerHTML = liste.length ? liste.map((r,i) => {
+        const js = (r.joueurs && r.joueurs.length ? r.joueurs : [{couleur:r.couleur||0}]);
+        const pions_ = js.map(j => pionSVG(pions()[(j.couleur||0) % pions().length].c)).join("");
+        return `<div class="m-joueur m-salon" data-code="${r.code}" style="animation-delay:${i*40}ms"><span class="m-pions">${pions_}</span>
+        <span class="nom">${esc(TXT.salonDe(r.hote))}<small>${r.nb}/${r.max} · ${TXT.placesLibres(r.max - r.nb)}${r.auto ? ` <small class="rap">${TXT.rapide}</small>` : ""}</small></span>
+        <button class="bouton-plat" data-code="${r.code}">${TXT.rejoindreBtn} ›</button></div>`; }).join("") : `<div class="m-vide"><i></i>${TXT.aucunSalon}</div>`;
     $$("#m-ouverts button").forEach(b => b.onclick = () => avecProfil(() => rejoindreSalon(b.dataset.code)));
   });
 }
@@ -447,10 +515,13 @@ function rafraichir(){
       <span class="etat"><i></i>${j.pret ? TXT.pret : TXT.pasPret}</span></div>`).join("")
     + (S.joueurs.length < MAX ? `<div class="m-vide"><i></i>${TXT.attente}</div>` : "");
   const n = S.joueurs.length, tousPrets = n >= 2 && S.joueurs.every(j => j.pret);
-  $("#m-msg").innerHTML = S.phase === "connexion" ? `<i class="pt local"></i>${TXT.connexion}` : (estHote() ? (tousPrets ? "" : `<i class="pt ${S.canal.type==="local"?"local":""}"></i>${TXT.lancerAide(n)}`) : `<i class="pt ${S.canal.type==="local"?"local":""}"></i>${TXT.attenteHote}`);
-  $("#m-actions").innerHTML = `<button class="bouton piece ${me && me.pret ? "c-noir" : "c-vert"}" id="m-pret" ${S.phase==="connexion"?"disabled":""}>${me && me.pret ? TXT.plusPret : TXT.jeSuisPret}</button>`
-    + (estHote() ? `<button class="bouton piece c-jaune" id="m-lancer" ${tousPrets ? "" : "disabled"}>${TXT.lancer}</button>` : "");
-  $("#m-pret").onclick = basculerPret;
+  if(S.auto){ majMsg(); }
+  else $("#m-msg").innerHTML = S.phase === "connexion" ? `<i class="pt local"></i>${TXT.connexion}` : (estHote() ? (tousPrets ? "" : `<i class="pt ${S.canal.type==="local"?"local":""}"></i>${TXT.lancerAide(n)}`) : `<i class="pt ${S.canal.type==="local"?"local":""}"></i>${TXT.attenteHote}`);
+  $("#m-actions").innerHTML = S.auto
+    ? (estHote() ? `<button class="bouton piece c-jaune" id="m-lancer" ${n >= 2 ? "" : "disabled"}>${TXT.lancerMaintenant}</button>` : "")
+    : `<button class="bouton piece ${me && me.pret ? "c-noir" : "c-vert"}" id="m-pret" ${S.phase==="connexion"?"disabled":""}>${me && me.pret ? TXT.plusPret : TXT.jeSuisPret}</button>`
+      + (estHote() ? `<button class="bouton piece c-jaune" id="m-lancer" ${tousPrets ? "" : "disabled"}>${TXT.lancer}</button>` : "");
+  const bpr = $("#m-pret"); if(bpr) bpr.onclick = basculerPret;
   const bl = $("#m-lancer"); if(bl) bl.onclick = lancer;
 }
 
@@ -480,5 +551,5 @@ function lienDirect(){ const code = new URLSearchParams(location.search).get("sa
 
 addEventListener("pagehide", () => { if(S){ if(estHote()) envoyer({t:"ferme"}); else envoyer({t:"quitter"}); } });
 
-return { ecran:ecranMulti, profil:ecranProfil, compte:() => Compte.get(), chipProfil, lienDirect, dispo:canalDispo, TXT, stop:fermerSalon };
+return { ecran:ecranMulti, profil:ecranProfil, compte:() => Compte.get(), chipProfil, lienDirect, dispo:canalDispo, TXT, stop:fermerSalon, etat:() => S };
 })();
