@@ -54,7 +54,7 @@ def icones(sigle):
                 t = k / bw; col = tuple(int(a[j] + (c[j] - a[j]) * t) for j in range(3)); dr.rectangle([x0 + k, by, x0 + k + 1, by + bh], fill=col)
         dr.rectangle([taille * marge - 2, by - 2, taille * (1 - marge) + 2, by + bh + 2], outline=(0, 0, 0), width=max(2, taille // 100))
         return im
-    for nom, t, m in [("icon-192.png", 192, .09), ("icon-512.png", 512, .09), ("apple-touch-icon.png", 180, .09), ("maskable-192.png", 192, .2), ("maskable-512.png", 512, .2)]:
+    for nom, t, m in [("icon-192.png", 192, .09), ("icon-512.png", 512, .09), ("apple-touch-icon.png", 180, .09), ("maskable-192.png", 192, .2), ("maskable-512.png", 512, .2), ("icon-1024.png", 1024, .09)]:
         dessiner(t, m).save(ROOT / "icons" / nom)
     print("Icônes régénérées avec :", sigle)
 

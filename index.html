@@ -1918,7 +1918,7 @@ function demarrerMinuteur(){
 function arreterMinuteur(){ if(minuteur) cancelAnimationFrame(minuteur); minuteur=null; }
 
 function finManche(raison){
-  if(P.m.fini) return;
+  if(!P || !P.m || P.m.fini) return;   // la partie a pu être quittée entre-temps (minuteur en attente)
   P.m.fini = true; arreterMinuteur(); P.compo.bloquer(true); composeurActif = null; $(".ecran")?.classList.remove("masque");
   if(P.mode==="braquage") return finBraquage(false);
   const c = P.carte, N = NIVEAUX[c.niv], reussi = P.m.trouves.length>0, joker = raison==="joker";
@@ -2208,7 +2208,7 @@ window.addEventListener("resize", () => { const s=$(".ecran[style*='--tw']"); if
 /* ---------- Installation (PWA) ---------- */
 let installEvt = null;
 window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); installEvt = e; const b=$("#b-install"); if(b){ b.hidden=false; b.onclick=()=>{ installEvt.prompt(); installEvt=null; b.hidden=true; }; } });
-if("serviceWorker" in navigator && (location.protocol==="https:" || location.hostname==="localhost") && !location.hostname.endsWith("claude.ai") && !location.hostname.includes("claudeusercontent")){
+if("serviceWorker" in navigator && (location.protocol==="https:" || (location.protocol==="http:" && location.hostname==="localhost")) && !location.hostname.endsWith("claude.ai") && !location.hostname.includes("claudeusercontent")){
   navigator.serviceWorker.register("sw.js").catch(()=>{});
 }
 </script>

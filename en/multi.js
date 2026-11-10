@@ -484,6 +484,12 @@ function ecranMulti(){
   });
 }
 
+// lien d'invitation : adresse du site, même depuis l'appli iOS où le jeu est servi par l'appli elle-même
+function lienSalon(code){
+  const web = /^https?:$/.test(location.protocol) && location.hostname !== "localhost";
+  const base = web || !window.QLN_SITE_URL ? location.origin + location.pathname : window.QLN_SITE_URL + (/\/en\//.test(location.pathname) ? "en/" : "");
+  return base + "?salon=" + code;
+}
 function ecranSalon(){
   app.innerHTML = `
   <section class="ecran">
@@ -507,7 +513,7 @@ function ecranSalon(){
   S.rendu = {salon:true};
   $("#b-quitter").onclick = quitterSalon;
   $("#m-copier").onclick = async () => { try{ await navigator.clipboard.writeText(S.code); toast(TXT.copie, 1500); Son.tap(); }catch(e){ toast(S.code); } };
-  const bp = $("#m-partager"); if(bp) bp.onclick = () => navigator.share({title:"Le-QLN", text:TXT.partageTexte(S.code), url:location.origin+location.pathname+"?salon="+S.code}).catch(()=>{});
+  const bp = $("#m-partager"); if(bp) bp.onclick = () => navigator.share({title:"Le-QLN", text:TXT.partageTexte(S.code), url:lienSalon(S.code)}).catch(()=>{});
   $$(".m-chat button").forEach(b => b.onclick = () => envoyerEmoji(b.dataset.e));
   rafraichir();
 }

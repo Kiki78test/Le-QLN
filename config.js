@@ -6,7 +6,9 @@ window.QLN_WS_URL = window.QLN_API_URL ? window.QLN_API_URL.replace(/^http/, "ws
 // Connexion Google (facultatif) : identifiant client OAuth « Application Web ».
 window.QLN_GOOGLE_CLIENT_ID = "";
 
-// Appli Android (enveloppe Capacitor, dossier mobile/) : reconnue par son agent utilisateur.
+// Adresse publique du jeu : liens partagés depuis l'appli iOS (où le jeu est embarqué, donc sans adresse web).
+window.QLN_SITE_URL = "https://kiki78test.github.io/Le-QLN/";
+// Applis Android et iOS (enveloppe Capacitor, dossier mobile/) : reconnues par leur agent utilisateur.
 window.QLN_NATIVE = /LeQLNApp\//.test(navigator.userAgent);
 if(window.QLN_NATIVE){
   window.QLN_GOOGLE_CLIENT_ID = "";   // Google refuse sa connexion dans une vue web intégrée : e-mail + mot de passe seulement

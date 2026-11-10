@@ -27,7 +27,7 @@ services:
       - key: SECRET              # générée une fois, ne jamais la changer (sinon tous les joueurs sont déconnectés)
         generateValue: true
       - key: ORIGINES
-        value: https://kiki78test.github.io
+        value: https://kiki78test.github.io,capacitor://localhost   # site + appli iOS (jeu embarqué)
       - key: GOOGLE_CLIENT_ID    # facultatif
         sync: false
       - key: RESEND_API_KEY      # facultatif (mot de passe oublié, après l'achat du domaine)

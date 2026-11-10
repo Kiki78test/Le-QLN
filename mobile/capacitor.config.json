@@ -6,14 +6,31 @@
     "url": "https://kiki78test.github.io/Le-QLN/?app=native",
     "cleartext": false,
     "errorPath": "index.html",
-    "allowNavigation": ["kiki78test.github.io", "*.onrender.com"]
+    "allowNavigation": [
+      "kiki78test.github.io",
+      "*.onrender.com"
+    ]
   },
   "android": {
     "appendUserAgent": "LeQLNApp/0.1 (Android)",
     "backgroundColor": "#0b1a3a"
   },
   "plugins": {
-    "SplashScreen": { "launchShowDuration": 0, "backgroundColor": "#0b1a3a", "showSpinner": false, "launchAutoHide": true },
-    "SystemBars": { "insetsHandling": "disable", "style": "DARK" }
+    "SplashScreen": {
+      "launchShowDuration": 0,
+      "backgroundColor": "#0b1a3a",
+      "showSpinner": false,
+      "launchAutoHide": true
+    },
+    "SystemBars": {
+      "insetsHandling": "disable",
+      "style": "DARK"
+    }
+  },
+  "ios": {
+    "appendUserAgent": "LeQLNApp/0.1 (iOS)",
+    "backgroundColor": "#0b1a3a",
+    "contentInset": "never",
+    "scrollEnabled": false
   }
 }

@@ -1,0 +1,98 @@
+# Fabrique l'appli iOS (iPhone / iPad) de Le-QLN sur un Mac de GitHub — aucun Mac nécessaire chez vous.
+# Déclenchement : modification de mobile/ ou des icônes, ou à la demande (Actions → « Appli iOS » → Run workflow).
+#
+# 1) Sans compte Apple : compilation pour le simulateur iPhone (vérifie que tout se construit) + capture d'écran
+#    de l'appli lancée dans le simulateur. Résultat dans l'onglet Actions (artefacts).
+# 2) Avec le compte Apple Developer (99 €/an) et les 4 secrets ci-dessous : appli signée et envoyée sur TestFlight
+#    (installation sur votre iPhone via l'appli TestFlight, puis publication sur l'App Store depuis App Store Connect).
+#    Secrets (Settings → Secrets and variables → Actions) :
+#      APPLE_TEAM_ID              identifiant d'équipe (10 caractères, developer.apple.com → Membership)
+#      ASC_KEY_ID                 clé API App Store Connect (Utilisateurs et accès → Intégrations → Clés), rôle « App Manager »
+#      ASC_ISSUER_ID              identifiant de l'émetteur affiché au même endroit
+#      ASC_KEY_P8                 contenu du fichier AuthKey_XXXX.p8 téléchargé (une seule fois possible)
+#    La signature est gérée automatiquement par Xcode avec cette clé (pas de certificat à exporter).
+name: Appli iOS
+on:
+  push:
+    branches: [main]
+    paths: ['mobile/**', 'icons/**', '.github/workflows/ios.yml']
+  workflow_dispatch:
+concurrency:
+  group: appli-ios
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 45
+    defaults:
+      run:
+        working-directory: mobile
+    env:
+      HAS_APPLE: ${{ secrets.ASC_KEY_P8 != '' && secrets.APPLE_TEAM_ID != '' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: pip3 install --break-system-packages pillow || pip3 install pillow
+      - run: npm install --no-audit --no-fund
+      - name: Embarquer le jeu dans l'appli
+        run: python3 native/ios/patch_ios.py preparer
+      - run: npx cap add ios
+      - name: Réglages Le-QLN (nom, portrait, icône, démarrage, version)
+        run: python3 native/ios/patch_ios.py reglages
+      - run: npx cap sync ios
+      - name: Compiler pour le simulateur
+        working-directory: mobile/ios/App
+        run: |
+          xcodebuild -project App.xcodeproj -scheme App -configuration Debug -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' -derivedDataPath build CODE_SIGNING_ALLOWED=NO build | tail -20
+      - name: Lancer dans le simulateur et faire une capture
+        working-directory: mobile/ios/App
+        run: |
+          APP=$(find build/Build/Products -name "App.app" -maxdepth 3 | head -1)
+          DEV=$(xcrun simctl list devices available | grep -m1 -E "iPhone 1[5-9]" | sed -E 's/.*\(([0-9A-F-]{36})\).*/\1/')
+          xcrun simctl boot "$DEV" || true
+          xcrun simctl install "$DEV" "$APP"
+          xcrun simctl launch "$DEV" fr.leqln.app
+          sleep 20
+          xcrun simctl io "$DEV" screenshot ../../capture-iphone.png
+          (cd "$(dirname "$APP")" && zip -qr "$GITHUB_WORKSPACE/mobile/Le-QLN-iOS-simulateur.zip" App.app)
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Le-QLN-iOS-simulateur
+          path: |
+            mobile/Le-QLN-iOS-simulateur.zip
+            mobile/capture-iphone.png
+          retention-days: 30
+      # ---------- avec le compte Apple : archive signée → TestFlight ----------
+      - name: Clé App Store Connect
+        if: env.HAS_APPLE == 'true'
+        run: |
+          mkdir -p ~/private_keys
+          printf '%s' "${{ secrets.ASC_KEY_P8 }}" > ~/private_keys/AuthKey_${{ secrets.ASC_KEY_ID }}.p8
+      - name: Archiver (signature automatique)
+        if: env.HAS_APPLE == 'true'
+        working-directory: mobile/ios/App
+        run: |
+          xcodebuild -project App.xcodeproj -scheme App -configuration Release -destination 'generic/platform=iOS' \
+            -archivePath build/LeQLN.xcarchive DEVELOPMENT_TEAM=${{ secrets.APPLE_TEAM_ID }} CODE_SIGN_STYLE=Automatic \
+            -allowProvisioningUpdates -authenticationKeyPath ~/private_keys/AuthKey_${{ secrets.ASC_KEY_ID }}.p8 \
+            -authenticationKeyID ${{ secrets.ASC_KEY_ID }} -authenticationKeyIssuerID ${{ secrets.ASC_ISSUER_ID }} archive | tail -20
+      - name: Envoyer sur TestFlight
+        if: env.HAS_APPLE == 'true'
+        working-directory: mobile/ios/App
+        run: |
+          cat > export.plist <<EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0"><dict>
+            <key>method</key><string>app-store-connect</string>
+            <key>destination</key><string>upload</string>
+            <key>teamID</key><string>${{ secrets.APPLE_TEAM_ID }}</string>
+            <key>signingStyle</key><string>automatic</string>
+          </dict></plist>
+          EOF
+          xcodebuild -exportArchive -archivePath build/LeQLN.xcarchive -exportOptionsPlist export.plist -exportPath build/export \
+            -allowProvisioningUpdates -authenticationKeyPath ~/private_keys/AuthKey_${{ secrets.ASC_KEY_ID }}.p8 \
+            -authenticationKeyID ${{ secrets.ASC_KEY_ID }} -authenticationKeyIssuerID ${{ secrets.ASC_ISSUER_ID }} | tail -20
