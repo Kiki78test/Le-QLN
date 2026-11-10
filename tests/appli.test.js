@@ -278,16 +278,17 @@ test("hors ligne : un score du défi du jour attend le réseau puis part (avec s
 for(const lang of ["fr", "en"]) test(`${lang} : séries à thème et par langue`, async () => {
   const {p, ctx, erreurs} = await ouvrir(lang, "telephone");
   // niveau 1 : la langue est verrouillée, 2 thèmes ouverts
-  await p.evaluate(() => ecranSolo()); await p.waitForSelector("#s-serie");
-  const ouverts1 = await p.evaluate(() => [...document.querySelectorAll("#s-serie option:not([disabled])")].length);
+  await p.evaluate(() => ecranSolo()); await p.waitForSelector(".serie-tuile");
+  const ouverts1 = await p.evaluate(() => document.querySelectorAll(".serie-tuile:not(.verrou)").length);
   assert.equal(ouverts1, 3, "Classique + 2 thèmes au niveau 1");
   // haut niveau : tout est ouvert
   await p.evaluate(() => Progres.remplacer({...Progres.donnees(), xp:999999}));
-  await p.evaluate(() => ecranSolo()); await p.waitForSelector("#s-serie");
-  assert.equal(await p.evaluate(() => document.querySelectorAll("#s-serie option[disabled]").length), 0, "tout est débloqué à haut niveau");
+  await p.evaluate(() => ecranSolo()); await p.waitForSelector(".serie-tuile");
+  assert.equal(await p.evaluate(() => document.querySelectorAll(".serie-tuile.verrou").length), 0, "tout est débloqué à haut niveau");
   for(const k of ["theme-animaux", "langue-" + (lang === "en" ? "fr" : "en"), "langue-es", "langue-de", "langue-it"]){
-    await p.evaluate(() => ecranSolo()); await p.waitForSelector("#s-serie");
-    await p.selectOption("#s-serie", k);
+    await p.evaluate(() => ecranSolo()); await p.waitForSelector(".serie-tuile");
+    await p.evaluate(k => document.querySelector(`.serie-tuile[data-serie="${k}"]`).click(), k);
+    assert.equal(await p.evaluate(k => document.querySelector(`.serie-tuile[data-serie="${k}"]`).getAttribute("aria-checked"), k), "true");
     await p.evaluate(() => document.querySelector("#s-defi").click());
     await p.waitForSelector(".carte.carte-serie .serie-badge", {timeout:8000});
     const etat = await p.evaluate(() => ({mode:P.mode, n:P.parcours.length, toutes:P.cartes.every(c => c.deco && c.mots.length >= 2)}));

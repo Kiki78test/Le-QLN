@@ -58,21 +58,39 @@ async function catalogue(){
 }
 const choisie = () => store.get("serie", "classique");
 
-/* ---------- menu de l'écran Solo ---------- */
+/* ---------- choix de la série (écran Solo) : bandeau de tuiles à faire défiler ---------- */
+function fondTuile(x){
+  if(x.cle === "classique") return "linear-gradient(160deg,#8fca42,#1e6a29)";
+  if(x.cle.startsWith("langue-")){ const b = DRAPEAU[x.cle.slice(7)].bandes; return `linear-gradient(90deg,${b[0]} 0 33.3%,${b[1]} 33.3% 66.6%,${b[2]} 66.6%)`; }
+  return `linear-gradient(160deg,${x.th.c1},${x.th.c2})`;
+}
 async function menu(zone, majBouton){
   const liste = await catalogue();
   let cle = choisie(); if(!liste.some(x => x.cle === cle && x.ouvert)) cle = "classique";
-  const opt = x => `<option value="${x.cle}" ${x.cle === cle ? "selected" : ""} ${x.ouvert ? "" : "disabled"}>${x.emoji} ${esc(x.nom)}${x.ouvert ? "" : " 🔒 " + TXT.verrou(x.requis)}</option>`;
   const groupes = [...new Set(liste.map(x => x.groupe))];
-  zone.innerHTML = `<label class="serie-sel"><span>${TXT.serie}</span><select id="s-serie">${groupes.map(g => g ? `<optgroup label="${esc(g)}">${liste.filter(x => x.groupe === g).map(opt).join("")}</optgroup>` : liste.filter(x => !x.groupe).map(opt).join("")).join("")}</select></label>
+  const tuile = x => `<button class="serie-tuile ${x.ouvert ? "" : "verrou"}" data-serie="${x.cle}" role="radio" aria-checked="${x.cle === cle}" ${x.ouvert ? "" : "aria-disabled=\"true\""} style="--fond:${fondTuile(x)}" title="${esc(x.nom)}">
+      <i class="st-fond" aria-hidden="true"></i><span class="st-emoji" aria-hidden="true">${x.emoji}</span><span class="st-nom">${esc(x.nom)}</span>${x.ouvert ? "" : `<span class="st-verrou">🔒 ${TXT.verrou(x.requis)}</span>`}</button>`;
+  zone.innerHTML = `<div class="serie-choix"><span class="serie-lbl">${TXT.serie}</span>
+    <div class="serie-bande" role="radiogroup" aria-label="${TXT.serie}">${groupes.map(g => (g ? `<span class="serie-groupe">${esc(g)}</span>` : "") + liste.filter(x => x.groupe === g).map(tuile).join("")).join("")}</div></div>
     <p class="serie-note" id="serie-note"></p>`;
+  const bande = $(".serie-bande", zone);
   const maj = () => {
-    const x = liste.find(y => y.cle === $("#s-serie", zone).value) || liste[0];
+    const x = liste.find(y => y.cle === cle) || liste[0];
     store.set("serie", x.cle);
+    $$(".serie-tuile", zone).forEach(b => b.setAttribute("aria-checked", b.dataset.serie === x.cle));
     $("#serie-note", zone).textContent = x.cle === "classique" ? "" : x.desc + " · " + TXT.pasClasse;
     majBouton(x);
   };
-  $("#s-serie", zone).onchange = maj; maj();
+  $$(".serie-tuile", zone).forEach(b => b.onclick = () => {
+    const x = liste.find(y => y.cle === b.dataset.serie);
+    if(!x.ouvert){ if(typeof toast === "function") toast(TXT.niveau(x.requis), 2200); return; }
+    cle = x.cle; maj(); if(typeof Son !== "undefined") Son.tap();
+    b.scrollIntoView({behavior:"smooth", inline:"center", block:"nearest"});
+  });
+  // molette verticale = défilement horizontal (ordinateur)
+  bande.addEventListener("wheel", e => { if(Math.abs(e.deltaY) > Math.abs(e.deltaX)){ bande.scrollLeft += e.deltaY; e.preventDefault(); } }, {passive:false});
+  maj();
+  const sel = $(`.serie-tuile[data-serie="${cle}"]`, zone); if(sel) bande.scrollLeft = Math.max(0, sel.offsetLeft - bande.clientWidth/2 + sel.offsetWidth/2);
   // nouvelle série débloquée depuis la dernière visite
   const vu = store.get("seriesVues", 0), ouvertes = liste.filter(x => x.ouvert).length;
   if(vu && ouvertes > vu){ const n = liste.filter(x => x.ouvert).slice(vu).map(x => x.nom).join(", "); if(typeof toast === "function") toast(TXT.debloque(n), 3500); }
@@ -138,12 +156,25 @@ function habiller(c){
 const css = document.createElement("style");
 css.textContent = `
 .serie-zone{grid-column:1/-1; display:grid; gap:4px; justify-items:center}
-.serie-sel{width:100%; display:flex; align-items:center; gap:10px; justify-content:center; font:700 15px var(--f-ui); color:var(--brume); letter-spacing:.06em; text-transform:uppercase; margin:2px 0 0}
-.serie-sel select{flex:1; max-width:340px; height:46px; border-radius:14px; padding:0 14px; font:700 17px var(--f-ui); letter-spacing:.02em; text-transform:none; color:#fff;
-  background:#0d2259 url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='9'><path d='M1 1l6 6 6-6' fill='none' stroke='%23ffd60a' stroke-width='2.4' stroke-linecap='round'/></svg>") no-repeat right 14px center;
-  border:1.5px solid rgba(255,214,10,.45); appearance:none; -webkit-appearance:none; cursor:pointer}
-.serie-sel select:focus-visible{outline:2px solid var(--or); outline-offset:2px}
-.serie-sel option,.serie-sel optgroup{background:#0d2259; color:#fff}
+.serie-choix{width:100%; display:grid; gap:6px}
+.serie-lbl{font:700 13px var(--f-ui); color:var(--brume); letter-spacing:.14em; text-transform:uppercase; text-align:center}
+.serie-bande{display:flex; gap:8px; overflow-x:auto; overflow-y:hidden; padding:6px 4px 8px; scroll-snap-type:x proximity; scrollbar-width:none; -webkit-overflow-scrolling:touch;
+  -webkit-mask:linear-gradient(90deg, transparent, #000 18px, #000 calc(100% - 18px), transparent); mask:linear-gradient(90deg, transparent, #000 18px, #000 calc(100% - 18px), transparent)}
+.serie-bande::-webkit-scrollbar{display:none}
+.serie-groupe{flex:none; align-self:center; writing-mode:vertical-rl; transform:rotate(180deg); font:700 11px var(--f-ui); letter-spacing:.16em; text-transform:uppercase; color:var(--or); opacity:.85; padding:0 2px}
+.serie-tuile{flex:none; position:relative; width:86px; height:80px; border:0; border-radius:14px; padding:6px 6px 7px; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; gap:3px;
+  color:#fff; cursor:pointer; scroll-snap-align:center; overflow:hidden; background:#0d2259;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.18), 0 4px 10px rgba(0,0,0,.35); transition:transform .15s, box-shadow .15s}
+.serie-tuile .st-fond{position:absolute; inset:0; background:var(--fond); opacity:.9}
+.serie-tuile .st-fond::after{content:""; position:absolute; inset:0; background:linear-gradient(180deg, rgba(255,255,255,.18), transparent 40%, rgba(0,0,0,.45))}
+.serie-tuile .st-emoji{position:relative; font-size:26px; line-height:1; filter:drop-shadow(0 2px 3px rgba(0,0,0,.45)); margin-bottom:auto; margin-top:4px}
+.serie-tuile .st-nom{position:relative; font:800 13px/1.05 var(--f-ui); letter-spacing:.02em; text-align:center; text-shadow:0 1px 3px rgba(0,0,0,.8);
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden}
+.serie-tuile .st-verrou{position:absolute; inset:auto 0 0 0; padding:2px 0; font:700 10.5px var(--f-ui); background:rgba(0,0,0,.6); color:#fff}
+.serie-tuile.verrou{cursor:default} .serie-tuile.verrou .st-fond{filter:grayscale(.85) brightness(.55)} .serie-tuile.verrou .st-emoji{opacity:.55}
+.serie-tuile[aria-checked="true"]{transform:translateY(-2px); box-shadow:0 0 0 2.5px #ffd84a, 0 0 18px rgba(255,207,58,.55), 0 6px 14px rgba(0,0,0,.4)}
+.serie-tuile:focus-visible{outline:2px solid var(--or); outline-offset:3px}
+@media (hover:hover){ .serie-tuile:not(.verrou):not([aria-checked="true"]):hover{transform:translateY(-2px)} }
 .serie-note{margin:0; min-height:0; text-align:center; font:600 13.5px var(--f-ui); color:var(--brume-2)}
 .serie-note:empty{display:none}
 .carte.carte-serie{position:relative}

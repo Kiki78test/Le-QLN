@@ -859,6 +859,9 @@ body::before{background:radial-gradient(130% 95% at 50% 45%, transparent 55%, rg
 #scene .filet svg{display:block; width:100%; height:100%}
 @media (max-width:999px){ #scene .filet{bottom:6px; height:34px} #scene .lf{font-size:min(var(--t), 16vw)!important} }
 @media (prefers-reduced-motion:reduce){ #scene .rayons,#scene .lf,#scene .et{animation:none!important} }
+/* le contenu s'arrête au-dessus du filet doré du bas (il ne passe jamais derrière) */
+.app:not(:has(.plateau-ecran)){padding-bottom:calc(28px + 34px)}
+@media (min-width:1000px){ .app:not(:has(.plateau-ecran)){padding-bottom:calc(28px + 52px)} }
 </style>
 </head>
 <body>

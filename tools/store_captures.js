@@ -63,7 +63,7 @@ const SCENES = [
   ["jour", async p => { await p.evaluate(() => { ecranAccueil(); nouvellePartie("jour"); }); await pause(p, 1600); }],
   ["series", async p => {
     await p.evaluate(() => ecranSolo()); await pause(p, 500);
-    await p.evaluate(() => { const s = document.querySelector("#s-serie"); const o = [...s.options].find(o => !o.disabled && /^theme-/.test(o.value)) || [...s.options].find(o => !o.disabled && o.index > 0); if(o){ s.value = o.value; s.dispatchEvent(new Event("change", {bubbles:true})); } });
+    await p.evaluate(() => { const t = [...document.querySelectorAll(".serie-tuile:not(.verrou)")].find(b => /^theme-/.test(b.dataset.serie)); if(t) t.click(); });
     await pause(p, 400); await p.evaluate(() => document.querySelector("#s-defi").click()); await pause(p, 1800);
   }],
   ["podium", async p => {

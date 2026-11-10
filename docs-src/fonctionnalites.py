@@ -32,7 +32,7 @@ st+=ul(["<b>Le Défi</b> : partie libre de 10 cartes (3 vertes, 3 bleues, 2 roug
  "<b>Duel de l'ombre</b> : les cartes du jour contre le « fantôme » de votre meilleure partie (sa banque s'affiche carte après carte).",
  "<b>Défi de la semaine</b> : une variante par semaine (Sablier éclair, Sans filet, Montée en puissance, Une seule vie) ; un seul essai classé, puis essais libres."])
 st.append(Paragraph("Séries du Défi (menu « Série »)",H2))
-st+=ul(["Sur l'écran Solo, un menu déroulant sous « Le Défi » : <b>Classique</b>, <b>langues</b> (cartes en anglais dans la version française, en français dans la version anglaise, et dans les deux versions : <b>espagnol, allemand, italien</b>) ou <b>thème</b>.",
+st+=ul(["Sur l'écran Solo, sous « Le Défi », un bandeau de tuiles à faire défiler (couleurs du thème ou du drapeau, cadenas et niveau requis sur les séries verrouillées) : <b>Classique</b>, <b>langues</b> (cartes en anglais dans la version française, en français dans la version anglaise, et dans les deux versions : <b>espagnol, allemand, italien</b>) ou <b>thème</b>.",
  "<b>16 thèmes en français</b> (Animaux, Cuisine, Paysages et météo, Sports et loisirs, Métiers et personnes, Plantes et fleurs, Corps et santé, Maison et objets, Voyages et géographie, Musique et arts, Sciences, Vêtements et mode, Mer et marine, Émotions et caractère, Transports, Histoire et légendes) ; <b>12 en anglais</b>. Un thème n'est proposé que s'il compte au moins 16 cartes.",
  "Série à thème : 8 cartes dont le mot de départ appartient au thème, de la plus facile à la plus difficile ; toutes les anagrammes du dictionnaire restent acceptées. Les cartes déjà vues sont évitées d'une série à l'autre.",
  "<b>Design</b> : chaque thème a sa couleur (cadre de la carte, lueur de l'écran), un motif de fond avec son emblème et un badge ; une carte d'une autre langue porte les couleurs du drapeau et un badge drapeau. Définitions des mots étrangers : Wiktionnaire de cette langue (nouvel onglet).",
@@ -124,7 +124,8 @@ st+=ul(["Multijoueur : reprendre une partie après une coupure (rejeu depuis l'h
  "Hébergement : base Render à passer en Basic avant le 10/12/2026, serveur en Starter à l'ouverture au public ; domaine (Cloudflare) quand le nom est choisi.",
  "Décisions en attente : vidéos récompense touchant aux règles, propositions de règles, mots douteux, nom définitif."])
 st.append(Paragraph("Historique des versions",H))
-st+=ul(["<b>10 nov. 2026 (nuit)</b> — tablettes (iPad…) : la mise en page du téléphone est agrandie à la taille de l'écran ; appli iOS pour iPhone et iPad, captures iPad 13 pouces pour l'App Store.",
+st+=ul(["<b>10 nov. 2026 (nuit)</b> — choix de la série en tuiles (au lieu du menu déroulant) ; le contenu ne passe plus derrière le filet doré du bas.",
+ "<b>10 nov. 2026 (nuit)</b> — tablettes (iPad…) : la mise en page du téléphone est agrandie à la taille de l'écran ; appli iOS pour iPhone et iPad, captures iPad 13 pouces pour l'App Store.",
  "<b>10 nov. 2026 (nuit)</b> — appli Android à publier (.aab signé, clé d'envoi chiffrée) ; vraies publicités AdMob prêtes dans les applis (consentement RGPD, ATT, menu « Choix publicitaires »).",
  "<b>10 nov. 2026 (soir)</b> — définitions vérifiées au Wiktionnaire pour tout le dictionnaire français : 98 % des 8 156 mots en ont une (115 sans, liste dans « Cartes écartées de l'appli ») ; action GitHub « Définitions (Wiktionnaire) ».",
  "<b>10 nov. 2026 (soir)</b> — dictionnaire français corrigé après audit externe : sigles, noms propres et mots familiers retirés des réponses (SFIO, BAES, PETA, RÉAC, NERAC, PETRO, PETROS, ESPORT, LOIRET, PERSO), fautes de frappe du tableau d'origine retirées (CAROSSIER, SERPIERE, CROLATES, ENTONOIR) ; 3 228 cartes (outil tools/corrections_fr.py).",
