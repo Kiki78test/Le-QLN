@@ -45,6 +45,8 @@ h += "<h3>Actions (onglet Actions)</h3>" + T([
     ["Version en ligne", "après chaque publication du site + toutes les 6 h", "Mêmes tests sur le site publié et le vrai serveur (<code>/sante</code>, <code>/api/sante-api</code>)"],
     ["Sécurité", "chaque semaine", "Audit des dépendances (<code>npm audit</code>)"],
     ["Appli Android", "modification de <code>mobile/</code> ou des icônes", "APK de test signé avec la clé de test (<code>mobile/native/android/qln-test.jks</code>), publié dans Releases → « appli-android »"],
+    ["Appli Android (Google Play)", "à la demande", "Fichier <code>.aab</code> signé avec la clé d'envoi (créée et chiffrée au premier lancement), numéro de version automatique, empreinte du certificat dans le résumé"],
+    ["Définitions (Wiktionnaire)", "modification de la liste", "Cherche une définition pour chaque mot du dictionnaire français → <code>docs-src/definitions.json</code>"],
     ["Appli iOS", "idem", "Mac macOS 15 : compilation simulateur + capture ; avec les secrets Apple : archive signée → TestFlight"],
     ["Changer le nom", "à la demande", "Renomme le jeu partout (<code>tools/changer_nom.py</code>), régénère EN, pages juridiques, icônes, appli Android"]],
     ["Action", "Quand", "Ce qu'elle fait"])
@@ -52,7 +54,7 @@ h += "<h3>Secrets GitHub (Settings → Secrets and variables → Actions)</h3>" 
     ["APPLE_TEAM_ID", "Identifiant d'équipe Apple (10 caractères)", NON],
     ["ASC_KEY_ID / ASC_ISSUER_ID", "Clé API App Store Connect (rôle App Manager)", NON],
     ["ASC_KEY_P8", "Contenu du fichier <code>AuthKey_….p8</code>", NON],
-    ["(à venir) clé de publication Android", "Clé de signature Google Play (keystore + mots de passe) pour l'appli publiée", NON]],
+    ["ANDROID_KEYSTORE_PASSWORD", "Mot de passe (20 caractères et plus) de la clé d'envoi Google Play ; la clé elle-même est créée par l'action et rangée chiffrée dans <code>mobile/native/android/upload.jks.enc</code>", NON]],
     ["Secret", "Contenu", "État"])
 
 h += "<h2 class='pb'>2. Render — serveur et base de données</h2>"

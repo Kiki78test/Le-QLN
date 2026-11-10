@@ -1,0 +1,76 @@
+# Fabrique l'appli Android À PUBLIER sur Google Play (fichier .aab signé avec la clé d'envoi de Le-QLN).
+# À la demande : onglet Actions → « Appli Android (Google Play) » → Run workflow.
+#
+# Préalable, une seule fois : créer le secret ANDROID_KEYSTORE_PASSWORD
+#   (Settings → Secrets and variables → Actions → New repository secret), un mot de passe long (20 caractères et plus,
+#   généré par un gestionnaire de mots de passe) que vous gardez précieusement.
+# Au premier lancement, la clé d'envoi est créée et rangée CHIFFRÉE avec ce mot de passe dans le dépôt
+#   (mobile/native/android/upload.jks.enc) ; les fois suivantes, elle est réutilisée. Sans le mot de passe, elle est inutilisable.
+# Google Play garde la vraie clé de signature (« Signature d'application par Google Play ») : si la clé d'envoi
+#   était perdue, Google peut la remplacer sur demande.
+# Résultat : artefact « Le-QLN-Google-Play » (fichier .aab) à déposer dans la Play Console (Tests internes, puis Production).
+name: Appli Android (Google Play)
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: appli-android-publication
+  cancel-in-progress: false
+jobs:
+  publication:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      QLN_UPLOAD_PASS: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+      QLN_VERSION_NAME: 1.0.${{ github.run_number }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Vérifier le secret
+        run: |
+          if [ -z "$QLN_UPLOAD_PASS" ]; then echo "::error::Créez d'abord le secret ANDROID_KEYSTORE_PASSWORD (voir l'en-tête de ce fichier)."; exit 1; fi
+          if [ ${#QLN_UPLOAD_PASS} -lt 16 ]; then echo "::error::Mot de passe trop court : 16 caractères minimum (20 conseillés)."; exit 1; fi
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 21
+      - name: Clé d'envoi (créée au premier lancement, puis réutilisée)
+        run: |
+          ENC=mobile/native/android/upload.jks.enc
+          if [ ! -f "$ENC" ]; then
+            keytool -genkeypair -v -storetype PKCS12 -keystore "$RUNNER_TEMP/upload.jks" -alias upload -keyalg RSA -keysize 4096 -validity 10000 \
+              -storepass "$QLN_UPLOAD_PASS" -keypass "$QLN_UPLOAD_PASS" -dname "CN=Le-QLN, O=Le-QLN, C=FR"
+            openssl enc -aes-256-cbc -pbkdf2 -iter 600000 -salt -in "$RUNNER_TEMP/upload.jks" -out "$ENC" -pass env:QLN_UPLOAD_PASS
+            git config user.name "github-actions"; git config user.email "actions@users.noreply.github.com"
+            git add "$ENC"; git commit -m "Clé d'envoi Google Play (chiffrée)"; git push
+          else
+            openssl enc -d -aes-256-cbc -pbkdf2 -iter 600000 -in "$ENC" -out "$RUNNER_TEMP/upload.jks" -pass env:QLN_UPLOAD_PASS \
+              || { echo "::error::Impossible de déchiffrer la clé : le secret ANDROID_KEYSTORE_PASSWORD n'est pas celui du premier lancement."; exit 1; }
+          fi
+          echo "QLN_UPLOAD_JKS=$RUNNER_TEMP/upload.jks" >> $GITHUB_ENV
+          echo "### Empreinte du certificat d'envoi (à comparer dans la Play Console)" >> $GITHUB_STEP_SUMMARY
+          keytool -list -v -keystore "$RUNNER_TEMP/upload.jks" -storepass "$QLN_UPLOAD_PASS" | grep -E "SHA1:|SHA256:" | sed 's/^\s*/    /' >> $GITHUB_STEP_SUMMARY
+      - name: Projet Android
+        working-directory: mobile
+        run: |
+          npm install --no-audit --no-fund
+          npx cap add android
+          python3 native/android/patch_android.py android
+          npx cap sync android
+      - name: Fabriquer le fichier .aab signé
+        working-directory: mobile/android
+        run: chmod +x gradlew && ./gradlew bundleRelease --no-daemon
+      - run: cp mobile/android/app/build/outputs/bundle/release/app-release.aab "Le-QLN-${QLN_VERSION_NAME}.aab"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Le-QLN-Google-Play
+          path: Le-QLN-*.aab
+          retention-days: 90
+      - name: Résumé
+        run: |
+          echo "### Fichier à déposer dans la Play Console : Le-QLN-${QLN_VERSION_NAME}.aab (artefact « Le-QLN-Google-Play » ci-dessous)" >> $GITHUB_STEP_SUMMARY
+          echo "Version ${QLN_VERSION_NAME} (code ${{ github.run_number }})." >> $GITHUB_STEP_SUMMARY
+          rm -f "$QLN_UPLOAD_JKS"

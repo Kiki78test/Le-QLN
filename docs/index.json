@@ -1,5 +1,11 @@
 [
   {
+    "titre": "Publier sur Google Play",
+    "fichier": "publication-google-play.pdf",
+    "date": "2026-11-10",
+    "description": "Fabrication de l'appli Android à publier (fichier .aab signé), création de la clé d'envoi (secret ANDROID_KEYSTORE_PASSWORD), étapes dans la Play Console (tests internes, 12 testeurs, fiche, production)."
+  },
+  {
     "titre": "Cartes écartées de l'appli (proposition)",
     "fichier": "le-qln-anagrammes-ecartees.xlsx",
     "date": "2026-11-10",
