@@ -3,7 +3,7 @@
     "titre": "Mise en ligne du serveur",
     "fichier": "mise-en-ligne-serveur.pdf",
     "date": "2026-11-10",
-    "description": "Procédure pas à pas : Render (service web + base), connexion Google, Cloudflare (domaine), Resend (mot de passe oublié), vérifications et budget mensuel."
+    "description": "Mise en place en un clic (Blueprint Render : serveur + base dédiée), automatismes (tests, redéploiement, vérifications, appli Android de test), Google, Cloudflare, Resend et budget."
   },
   {
     "titre": "Publicité réelle",

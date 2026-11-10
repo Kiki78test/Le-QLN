@@ -11,8 +11,8 @@ Les tables sont créées automatiquement au démarrage (préfixe `qln_`), y comp
 Le fichier **`render.yaml`** à la racine du dépôt décrit tout le service (Blueprint).
 
 1. Render → **New → Blueprint** → dépôt `Kiki78test/Le-QLN` → Render lit `render.yaml`.
-2. Il ne demande qu'une valeur : **`DATABASE_URL`** = l'**External Database URL** de votre PostgreSQL Render
-   (celle d'Airmony convient : les tables `qln_*` ne touchent à rien d'autre). `SECRET` est générée automatiquement.
+2. Render crée tout seul la **base PostgreSQL dédiée** `le-qln-db` (Frankfurt, ≈ 6 $/mois) et la branche au service ;
+   `SECRET` est générée automatiquement. Aucune valeur à copier.
 3. **Apply**. Une fois « Live », vérifiez `https://le-qln.onrender.com/sante` → `{"ok":true, … "api":true}`.
 4. Dans `config.js` (racine du dépôt) : `window.QLN_API_URL = "https://le-qln.onrender.com";` puis poussez.
 

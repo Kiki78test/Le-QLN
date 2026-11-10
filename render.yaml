@@ -1,5 +1,5 @@
 # Le-QLN — serveur (multijoueur + comptes + classements) sur Render.
-# Mise en place unique : Render → New → Blueprint → dépôt Kiki78test/Le-QLN → coller DATABASE_URL → Apply.
+# Mise en place unique : Render → New → Blueprint → dépôt Kiki78test/Le-QLN → Apply (la base dédiée est créée et branchée toute seule).
 # Ensuite, chaque modification poussée dans server/ (ou analyse.js) est redéployée automatiquement,
 # et seulement si les tests GitHub sont passés (autoDeployTrigger: checksPass).
 services:
@@ -18,8 +18,10 @@ services:
         - server/**
         - analyse.js
     envVars:
-      - key: DATABASE_URL        # External Database URL de la base PostgreSQL (celle d'Airmony convient : tables qln_*)
-        sync: false
+      - key: DATABASE_URL        # base dédiée ci-dessous, branchée automatiquement (adresse interne)
+        fromDatabase:
+          name: le-qln-db
+          property: connectionString
       - key: SECRET              # générée une fois, ne jamais la changer (sinon tous les joueurs sont déconnectés)
         generateValue: true
       - key: ORIGINES
@@ -30,3 +32,11 @@ services:
         sync: false
       - key: MAIL_FROM
         sync: false
+
+databases:
+  - name: le-qln-db           # base PostgreSQL dédiée au jeu (séparée d'Airmony)
+    databaseName: qln
+    user: qln
+    region: frankfurt
+    plan: basic-256mb          # ≈ 6 $/mois ; sauvegardes quotidiennes
+    ipAllowList: []            # accessible seulement depuis les services Render (pas depuis Internet)
