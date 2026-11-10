@@ -2420,7 +2420,7 @@ chargerDico().then(() => Contestation.charger()).then(() => (typeof Legal !== "u
   /* ordinateur : un écran un peu trop haut est réduit (zoom) pour tenir sans défilement ; les écrans vraiment longs
      (règles, documentation, classements…) gardent leur taille et défilent */
   if("zoom" in document.documentElement.style){
-    const appEl = document.getElementById("app"); let tz = null;
+    const appEl = document.getElementById("app"); let tz = null, calme = 0;
     const ajusterZoom = () => {
       appEl.style.zoom = ""; appEl.style.minHeight = "";
       if(innerWidth < 1000 || innerHeight < 480) return;
@@ -2435,10 +2435,13 @@ chargerDico().then(() => Contestation.charger()).then(() => (typeof Legal !== "u
         appEl.style.zoom = (Math.floor(z*1000)/1000).toString(); appEl.style.minHeight = "0";   // (la hauteur minimale, en pourcentage, n'est pas réduite par le zoom)
       }
       if(z === 1){ appEl.style.zoom = ""; appEl.style.minHeight = ""; }
+      calme = Date.now() + 500;
     };
     let tz2 = null, tz3 = null;
     const demander = () => { clearTimeout(tz); clearTimeout(tz2); clearTimeout(tz3); tz = setTimeout(ajusterZoom, 40); tz2 = setTimeout(ajusterZoom, 450); tz3 = setTimeout(ajusterZoom, 1300); };   // (certains écrans se complètent juste après l'affichage)
     new MutationObserver(demander).observe(appEl, {childList:true});
+    // l'écran grandit en cours de route (mots trouvés sous les boutons, messages…) : on réajuste, sans boucler sur nos propres changements
+    if(window.ResizeObserver){ const ro = new ResizeObserver(() => { if(Date.now() > calme){ clearTimeout(tz); tz = setTimeout(() => { ajusterZoom(); calme = Date.now() + 500; }, 120); } }); ro.observe(appEl); }
     addEventListener("resize", demander); demander();
   }
   /* vibrations légères (mobiles) */
