@@ -127,6 +127,7 @@ function finPartie({mode, total=0, viesPerdues=null, medaille=-2, victoire=false
   if(mode === "festival" && medaille === 2) debloquer("festival-or");
   if(mode === "festival" && medaille >= 0) ajouterXp(15*(medaille+1));
   if(mode === "braquage" && braquageOk){ ajouterXp(60); debloquer("braquage"); }
+  if(mode === "multi" && victoire) ajouterXp(80);
   if(mode === "ia"){ D.st.partiesIA++; if(victoire){ D.st.victoiresIA++; ajouterXp(80); debloquer("ia"); } }
   sauver();
   try{ document.dispatchEvent(new CustomEvent("qln:fin-partie", {detail:{mode, total, viesPerdues, medaille, victoire, braquageOk}})); }catch(e){}

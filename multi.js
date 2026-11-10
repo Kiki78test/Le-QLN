@@ -43,7 +43,7 @@ const TXT = {
   rapideCree:"Aucun salon en attente : le vôtre est ouvert. La partie démarre dès que d'autres joueurs arrivent.", rapideEchec:"Impossible de trouver un salon pour l'instant, réessayez.",
   enAttente:"Salons en attente", placesLibres:n=>`${n} place${n>1?"s":""} libre${n>1?"s":""}`, enLigneN:n=>`${n} joueur${n>1?"s":""} en ligne`,
   decompte:s=>`La partie démarre dans ${s} s`, autoAide:"Partie rapide : la partie démarre toute seule dès que 2 joueurs sont là.", lancerMaintenant:"Lancer maintenant",
-  avecCode:"Avec un code", objectif:"Objectif : finir le plus riche. Arriver 1er ne rapporte que +100 €.", horsLigne:"Hors connexion : le multijoueur revient dès que le réseau est de retour. Les autres modes restent jouables.",
+  version:"Ce salon joue dans une autre langue ou avec une autre version du jeu. Mettez l'appli à jour, ou créez votre salon.", avecCode:"Avec un code", objectif:"Objectif : finir le plus riche. Arriver 1er ne rapporte que +100 €.", horsLigne:"Hors connexion : le multijoueur revient dès que le réseau est de retour. Les autres modes restent jouables.",
 };
 
 /* ---------- Styles ---------- */
@@ -217,7 +217,7 @@ const Annuaire = {
   ecouter(fn){
     this.arreter(); this.fn = fn; this.carte.clear();
     if(enLigne()){
-      this.off = Socket.ecouter(m => { if(m.t === "__ouvert") Socket.envoyer({t:"annuaire"}); else if(m.t === "salons") fn(m.liste, "ligne", m.en_ligne); else if(m.t === "__coupe") fn(null, "coupe"); });
+      this.off = Socket.ecouter(m => { if(m.t === "__ouvert") Socket.envoyer({t:"annuaire"}); else if(m.t === "salons") fn((m.liste || []).filter(r => !r.lang || r.lang === LANGUE_JEU), "ligne", m.en_ligne); else if(m.t === "__coupe") fn(null, "coupe"); });
       if(Socket.etat === "ouvert") Socket.envoyer({t:"annuaire"});
     } else {
       this.bc = new BroadcastChannel("qln-annuaire");
@@ -227,14 +227,14 @@ const Annuaire = {
       this.pousser();
     }
   },
-  pousser(){ if(this.fn) this.fn([...this.carte.values()].filter(r => r.phase === "attente"), "local"); },
+  pousser(){ if(this.fn) this.fn([...this.carte.values()].filter(r => r.phase === "attente" && (!r.lang || r.lang === LANGUE_JEU)), "local"); },
   arreter(){ if(this.off){ if(Socket.etat === "ouvert") Socket.envoyer({t:"annuaire-stop"}); this.off(); this.off = null; } if(this.bc){ this.bc.close(); this.bc = null; } clearInterval(this.timer); this.fn = null; },
   // côté hôte
   publier(resume){ if(enLigne()) Socket.envoyer({t:"publier", resume}); else { try{ this.canalPub().postMessage({t:"publier", resume}); }catch(e){} } },
   depublier(code){ if(!enLigne()){ try{ this.canalPub().postMessage({t:"depublier", code}); }catch(e){} } },
   canalPub(){ if(!this.pub){ this.pub = new BroadcastChannel("qln-annuaire"); this.pub.onmessage = e => { if(e.data && e.data.t === "demande" && S && estHote()) publierSalon(); }; } return this.pub; },
 };
-function resumeSalon(){ const h = S.joueurs.find(j => j.hote) || S.moi; return {code:S.code, hote:h.pseudo, couleur:h.couleur, nb:S.joueurs.length, max:MAX, phase:S.phase, auto:!!S.auto, joueurs:S.joueurs.slice(0, MAX).map(j => ({pseudo:j.pseudo, couleur:j.couleur})), t:Date.now()}; }
+function resumeSalon(){ const h = S.joueurs.find(j => j.hote) || S.moi; return {code:S.code, lang:LANGUE_JEU, hote:h.pseudo, couleur:h.couleur, nb:S.joueurs.length, max:MAX, phase:S.phase, auto:!!S.auto, joueurs:S.joueurs.slice(0, MAX).map(j => ({pseudo:j.pseudo, couleur:j.couleur})), t:Date.now()}; }
 function publierSalon(){ if(S && estHote()) Annuaire.publier(resumeSalon()); }
 
 /* =========================================================================
@@ -244,11 +244,14 @@ let S = null; // {code, hote, moi, joueurs:[{id,pseudo,couleur,pret,vu,hote}], c
 const moi = () => S && S.joueurs.find(j => j.id === S.moi.id);
 const estHote = () => S && S.hote;
 const envoyer = m => S && S.canal.envoyer({...m, de:S.moi.id, code:S.code});
-const fermerSalon = () => { if(!S) return; clearInterval(S.timers.tick); clearInterval(S.timers.auto); clearInterval(S.timers.aff); if(estHote()) Annuaire.depublier(S.code); S.canal.fermer(); S = null; };
+const fermerSalon = () => { if(!S) return; if(typeof PlateauIA !== "undefined" && PlateauIA.enCours()) PlateauIA.arreter(); clearInterval(S.timers.tick); clearInterval(S.timers.auto); clearInterval(S.timers.aff); if(estHote()) Annuaire.depublier(S.code); S.canal.fermer(); S = null; };
 
 // Identité dans le salon = compte + onglet (permet de tester à plusieurs onglets dans un même navigateur)
 const onglet = () => { try{ let o = sessionStorage.getItem("qln-onglet"); if(!o){ o = Math.random().toString(36).slice(2,8); sessionStorage.setItem("qln-onglet", o); } return o; }catch(e){ return "x"; } };
-function joueurDepuisCompte(){ const c = Compte.get(); return {id:c.id+":"+onglet(), pseudo:c.pseudo, couleur:c.couleur, pret:false, vu:Date.now()}; }
+// langue et version du dictionnaire : la partie est rejouée à l'identique sur chaque appareil, il faut les mêmes cartes partout
+const LANGUE_JEU = document.documentElement.lang === "en" ? "en" : "fr";
+const signatureDico = () => { try{ return Object.keys(DICO).map(k => DICO[k].length).join("."); }catch(e){ return ""; } };
+function joueurDepuisCompte(){ const c = Compte.get(); return {id:c.id+":"+onglet(), pseudo:c.pseudo, couleur:c.couleur, pret:false, vu:Date.now(), lang:LANGUE_JEU, dico:signatureDico()}; }
 function couleurLibre(souhait){
   const prises = new Set(S.joueurs.map(j => j.couleur));
   if(!prises.has(souhait)) return souhait;
@@ -257,7 +260,8 @@ function couleurLibre(souhait){
 }
 const delaiAuto = n => n >= MAX ? 3 : (window.QLN_RAPIDE_DELAI || 10);
 function resteAuto(){ return S && S.auto && S.depart ? Math.max(0, Math.ceil((S.depart - Date.now())/1000)) : null; }
-function diffuserEtat(){ if(!estHote()) return; envoyer({t:"etat", joueurs:S.joueurs.map(({id,pseudo,couleur,pret,hote})=>({id,pseudo,couleur,pret,hote})), phase:S.phase, auto:!!S.auto, reste:resteAuto()}); }
+function diffuserEtat(){ if(!estHote()) return; envoyer({t:"etat", joueurs:S.joueurs.map(({id,pseudo,couleur,pret,hote})=>({id,pseudo,couleur,pret,hote})), phase:S.phase, auto:!!S.auto, reste:resteAuto(),
+  ...(S.phase === "jeu" ? {graine:S.graine, partie:S.partie} : {})}); }
 
 function creerSalon(opt = {}){
   Annuaire.arreter();
@@ -316,7 +320,12 @@ function recevoir(m){
   if(m && m.t === "__coupe" && S){ if(S.canal.type === "ligne"){ fermerSalon(); ecranMulti(); toast(TXT.coupe, 5000); } return; }
   if(m && m.t === "__ouvert" && S){ if(!estHote()) envoyer({t:"bonjour", joueur:S.moi}); return; }
   if(!S || !m || m.code !== S.code || m.de === S.moi.id) return;
-  const j = S.joueurs.find(x => x.id === m.de);
+  let j = S.joueurs.find(x => x.id === m.de);
+  // pendant la partie, un joueur retiré pour silence (appli en arrière-plan…) qui se manifeste reprend sa place
+  if(!j && estHote() && S.phase === "jeu" && S.partie && (m.t === "ping" || m.t === "act")){
+    const p = S.partie.find(x => x.id === m.de);
+    if(p){ j = {...p, pret:true, vu:Date.now(), hote:false}; S.joueurs.push(j); diffuserEtat(); }
+  }
   if(m.de === "serveur"){
     if(m.t === "ferme"){ fermerSalon(); ecranMulti(); toast(TXT.salonFerme); }
     else if(m.t === "refus" && m.pour === S.moi.id){ echecRejoindre(TXT[m.raison] || TXT.introuvable); }
@@ -328,6 +337,7 @@ function recevoir(m){
         if(j){ j.vu = Date.now(); diffuserEtat(); break; }
         if(S.phase !== "attente"){ envoyer({t:"refus", pour:m.de, raison:"enCours"}); break; }
         if(S.joueurs.length >= MAX){ envoyer({t:"refus", pour:m.de, raison:"plein"}); break; }
+        if((m.joueur.lang || "fr") !== LANGUE_JEU || (m.joueur.dico && m.joueur.dico !== signatureDico())){ envoyer({t:"refus", pour:m.de, raison:"version"}); break; }
         const couleur = couleurLibre(m.joueur.couleur);
         S.joueurs.push({...m.joueur, couleur, pret:!!S.auto, vu:Date.now(), hote:false});
         if(couleur !== m.joueur.couleur) envoyer({t:"info", pour:m.de, texte:"couleurPrise"});
@@ -337,6 +347,7 @@ function recevoir(m){
       case "pret": if(j){ j.pret = !!m.pret; j.vu = Date.now(); rafraichir(); diffuserEtat(); Son.tap(); } break;
       case "quitter": if(j){ S.joueurs = S.joueurs.filter(x => x !== j); toast(TXT.parti(j.pseudo), 2200); rafraichir(); diffuserEtat(); publierSalon(); } break;
       case "chat": if(j){ j.vu = Date.now(); bulle(j.id, m.emoji); envoyer({t:"chat", emoji:m.emoji, auteur:j.id}); } break;
+      case "act": if(j){ j.vu = Date.now(); if(S.phase === "jeu" && typeof PlateauIA !== "undefined") PlateauIA.recevoirMulti(m); } break;   // décision d'un joueur sur le plateau
     }
   } else {
     switch(m.t){
@@ -346,12 +357,14 @@ function recevoir(m){
         S.joueurs = m.joueurs.map(x => ({...x, vu:Date.now()}));
         const me = moi(); if(me) S.moi.couleur = me.couleur;
         if(premier){ Son.ok(); vibre(15); }
+        if(m.phase === "jeu" && m.graine && S.graine == null){ S.graine = m.graine; S.partie = m.partie; }
         if(m.phase === "jeu" && !S.rendu?.jeu) ecranDepart(); else rafraichir();
         break; }
       case "refus": if(m.pour === S.moi.id) echecRejoindre(TXT[m.raison] || TXT.introuvable); break;
       case "info": if(m.pour === S.moi.id) toast(TXT[m.texte] || m.texte, 3500); break;
       case "chat": bulle(m.auteur, m.emoji); break;
-      case "demarrer": S.phase = "jeu"; S.graine = m.graine; ecranDepart(); break;
+      case "demarrer": S.phase = "jeu"; S.graine = m.graine; S.partie = m.partie; ecranDepart(); break;
+      case "dec": if(typeof PlateauIA !== "undefined") PlateauIA.recevoirMulti(m); break;   // décision validée par l'hôte
       case "ferme": fermerSalon(); ecranMulti(); toast(TXT.salonFerme); break;
     }
   }
@@ -382,7 +395,8 @@ function lancer(){
   if(S.auto) S.joueurs.forEach(j => j.pret = true);
   if(n < 2 || !S.joueurs.every(j => j.pret)){ toast(TXT.lancerAide(n)); return; }
   S.phase = "jeu"; S.graine = Math.floor(Math.random()*1e9);
-  envoyer({t:"demarrer", graine:S.graine}); diffuserEtat(); publierSalon();
+  S.partie = S.joueurs.map(({id, pseudo, couleur, hote}) => ({id, pseudo, couleur, hote:!!hote}));
+  envoyer({t:"demarrer", graine:S.graine, partie:S.partie}); diffuserEtat(); publierSalon();
   Son.fin(); vibre([30,40,30]);
   ecranDepart();
 }
@@ -541,24 +555,28 @@ function rafraichir(){
 }
 
 function ecranDepart(){
-  if(!S) return;
-  S.rendu = {jeu:true};
+  if(!S || S.graine == null || !S.partie) return;
+  if(S.partieLancee === S.graine) return;          // (une seule fois par partie, même si l'état est rediffusé)
+  S.partieLancee = S.graine; S.rendu = {jeu:true};
+  const hoteId = (S.partie.find(j => j.hote) || S.partie[0]).id;
   app.innerHTML = `
   <section class="ecran">
     <div class="entete-ecran"><span></span><h1>${TXT.salon} ${S.code}</h1><span></span></div>
     <div class="m-carte m-depart">
       <div class="gros">${TXT.depart}</div>
-      <div class="m-sieges">${S.joueurs.map(j => `<span>${jetonSVG(pions()[j.couleur % pions().length].c)}${esc(j.pseudo)}</span>`).join("")}</div>
+      <div class="m-sieges">${S.partie.map(j => `<span>${jetonSVG(pions()[j.couleur % pions().length].c)}${esc(j.pseudo)}</span>`).join("")}</div>
+      <p class="m-objectif">${TXT.objectif}</p>
     </div>
-    <div class="m-carte">
-      <span class="lbl">${TXT.etape}</span>
-      <div class="m-aide">${TXT.etapeTexte}</div>
-    </div>
-    <div class="duo"><button class="bouton piece c-noir" id="m-retour">${TXT.retourSalon}</button><button class="bouton piece c-jaune" id="m-accueil">${TXT.retourAccueil}</button></div>
   </section>`;
   if(typeof confettis === "function") setTimeout(() => confettis(120), 300);
-  $("#m-retour").onclick = () => { S.phase = "attente"; S.joueurs.forEach(j => j.pret = false); if(estHote()){ diffuserEtat(); publierSalon(); } ecranSalon(); };
-  $("#m-accueil").onclick = () => { if(estHote()) envoyer({t:"ferme"}); else envoyer({t:"quitter"}); fermerSalon(); ecranAccueil(); };
+  const graine = S.graine;
+  setTimeout(() => {
+    if(!S || S.partieLancee !== graine) return;
+    PlateauIA.demarrerMulti({graine, joueurs:S.partie, moi:S.moi.id, hote:estHote(), hoteId,
+      envoyer, present:id => !!S && S.joueurs.some(j => j.id === id),
+      quitter:() => { if(!S) return; if(estHote()) envoyer({t:"ferme"}); else envoyer({t:"quitter"}); fermerSalon(); },
+      retour:() => { if(!S) return ecranMulti(); S.phase = "attente"; S.joueurs.forEach(j => j.pret = false); S.rendu = null; if(estHote()){ diffuserEtat(); publierSalon(); } ecranSalon(); }});
+  }, 1800 * (window.QLN_TEST_VITE || 1));
 }
 
 // Lien direct ?salon=CODE → ouvre l'écran multijoueur avec le code pré-rempli

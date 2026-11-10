@@ -87,7 +87,7 @@ function classement(){
   if(!G){ fermer(); if(typeof Compte !== "undefined") Compte.ecranClassements(); return; }
   const js = [...G.joueurs].sort((a, b) => (a.horsJeu - b.horsJeu) || (G.caches ? 0 : b.argent - a.argent));
   volet(T.partie, `<p class="bb-or">${T.riche}</p>` + js.map((j, i) => {
-    const cache = G.caches && j.ia;
+    const cache = G.caches && (G.multi ? j.id !== G.multi.moi : j.ia);
     return `<div class="bb-ligne"><span class="rang">${G.caches ? "·" : i + 1}</span><span><b>${esc(j.nom)}</b><small>${j.horsJeu ? T.hors : j.arrive ? T.arrive(j.arrive) : T.enJeu} · ${j.reussies}/${j.cartes}</small></span><span class="somme">${cache ? "•••" : euros(j.argent)}</span></div>`;
   }).join("") + (G.caches ? `<p class="bb-note">${T.noteCache}</p>` : ""));
 }

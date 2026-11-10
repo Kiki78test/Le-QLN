@@ -51,7 +51,10 @@ st.append(Paragraph("Multijoueur",H2))
 st+=ul(["Profil joueur (pseudo + pion), salons publics visibles par tous, code à 5 lettres et lien de partage, liste des joueurs, état « prêt », réactions rapides, lancement par l'hôte (2 à 6 joueurs).",
  "<b>Accueil multi</b> : liste des salons en attente (pions présents, places libres, mis en avant les plus remplis) et nombre de joueurs en ligne.",
  "<b>Partie rapide</b> : un bouton qui rejoint au hasard un salon en attente (le plus rempli), ou en ouvre un automatique ; la partie démarre toute seule quelques secondes après l'arrivée du 2e joueur (3 s si le salon est plein).",
- "<b>État</b> : serveur en ligne sur Render ; la partie synchronisée sur le plateau reste à faire."])
+ "<b>Partie sur le plateau, synchronisée</b> : mêmes règles que « Contre l'IA » (dé, choix de la case, cartes et sabliers, enchères, prison et garant, bonus d'arrivée, le plus riche gagne). Chacun joue sur son appareil ; quand un joueur joue sa carte, les autres la voient en direct, préparent une réponse et enchérissent s'il sèche. Les gains des autres restent cachés jusqu'au podium.",
+ "<b>Comment c'est synchronisé</b> : chaque appareil fait tourner la même partie à partir d'un hasard commun ; chaque décision d'un joueur est numérotée, validée par l'hôte puis rediffusée à tous. Il faut la même langue et la même version du dictionnaire (sinon le salon refuse l'entrée, avec un message).",
+ "<b>Joueur lent ou parti</b> : l'appli joue à sa place (dé lancé, case la plus proche de l'arrivée, carte séchée, pas d'enchère) après un délai (dé et case 45-60 s, carte : sablier + 25 s, enchère 50 s), ou au bout de 3 s s'il a quitté ; un joueur revenu reprend la main. Si l'hôte quitte, la partie s'arrête pour tous.",
+ "Fin : podium détaillé chez chacun, « Retour au salon » pour rejouer ; une victoire rapporte 80 XP."])
 
 st.append(Paragraph("3. Les règles avancées (Défi et Festival)",H))
 st.append(tbl([["Règle","Effet"],
@@ -109,14 +112,14 @@ st.append(Paragraph("8. Documentation intégrée",H))
 st+=ul(["Onglet Documentation (accueil) : PDF et tableurs datés — choix du nom, textes juridiques, mise en ligne du serveur, publicité réelle, idées de noms, monétisation publicitaire, propositions de règles, mots douteux, dictionnaire anglais, et ce document."])
 
 st.append(Paragraph("9. Ce qui reste à faire",H))
-st+=ul(["Partie multijoueur synchronisée sur le plateau (dés, cartes et sabliers partagés).",
+st+=ul(["Multijoueur : reprendre une partie après une coupure (rejeu depuis l'hôte) ; relais de l'hôte si celui-ci quitte.",
  "Mot de passe oublié (service d'e-mail), amis ; chronos du défi du jour rejoués côté serveur (les mots et cartes sont déjà vérifiés).",
  "Renseigner l'éditeur, l'adresse et le contact légaux (marque.json) ; relecture des textes juridiques.",
  "Vraie régie publicitaire : comptes Play Console et AdMob créés (validation d'identité en cours), applis Android et iOS prêtes ; reste à brancher AdMob, le consentement et l'achat « Sans pub ».",
  "Hébergement : base Render à passer en Basic avant le 10/12/2026, serveur en Starter à l'ouverture au public ; domaine (Cloudflare) quand le nom est choisi.",
  "Décisions en attente : vidéos récompense touchant aux règles, propositions de règles, mots douteux, nom définitif."])
 st.append(Paragraph("Historique des versions",H))
-st+=ul(["<b>10 nov. 2026 (nuit)</b> — fiches des stores (textes FR/EN, captures, questionnaires) ; séries en espagnol, allemand et italien.",
+st+=ul(["<b>10 nov. 2026 (nuit)</b> — multijoueur synchronisé sur le plateau (mêmes règles que contre l'IA) ; fiches des stores (textes FR/EN, captures, questionnaires) ; séries en espagnol, allemand et italien.",
  "<b>10 nov. 2026 (soirée)</b> — barre du bas sur ordinateur, jetons des joueurs (anneau lumineux, initiale sur le plateau), chevrons sur les tuiles de l'accueil.",
  "<b>10 nov. 2026 (soirée)</b> — règles du jeu illustrées ; documentation à signature visuelle commune ; « le plus riche gagne » rendu évident sur le plateau.",
  "<b>10 nov. 2026 (fin de journée)</b> — design rapproché des maquettes : dé blanc 3D avec halo et anneaux dorés, cadre lumineux du plateau, libellés du plateau en caractères gras, traînées de lumière en fond.",

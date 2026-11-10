@@ -128,6 +128,57 @@ async function rapide(lang, api){
   sansErreur(un.erreurs); sansErreur(deux.erreurs);
   await un.ctx.close(); if(deux.ctx) await deux.ctx.close();
 }
+/* Plateau multijoueur : une partie complète à deux, chaque appareil rejoue la même partie ; un « pilote » répond au hasard
+   à la place de chaque joueur (dé, case, carte, enchères, offres, prison, garant). Les deux podiums doivent être identiques. */
+async function partieMulti(lang, api, {depart = false} = {}){
+  const pre = lang === "en" ? "-en" : "";
+  const un = await ouvrir(lang, "telephone", {api});
+  let deux;
+  if(api) deux = await ouvrir(lang, "telephone", {api});
+  else { const p2 = await un.ctx.newPage(); p2.setDefaultTimeout(8000); const er = []; p2.on("pageerror", e => er.push(e.message)); deux = {p:p2, ctx:null, erreurs:er}; await p2.addInitScript(() => { try{ for(const k of ["qln:", "qln-en:"]){ localStorage.setItem(k + "progres", JSON.stringify({tuto:"fait"})); localStorage.setItem(k + "pub", "false"); } }catch(e){} }); await p2.route(/\/config\.js(\?|$)/, r => r.fulfill({contentType:"application/javascript", body:'window.QLN_API_URL="";window.QLN_WS_URL="";window.QLN_GOOGLE_CLIENT_ID="";'})); await p2.goto(`${SITE}/${lang === "en" ? "en/" : ""}index.html`); await p2.waitForSelector("#b-defi"); await p2.waitForFunction(() => typeof DICO !== "undefined" && DICO && DICO.v && DICO.v.length > 0, null, {timeout:15000}); }
+  await un.p.evaluate(`localStorage.setItem("qln${pre}:compte", JSON.stringify({id:"t-Ana", pseudo:"Ana", couleur:0, cree:1}))`);
+  for(const j of [un, deux]) await j.p.evaluate(() => {
+    window.QLN_RAPIDE_DELAI = 2; window.QLN_TEST_VITE = .04;
+    window.QLN_TEST_PILOTE = (type, ctx) => {
+      const r = Math.random();
+      if(type === "de") return true;
+      if(type === "case") return Math.floor(r * ctx.opts.length);
+      if(type === "carte"){ const s = solutionsDe(ctx.c); return r < .5 ? {proposition:norm(s[0])} : r < .6 ? {proposition:"ZZZZ"} : {proposition:null}; }
+      if(type === "ench") return r < .4 ? null : {mot:solutionsDe(ctx.c)[0], montant:Math.max(5, Math.floor(ctx.maxi/10)*5)};
+      if(type === "offre") return r < .8 ? 0 : -1;
+      if(type === "prison") return ["payer", "aide", "attendre"][Math.floor(r*3)];
+      if(type === "garant") return r < .5;
+      return null;
+    };
+  });
+  await un.p.evaluate(() => { document.querySelector("#b-multi").click(); });
+  await un.p.waitForSelector("#m-rapide"); await un.p.click("#m-rapide", {force:true});
+  await un.p.waitForFunction(() => Multi.etat() && Multi.etat().code, null, {timeout:12000});
+  await deux.p.evaluate(`localStorage.setItem("qln${pre}:compte", JSON.stringify({id:"${api ? "t-Bob" : "t-Ana"}", pseudo:"Bob", couleur:1, cree:1}))`);
+  await deux.p.evaluate(() => { document.querySelector("#b-multi").click(); });
+  await deux.p.waitForSelector("#m-rapide"); await deux.p.waitForTimeout(800); await deux.p.click("#m-rapide", {force:true});
+  // le plateau s'affiche chez les deux, puis la partie se joue jusqu'au podium
+  for(const j of [un, deux]) await j.p.waitForSelector("#tapis", {state:"attached", timeout:20000});
+  if(depart){
+    // le 2e joueur ferme l'appli en cours de partie : l'hôte termine seul, l'appli joue à la place de l'absent
+    await deux.p.waitForTimeout(1500); await deux.p.close({runBeforeUnload:true});
+    await un.p.waitForSelector("#b-salon", {timeout:240000});
+    const fin = await un.p.evaluate(() => [...document.querySelectorAll(".podium-l")].length);
+    assert.equal(fin, 2, "podium complet malgré le départ"); sansErreur(un.erreurs); await un.ctx.close(); return;
+  }
+  for(const j of [un, deux]) await j.p.waitForSelector("#b-salon", {timeout:240000});
+  const podium = p => p.evaluate(() => [...document.querySelectorAll(".podium-l")].map(l => [l.querySelector("span:nth-of-type(2)").firstChild.textContent.trim(), l.querySelector("b").textContent, l.querySelector(".podium-detail") ? l.querySelector(".podium-detail").textContent : ""]));
+  const a = await podium(un.p), b = await podium(deux.p);
+  assert.equal(a.length, 2); assert.deepEqual(a, b, "même partie, même résultat chez les deux joueurs");
+  assert.deepEqual(a.map(x => x[0]).sort(), ["Ana", "Bob"]);
+  sansErreur(un.erreurs); sansErreur(deux.erreurs);
+  await un.ctx.close(); if(deux.ctx) await deux.ctx.close();
+  return a;
+}
+for(const lang of ["fr", "en"]) test(`${lang} · multijoueur : partie complète synchronisée sur le plateau (local)`, {timeout:300000}, async () => { await partieMulti(lang, ""); });
+test("multijoueur : un joueur quitte en cours de partie, l'hôte termine (local)", {timeout:300000}, async () => { await partieMulti("fr", "", {depart:true}); });
+test("multijoueur : partie complète synchronisée sur le plateau (serveur)", {timeout:300000, skip: !SERVEUR && "pas de serveur (QLN_TEST_URL)"}, async () => { await partieMulti("fr", SERVEUR); });
+
 for(const lang of ["fr", "en"]) test(`${lang} · multijoueur : partie rapide à deux (local)`, async () => { await rapide(lang, ""); });
 test("multijoueur : partie rapide à deux (serveur)", {skip: !SERVEUR && "pas de serveur (QLN_TEST_URL)"}, async () => { await rapide("fr", SERVEUR); });
 

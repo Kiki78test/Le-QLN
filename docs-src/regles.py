@@ -48,6 +48,7 @@ h += f"""<div class="r"><h2>{med("v","1")}Le principe</h2>
 <p>Le tapis {NOM} complet, de 2 à 6 joueurs. Lancez le dé, avancez, et résolvez la carte de la couleur de la case. Réussite : vous encaissez et vous rejouez. Échec : les autres joueurs peuvent enchérir pour racheter la carte.</p>
 <p>Cases CD : vous choisissez votre chemin. Bonus et Malus : la banque vous verse ou vous prend le montant. Passe : vous attendez le tour suivant. Retour départ : retour sur la ligne de départ. Prison : payez la caution, faites-vous libérer par un joueur (qui touchera vos gains des 2 tours suivants) ou attendez 2 tours.</p>
 <p>L'arrivée demande un dé au moins égal au nombre de cases restantes et rapporte un bonus selon votre ordre d'arrivée (+100 € à −100 €). Les gains des adversaires restent cachés jusqu'à la fin.</p>
+<p>En multijoueur, chacun joue sur son téléphone, avec exactement les mêmes règles : quand un joueur résout sa carte, les autres la voient et peuvent enchérir s'il sèche. Un joueur trop lent ou parti est remplacé par l'appli pour ses décisions.</p>
 <div class="or"><b>Le plus riche gagne, pas le premier arrivé.</b>Arriver 1er ne rapporte que +100 € : gagnez des cartes, misez aux enchères. Le podium final détaille les gains : cartes, enchères, cases, arrivée.</div></div>
 <div class="r"><h2>{med("v","4")}Le Défi</h2>
 <p>Dix cartes de difficulté croissante et trois vies. Chaque carte non résolue coûte une vie.</p>
