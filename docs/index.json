@@ -1,15 +1,15 @@
 [
   {
-    "titre": "Services externes (développeur)",
-    "fichier": "services-externes.pdf",
-    "date": "2026-11-10",
-    "description": "Note technique : services (GitHub, Render, Google, Apple, Resend, Cloudflare, Wiktionnaire), variables d'environnement et secrets, tables de la base, API et multijoueur, anti-triche, stockage de l'appli, applis mobiles, tests, coûts et échéances."
-  },
-  {
     "titre": "Check-list",
     "fichier": "check-list.pdf",
     "date": "2026-11-10",
     "description": "Échéances (base Render en Basic avant le 10/12), démarches en cours de votre côté, décisions à prendre, prochaines étapes et ce qui est fait."
+  },
+  {
+    "titre": "Services externes (développeur)",
+    "fichier": "services-externes.pdf",
+    "date": "2026-11-10",
+    "description": "Note technique : services (GitHub, Render, Google, Apple, Resend, Cloudflare, Wiktionnaire), variables d'environnement et secrets, tables de la base, API et multijoueur, anti-triche, stockage de l'appli, applis mobiles, tests, coûts et échéances."
   },
   {
     "titre": "Thèmes des séries",

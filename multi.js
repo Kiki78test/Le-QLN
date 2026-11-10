@@ -43,7 +43,7 @@ const TXT = {
   rapideCree:"Aucun salon en attente : le vôtre est ouvert. La partie démarre dès que d'autres joueurs arrivent.", rapideEchec:"Impossible de trouver un salon pour l'instant, réessayez.",
   enAttente:"Salons en attente", placesLibres:n=>`${n} place${n>1?"s":""} libre${n>1?"s":""}`, enLigneN:n=>`${n} joueur${n>1?"s":""} en ligne`,
   decompte:s=>`La partie démarre dans ${s} s`, autoAide:"Partie rapide : la partie démarre toute seule dès que 2 joueurs sont là.", lancerMaintenant:"Lancer maintenant",
-  avecCode:"Avec un code", horsLigne:"Hors connexion : le multijoueur revient dès que le réseau est de retour. Les autres modes restent jouables.",
+  avecCode:"Avec un code", objectif:"Objectif : finir le plus riche. Arriver 1er ne rapporte que +100 €.", horsLigne:"Hors connexion : le multijoueur revient dès que le réseau est de retour. Les autres modes restent jouables.",
 };
 
 /* ---------- Styles ---------- */
@@ -104,6 +104,7 @@ css.textContent = `
 .m-salon .nom small{display:block; background:none; padding:0; color:var(--brume); font:600 13px var(--f-ui); letter-spacing:.03em; text-transform:none}
 .m-salon .nom small.rap{display:inline-block; background:linear-gradient(#ffe066,#e0a800); color:#1b1a05; padding:2px 8px; border-radius:999px; font:800 11px var(--f-ui); letter-spacing:.08em; text-transform:uppercase}
 .m-salon{grid-template-columns:auto 1fr auto; gap:10px}
+.m-objectif{display:flex; align-items:center; justify-content:center; gap:8px; padding:8px 12px; border-radius:12px; text-align:center; font:700 14.5px var(--f-ui); color:#3a2a00; background:linear-gradient(180deg,#fff3c0,#ffd95e); box-shadow:inset 0 0 0 1.5px rgba(160,110,0,.35)} .m-objectif i{font-style:normal; font-size:17px}
 .m-rapide{width:100%; margin:2px 0; grid-column:1/-1} .m-rapide[disabled]{opacity:.75}
 .m-en-ligne{font:600 13px var(--f-ui); color:var(--brume-2); display:flex; align-items:center; gap:7px} .m-en-ligne i{width:8px; height:8px; border-radius:50%; background:#9be15d; box-shadow:0 0 8px #9be15d}
 @media (min-width:700px){ .m-grille{display:grid; grid-template-columns:1fr 1fr; gap:16px; align-items:start} }
@@ -507,6 +508,7 @@ function ecranSalon(){
         <div class="m-chat" aria-label="${TXT.chatAide}">${TXT.chat.map(e => `<button data-e="${e}">${e}</button>`).join("")}</div>
       </div>
     </div>
+    <div class="m-objectif"><i aria-hidden="true">🏆</i>${TXT.objectif}</div>
     <div class="m-etat" id="m-msg"></div>
     <div class="duo" id="m-actions"></div>
   </section>`;

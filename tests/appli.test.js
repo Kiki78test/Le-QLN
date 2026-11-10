@@ -219,3 +219,17 @@ for(const lang of ["fr", "en"]) test(`${lang} : séries à thème et par langue`
   }
   sansErreur(erreurs); await ctx.close();
 });
+
+test("plateau : rappel « le plus riche gagne » et podium détaillé", async () => {
+  const {p, ctx, erreurs} = await ouvrir("fr", "telephone");
+  await p.evaluate(() => document.querySelector("#b-ia").click()); await p.click("#b-go", {force:true});
+  await p.waitForSelector("#b-parti");
+  assert.match(await p.textContent(".regle-or"), /Le plus riche gagne/);
+  await p.evaluate(() => document.querySelector("#b-parti").click()); await p.waitForTimeout(300);
+  assert.match(await p.evaluate(() => document.querySelector("#tapis").textContent), /BONUS\s*D'ARRIVÉE/);
+  await p.evaluate(() => { const G = PlateauIA._etat(); G.joueurs.forEach((j, i) => { j.detail = {cartes:100 + i*10, encheres:-20, cases:40, arrivee:[100,75,50,-25][i]}; j.argent = Object.values(j.detail).reduce((a, b) => a + b, 0); j.arrive = i + 1; }); PlateauIA._fin(); });
+  await p.waitForSelector(".podium-detail");
+  const txt = await p.textContent(".podium-l.premier .podium-detail");
+  assert.match(txt, /Cartes/); assert.match(txt, /Arrivée/);
+  sansErreur(erreurs); await ctx.close();
+});

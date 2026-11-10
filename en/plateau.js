@@ -93,6 +93,12 @@ css.textContent = `
 .podium-l{display:grid; grid-template-columns:40px auto 1fr auto; gap:12px; align-items:center; background:rgba(3,10,30,.5); border-radius:12px; padding:10px 14px; font-family:var(--f-ui); font-weight:700; font-size:19px; animation:pioche .5s backwards}
 .podium-l.premier{background:linear-gradient(100deg, rgba(255,207,58,.3), rgba(3,10,30,.5)); box-shadow:inset 0 0 0 2px var(--or)}
 .podium-l.hors{opacity:.55}
+.podium-detail{grid-column:1/-1; display:flex; flex-wrap:wrap; align-items:flex-start; align-self:start; gap:6px; margin-top:2px}
+.podium-detail i{display:inline-block; width:auto; height:auto; min-height:0; line-height:1.35; white-space:nowrap; animation:none; font:700 13px/1.35 var(--f-ui); font-style:normal; letter-spacing:.03em; padding:3px 9px; border-radius:999px; background:rgba(255,255,255,.08); color:var(--brume-2)}
+.podium-detail i em{font-style:normal; color:#fff} .podium-detail i.plus em{color:#9be15d} .podium-detail i.moins em{color:#ff8f7d} .podium-detail i.zero{opacity:.55}
+.podium-detail i.pd-arrivee{box-shadow:inset 0 0 0 1px rgba(255,214,90,.55)}
+.regle-or{margin:2px 0 0; padding:9px 12px; border-radius:12px; text-align:center; font:600 15.5px/1.3 var(--f-ui); color:#3a2a00; background:linear-gradient(180deg,#fff3c0,#ffd95e); box-shadow:inset 0 0 0 1.5px rgba(160,110,0,.35)}
+.regle-or b{display:block; font:800 19px var(--f-ui); letter-spacing:.02em}
 .podium-l .rang{font-family:var(--f-titre); font-size:34px; color:var(--or); line-height:1}
 .podium-l .pion-svg{width:22px; height:32px}
 .podium-l b{font-family:var(--f-titre); font-weight:400; font-size:30px; color:var(--or); font-variant-numeric:tabular-nums}
@@ -314,7 +320,7 @@ async function demarrer(cfg){
   const joueurs = [
     {id:"h", nom: cfg.nom || "You", couleur: PIONS[cfg.couleur].c, ia:null},
     ...advC.map((ci,k) => ({id:"ia"+k, nom:NOMS_IA[k], couleur:PIONS[ci].c, ia:cfg.niveau})),
-  ].map(j => ({...j, argent:0, pos:"D", prison:0, dette:null, arrive:null, horsJeu:false, cartes:0, reussies:0}));
+  ].map(j => ({...j, argent:0, pos:"D", prison:0, dette:null, arrive:null, horsJeu:false, cartes:0, reussies:0, detail:{cartes:0, encheres:0, cases:0, arrivee:0}}));
   G = { joueurs, ordre:[], idx:0, caches:cfg.caches, rapideIA:cfg.rapide, rapide:false, arrivees:[], deja:new Set(), journal:[], dernier:null, tours:0, courant:null };
   ecranPlateau();
   try{
@@ -340,9 +346,11 @@ async function tirerOrdre(){
   const v = panneau({classe:"c-jaune", titre:"Starting order", corps:`
     <p class="texte-centre" style="font-size:17px">Each player rolls the die. The highest goes first; ties are re-rolled.</p>
     <div class="ordre">${classement.map((j,i)=>`<div class="ordre-l"><span class="rang">${i+1}</span>${pionSVG(j.couleur)}<span>${esc(j.nom)}${j.ia?"":" (you)"}</span><span class="dee" aria-label="die ${lancers[j.id].join(" then ")}">${lancers[j.id].map(x=>DES[x]).join(" ")}</span></div>`).join("")}</div>
+    <p class="regle-or"><b>The richest player wins!</b> Finishing 1st only pays +€100: win cards, bid at auctions.</p>
     <button class="bouton piece c-rouge" id="b-parti">Let's go</button>`});
   $("#b-parti", v).focus();
   await ui(new Promise(r => $("#b-parti", v).onclick = () => { v.remove(); r(); }));
+  toast("The richest player wins!\nFinishing 1st = only +€100", 3200);
   journal(null, `Starting order: ${classement.map(j=>j.nom).join(", ")}.`);
 }
 
@@ -540,21 +548,21 @@ function fermeture(v, auto=0){
 }
 
 /* ---------- Argent ---------- */
-function crediter(j, montant, motif){
+function crediter(j, montant, motif, cat = "cases"){
   if(montant <= 0) return;
   if(j.dette){
     const g = J(j.dette.vers);
-    g.argent += montant;
+    g.argent += montant; g.detail.cases += montant;
     journal(j, `${motif}: ${euros(montant)} for ${j.nom}, passed on to ${g.nom} (bail).`);
   } else {
-    j.argent += montant;
+    j.argent += montant; j.detail[cat] += montant;
     journal(j, `${motif} : ${j.nom} encaisse ${euros(montant)}.`);
   }
   if(!j.ia && !j.dette) envolerGain(montant, $(`.joueur[data-id="${j.id}"]`));
   majJoueurs();
 }
-function debiter(j, montant, motif){
-  j.argent -= montant;
+function debiter(j, montant, motif, cat = "cases"){
+  j.argent -= montant; j.detail[cat] -= montant;
   journal(j, `${motif} : ${j.nom} verse ${euros(montant)}.`);
   if(!j.ia) envolerGain(-montant, $(`.joueur[data-id="${j.id}"]`));
   majJoueurs();
@@ -572,7 +580,7 @@ async function jouerCarte(j, niv){
 
   if(resultat.mot){
     j.reussies++;
-    crediter(j, N.gain, `${N.nom} card`);
+    crediter(j, N.gain, `${N.nom} card`, "cartes");
     Son.ok();
     await faceB(c, {titre:`${j.nom} wins the card`, valeur:"+"+euros(N.gain), trouve:resultat.mot, texte:`${j.nom} plays again.`, auto: j.ia ? 2600 : 0});
     return true;
@@ -604,9 +612,9 @@ async function jouerCarte(j, niv){
   }
   const w = gagnante.joueur;
   journal(w, `${w.nom} wins the auction with ${gagnante.mot.toUpperCase()} for ${euros(gagnante.montant)}.`);
-  crediter(w, N.gain, "Card buyout");
-  debiter(w, gagnante.montant, "Auction");
-  crediter(j, gagnante.montant, "Auction income");
+  crediter(w, N.gain, "Card buyout", "cartes");
+  debiter(w, gagnante.montant, "Auction", "encheres");
+  crediter(j, gagnante.montant, "Auction income", "encheres");
   Son.piece();
   await faceB(c, {titre:`Auction: ${w.nom}`, valeur:euros(gagnante.montant), trouve:gagnante.mot,
     texte:`${w.nom} collects ${euros(N.gain)} and pays ${euros(gagnante.montant)} to ${j.nom}, who takes the turn back.`, auto: (j.ia && w.ia) ? 3000 : 0});
@@ -789,7 +797,7 @@ async function prison(j){
   dock({de:false, msg:`${esc(j.nom)} is in jail`, sous:`Bail: €${CAUTION}`});
   const garantsIA = () => actifs().filter(a => a !== j && a.ia && a.argent >= CAUTION + 30 && Math.random() < PROFILS[a.ia].garant);
   const payerGarant = async g => {
-    g.argent -= CAUTION; j.dette = {vers:g.id, tours:2};
+    g.argent -= CAUTION; g.detail.cases -= CAUTION; j.dette = {vers:g.id, tours:2};
     journal(g, `${g.nom} pays ${j.nom}'s bail and will collect their winnings for 2 turns.`);
     majJoueurs();
     await annonce(j, {titre:"Released", detail:`thanks to ${g.nom}`, classe:"c-vert"}, `${g.nom} pays the bail. ${j.nom} will pass all their winnings to them for the next 2 turns.`);
@@ -844,11 +852,17 @@ async function arriver(j){
   const rang = G.arrivees.length + 1, bonus = BONUS_ARRIVEE[rang-1];
   j.arrive = rang; G.arrivees.push(j.id);
   dessinerPions();
-  if(bonus > 0) crediter(j, bonus, `Finish ${ordinal(rang)}`); else debiter(j, -bonus, `Finish ${ordinal(rang)}`);
+  if(bonus > 0) crediter(j, bonus, `Finish ${ordinal(rang)}`, "arrivee"); else debiter(j, -bonus, `Finish ${ordinal(rang)}`, "arrivee");
   journal(j, `${j.nom} crosses the finish in ${ordinal(rang)} place.`);
   Son.fin(); if(!j.ia) confettis(110);
   await annonce(j, {titre:"Finish", detail:`${ordinal(rang)} · €${bonus>0?"+":"−"}${Math.abs(bonus)}`, classe:"c-jaune"},
     j.ia ? `${j.nom} finishes in ${ordinal(rang)} place.` : `You finish in ${ordinal(rang)} place. ${actifs().length ? "The other players finish the game." : ""}`);
+}
+/* détail des gains d'un joueur : d'où vient son argent (montre que l'arrivée n'est qu'un bonus) */
+const LBL_DETAIL = {cartes:"Cards", encheres:"Auctions", cases:"Squares", arrivee:"Finish"};
+function detailPodium(x){
+  const d = x.detail || {};
+  return `<span class="podium-detail">${Object.keys(LBL_DETAIL).map(k => { const v = d[k] || 0; return `<i class="${v > 0 ? "plus" : v < 0 ? "moins" : "zero"} pd-${k}">${LBL_DETAIL[k]} <em>${v > 0 ? "+" : v < 0 ? "−" : ""}${euros(Math.abs(v))}</em></i>`; }).join("")}</span>`;
 }
 async function finPartie(){
   G.courant = null;
@@ -867,7 +881,7 @@ async function finPartie(){
     <div class="podium">${classes.map((x,i)=>`<div class="podium-l ${i===0&&!x.horsJeu?"premier":""} ${x.horsJeu?"hors":""}" style="animation-delay:${i*120}ms">
       <span class="rang">${x.horsJeu ? "—" : i+1}</span>${pionSVG(x.couleur)}
       <span>${esc(x.nom)}${x.ia?` <small>${PROFILS[x.ia].nom.toLowerCase()} AI</small>`:" <small>you</small>"}<small>${x.horsJeu ? "Out" : `Finished${x.arrive?" "+ordinal(x.arrive):""}`} · ${x.reussies}/${x.cartes} cards</small></span>
-      <b>${x.horsJeu ? "—" : euros(x.argent)}</b></div>`).join("")}</div>
+      <b>${x.horsJeu ? "—" : euros(x.argent)}</b>${x.horsJeu ? "" : detailPodium(x)}</div>`).join("")}</div>
     <div class="duo"><button class="bouton piece c-rouge" id="b-rejouer">Play again</button><button class="bouton piece c-noir" id="b-menu">Menu</button></div>
   </section>`;
   if(victoire){ Son.fin(); setTimeout(()=>confettis(200), 300); } else Son.echec();
@@ -930,7 +944,7 @@ function svgTapis(){
   const yTop = Y0 + CH/2, yMil = Y0 + 4*CH + CH/2, yBas = Y0 + 7*CH + CH/2;
   const accolade = `<path d="M${X0+14*CW+4} ${yTop}H${xb}V${yBas}H${X0+14*CW+4}M${X0+14*CW+4} ${yMil}H${xb}" fill="none" stroke="#cfe0ff" stroke-width="4" opacity=".85"/>
     <line x1="${xb}" y1="${yMil}" x2="${XA-8}" y2="${yMil}" stroke="#cfe0ff" stroke-width="4" marker-end="url(#fl-c)" opacity=".85"/>`;
-  const arrivee = `<ellipse class="lueur" cx="${XA+40}" cy="${Y0+CH*4.05}" rx="120" ry="${CH*3.6}" fill="url(#g-halo-or)"/><text x="${XA+38}" y="${Y0+CH*1.05-16}" text-anchor="middle" font-family="Barlow Condensed, Arial Narrow, sans-serif" font-weight="800" font-size="32" fill="url(#g-or)" stroke="#5a3706" stroke-width=".8" paint-order="stroke" letter-spacing="1.5">FINISH</text>`
+  const arrivee = `<ellipse class="lueur" cx="${XA+40}" cy="${Y0+CH*4.05}" rx="120" ry="${CH*3.6}" fill="url(#g-halo-or)"/><text x="${XA+38}" y="${Y0+CH*1.05-16}" text-anchor="middle" font-family="Barlow Condensed, Arial Narrow, sans-serif" font-weight="800" font-size="32" fill="url(#g-or)" stroke="#5a3706" stroke-width=".8" paint-order="stroke" letter-spacing="1.5"><tspan x="${XA+38}" dy="-24" font-size="19" letter-spacing="2.5">FINISH</tspan><tspan x="${XA+38}" dy="24">BONUS</tspan></text>`
     + BONUS_ARRIVEE.map((b,i)=>{ const [cx,cy] = caseArrivee(i); const col = i<2 ? ["#b8c21a","#e8ee55"] : i<4 ? ["#8f9399","#d9dce0"] : ["#8a4a2c","#c98463"];
       return `<g class="case-g" data-id="A${i}"><rect x="${cx-36}" y="${cy-CH/2+2}" width="72" height="${CH-4}" fill="${col[1]}" stroke="#000" stroke-width="3.5"/><rect x="${cx-34}" y="${cy-CH/2+4}" width="68" height="${CH-8}" fill="url(#g-biseau)"/><rect x="${cx-32}" y="${cy-CH/2+6}" width="64" height="${CH*.4}" fill="url(#g-reflet)"/>
         <text x="${cx}" y="${cy+16}" text-anchor="middle" font-family="Barlow Condensed, Arial Narrow, sans-serif" font-weight="800" font-size="46" fill="#111">${i+1}</text>
@@ -1132,6 +1146,6 @@ function journal(j, texte){
 return {
   config,
   stop(){ if(G){ G = null; $$(".voile").forEach(v=>v.remove()); composeurActif = null; } },
-  _etat: () => G, _noeuds: NOEUDS, _destinations: destinations,
+  _etat: () => G, _noeuds: NOEUDS, _destinations: destinations, _fin: () => finPartie(),   // (pour les tests)
 };
 })();

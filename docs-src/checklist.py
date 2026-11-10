@@ -59,6 +59,7 @@ h += sec("Prochaines étapes de Claude", [
     ("todo", "Changer le nom partout dès qu'il est choisi (action « Changer le nom »)."),
 ])
 h += sec("Fait", [
+    ("ok", "<b>10/11</b> — « le plus riche gagne » rendu évident (rappel, bandeau, bonus d'arrivée, podium détaillé) ; design rapproché des maquettes (dé 3D doré, cadre lumineux)."),
     ("ok", "<b>10/11</b> — séries du Défi : 16 thèmes FR / 9 EN, série dans l'autre langue, design par thème, déblocage par niveau, sans classement ; vibrations plus douces, lueur de validation."),
     ("ok", "<b>10/11</b> — version Apple préparée (fabrication sur Mac GitHub, simulateur OK ; TestFlight dès le compte Apple) ; note « Services externes »."),
     ("ok", "<b>10/11</b> — jeu complet hors ligne (scores en attente, pubs en cache, démarrage rapide sur réseau lent, multi signalé)."),
