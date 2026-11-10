@@ -1,5 +1,11 @@
 [
   {
+    "titre": "Choisir le nom du jeu",
+    "fichier": "aide-choix-du-nom.pdf",
+    "date": "2026-11-10",
+    "description": "Présélection de 4 noms (Qlinn, Anagold, Wordheist, Lexipot) avec premières vérifications web, méthode de contrôle en 30 minutes (stores, domaines, marques INPI/EUIPO/OMPI) et conseils de protection."
+  },
+  {
     "titre": "Textes juridiques",
     "fichier": "textes-juridiques.pdf",
     "date": "2026-11-10",
