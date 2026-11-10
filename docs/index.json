@@ -1,5 +1,11 @@
 [
   {
+    "titre": "Règles du jeu",
+    "fichier": "regles-du-jeu.pdf",
+    "date": "2026-11-10",
+    "description": "Les règles illustrées : principe de l'anagramme, quatre couleurs de cartes, plateau (cases, enchères, bonus d'arrivée, « le plus riche gagne »), Défi et séries, règles du solo, campagnes, clavier."
+  },
+  {
     "titre": "Check-list",
     "fichier": "check-list.pdf",
     "date": "2026-11-10",
