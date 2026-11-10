@@ -50,6 +50,22 @@ h += (f'<h2 class="pb">Mots sans définition ({len(lignes_sd)})</h2>'
       'Certains sont des pluriels ou des féminins dont seule la forme de base a une page ; d\'autres n\'existent dans aucun dictionnaire usuel. '
       'Dernière colonne : les autres mots de la même carte qui, eux, ont une définition.</p>'
       + T(lignes_sd, ["Mot", "Couleur", "Carte", "Statut", "Mots définis de la carte"], [16, 9, 41, 10, 24]))
+# annexe : tout le dictionnaire
+FR = json.loads((RACINE / "app" / "data" / "fr.json").read_text(encoding="utf-8"))
+COUL = {"v": "Vert", "b": "Bleu", "r": "Rouge", "n": "Noir"}
+tous = [(k, w, g) for k in "vbrn" for g in FR[k] for w in g]
+connus = [x for x in tous if x[1] in DEF]
+sd = [x for x in connus if not DEF.get(x[1])]
+if connus:
+    par = {k: (sum(1 for x in connus if x[0] == k), sum(1 for x in sd if x[0] == k)) for k in "vbrn"}
+    cartes_0 = [(k, g) for k in "vbrn" for g in FR[k] if all(w in DEF and not DEF[w] for w in g)]
+    h += (f'<h2 class="pb">Tout le dictionnaire : mots sans définition ({len(sd)} sur {len(connus)})</h2>'
+          + T([[COUL[k], str(par[k][0]), str(par[k][0] - par[k][1]), str(par[k][1]), f"{100 * (par[k][0] - par[k][1]) // max(1, par[k][0])} %"] for k in "vbrn"]
+              + [["<b>Total</b>", str(len(connus)), str(len(connus) - len(sd)), str(len(sd)), f"<b>{100 * (len(connus) - len(sd)) // max(1, len(connus))} %</b>"]],
+              ["Couleur", "Mots", "Avec définition", "Sans définition", "Couverture"], [20, 18, 22, 22, 18])
+          + f'<p>{len(cartes_0)} carte(s) n\'ont aucun mot défini. Pour les autres, le bouton « Définition » du jeu trouve au moins un mot de la carte.</p>'
+          + T([[html.escape(w), COUL[k], html.escape(" / ".join(g)), ", ".join(html.escape(m) for m in g if DEF.get(m)) or "<span class='att'>aucun</span>"] for k, w, g in sd],
+              ["Mot sans définition", "Couleur", "Carte (tous ses mots)", "Mots définis de la carte"], [20, 9, 45, 26]))
 h += B("Pour décider", "Dans le tableur « Cartes écartées de l'appli », dernière colonne de chaque onglet : « garder » ou « écarter ». Ou bien : « applique tel quel » (les cartes écartées ci-dessus ne sont plus tirées dans l'appli, les cartes limites restent).")
-document("cartes-ecartees.pdf", "Cartes écartées de l'appli", f"Proposition : {len(e)} cartes sans aucun mot courant, {len(l)} cartes limites.", h,
-         description=f"Liste des {len(e)} cartes françaises sans aucun mot courant que l'appli ne tirerait plus (elles restent dans la boîte), et des {len(l)} cartes limites ; méthode et décision à prendre.")
+document("cartes-ecartees.pdf", "Cartes écartées de l'appli", f"Proposition : {len(e)} cartes sans aucun mot courant, {len(l)} cartes limites ; mots sans définition dans tout le dictionnaire.", h,
+         description=f"Liste des {len(e)} cartes françaises sans aucun mot courant que l'appli ne tirerait plus (elles restent dans la boîte), et des {len(l)} cartes limites ; définitions trouvées au Wiktionnaire et liste de tous les mots du dictionnaire sans définition.")

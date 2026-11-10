@@ -59,6 +59,19 @@ def feuille(titre, lignes, pos, note):
         ws["A2"].font = Font(name="Arial", italic=True)
 feuille("Écartées (appli)", ecart, 0, f"{len(ecart)} cartes que l'appli ne tirerait plus : aucun mot n'est courant (Lexique < {SEUIL} par million et wordfreq < {ZIPF} Zipf). Elles restent dans la boîte et dans ce fichier.")
 feuille("Limite (à décider)", limite, 1, f"{len(limite)} cartes limites (mot le plus courant peu fréquent : Lexique < {LIMITE} par million et wordfreq < {ZIPF_LIMITE} Zipf) : gardées par défaut, à votre appréciation.")
+# tout le dictionnaire : mots sans définition au Wiktionnaire
+if DEF:
+    sd = [(COUL[k], w, g) for k in "vbrn" for g in d[k] for w in g if w in DEF and not DEF[w]]
+    ws = wb.create_sheet("Sans définition (tout)", 2)
+    ws.append([f"Tout le dictionnaire : {len(sd)} mots sans définition au Wiktionnaire sur {sum(1 for k in d for g in d[k] for w in g if w in DEF)}."]); ws["A1"].font = Font(name="Arial", bold=True); ws.append([])
+    ws.append(["Mot sans définition", "Couleur", "Carte (tous ses mots)", "Mots définis de la carte", "Votre décision"])
+    for c in ws[3]: c.font = Font(name="Arial", bold=True, color="FFFFFF"); c.fill = PatternFill("solid", fgColor="0F2A6B")
+    for c_, w, g in sd: ws.append([w, c_, " / ".join(g), ", ".join(m for m in g if DEF.get(m)) or "aucun", ""])
+    for col, wd in zip("ABCDE", [22, 10, 50, 34, 18]): ws.column_dimensions[col].width = wd
+    for row in ws.iter_rows(min_row=4):
+        for c in row: c.font = Font(name="Arial"); c.alignment = Alignment(vertical="top", wrap_text=True)
+        row[4].fill = PatternFill("solid", fgColor="FFF6D6")
+    ws.freeze_panes = "A4"
 for ws in wb.worksheets: ws.sheet_view.tabSelected = False
 wb.active = 0; wb.worksheets[0].sheet_view.tabSelected = True
 out = R / "docs" / "le-qln-anagrammes-ecartees.xlsx"; wb.save(out)
