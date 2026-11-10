@@ -29,7 +29,7 @@ Le jeu web est à la **racine** : GitHub Pages publie la racine telle quelle (`h
 | `server/` | serveur Node (Render) : relais multijoueur, API comptes/classements, anti-triche (`jour.js`) |
 | `mobile/` | applis Android et iOS (Capacitor) ; réglages natifs dans `mobile/native/` |
 | `docs/` | documentation (PDF, tableurs, `index.json` affiché dans le menu Documentation) |
-| `docs-src/` | sources des documents (ex. `services.py` → `docs/services-externes.pdf`, `checklist.py` → `docs/check-list.pdf`) |
+| `docs-src/` | sources des documents : un script par PDF, tous habillés par la charte commune `charte.py` (en-tête au logo du jeu, polices, pied de page) ; `python3 docs-src/tout.py` régénère tout |
 | `tools/` | outils : version anglaise, dictionnaires, pages juridiques, changement de nom |
 | `tests/` | tests automatiques (serveur + appli dans Chromium) |
 | `.github/workflows/` | automatismes : tests, version en ligne, sécurité, appli Android, appli iOS, changer le nom |

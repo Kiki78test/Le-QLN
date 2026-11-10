@@ -93,50 +93,26 @@ def page(lang, cle, chemin_app, autre_fichier, lien_lang):
 
 # ------------------------------------------------------------------ PDF (facultatif)
 def pdf():
+    """docs/textes-juridiques.pdf avec la charte commune de la documentation (docs-src/charte.py)."""
     try:
-        from reportlab.lib.pagesizes import A4
-        from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, PageBreak, Table, TableStyle
-        from reportlab.lib.styles import ParagraphStyle
-        from reportlab.lib import colors
-        from reportlab.lib.units import mm
-        from reportlab.pdfbase import pdfmetrics
-        from reportlab.pdfbase.ttfonts import TTFont
-        from reportlab.pdfbase.pdfmetrics import registerFontFamily
-    except ImportError:
-        print("reportlab absent : PDF non régénéré"); return
-    d = "/usr/share/fonts/truetype/dejavu/"
-    if not (pathlib.Path(d) / "DejaVuSans.ttf").exists(): print("police DejaVu absente : PDF non régénéré"); return
-    pdfmetrics.registerFont(TTFont("R", d + "DejaVuSans.ttf")); pdfmetrics.registerFont(TTFont("B", d + "DejaVuSans-Bold.ttf")); pdfmetrics.registerFont(TTFont("I", d + "DejaVuSans-Oblique.ttf"))
-    registerFontFamily("R", normal="R", bold="B", italic="I", boldItalic="B")
-    NAVY, GOLD, GREY = colors.HexColor("#0f1f4a"), colors.HexColor("#c9921a"), colors.HexColor("#555")
-    T = ParagraphStyle("t", fontName="B", fontSize=22, leading=26, textColor=NAVY)
-    H = ParagraphStyle("h", fontName="B", fontSize=13.5, leading=17, textColor=GOLD, spaceBefore=12, spaceAfter=5)
-    P = ParagraphStyle("p", fontName="R", fontSize=9.3, leading=13.2, textColor=colors.HexColor("#222"), spaceAfter=3)
-    S = ParagraphStyle("s", parent=P, fontSize=8.2, leading=11, textColor=GREY)
-    nom = M["nom"]; fr = D["fr"]
-    st = [Paragraph(f"{nom} — textes juridiques", T), Spacer(1, 2), Paragraph("Politique de confidentialité et mentions légales · version du 10 novembre 2026", S), Spacer(1, 8)]
-    st.append(Paragraph("À faire avant la publication", H))
-    for x in ["Renseigner dans <b>marque.json</b> : <b>editeur</b> (nom et prénom, ou raison sociale), <b>adresse</b> (postale) et <b>contact_email</b> (adresse dédiée, par exemple contact@votre-domaine). Puis lancer l'action GitHub « Changer le nom » ou <i>python3 tools/build_legal.py</i> : l'appli, les pages web et ce PDF se mettent à jour. Tant que ces champs sont vides, les textes affichent « [à compléter] ».",
-              "<b>Adresse non publiée</b> : un éditeur non professionnel peut rester anonyme du public en donnant son identité à l'hébergeur (loi LCEN du 21 juin 2004, art. 6-III-2). Si vous choisissez cette voie, remplacez l'adresse par la mention correspondante et vérifiez avec l'hébergeur. Dès que le jeu rapporte de l'argent (publicité), l'activité devient en principe professionnelle : la déclaration d'activité et les coordonnées de l'éditeur deviennent alors nécessaires.",
-              "<b>Adresses des hébergeurs</b> (Render, GitHub) : vérifiées au moment de la rédaction ; à recontrôler sur leurs sites avant publication.",
-              "<b>Publicité réelle</b> : quand elle est activée (AdSense/AdMob), mettre à jour le paragraphe « Publicité », activer le bandeau de consentement, et remplir le formulaire « Sécurité des données » du Play Store de façon cohérente avec ce texte.",
-              "<b>Adresse publique pour le Play Store</b> : après publication du site, la politique est accessible à confidentialite.html (et en/privacy.html en anglais), à la racine du site du jeu.",
-              "<b>Relecture</b> : ces textes sont une base sérieuse mais n'ont pas été relus par un juriste ; une relecture professionnelle est recommandée avant de percevoir des revenus."]:
-        st.append(Paragraph("• " + x, P))
+        sys.path.insert(0, str(ROOT / "docs-src")); import charte
+    except Exception as e:
+        print("charte indisponible : PDF non régénéré (", e, ")"); return
+    fr = D["fr"]
+    faire = ["Renseigner dans <b>marque.json</b> : <b>editeur</b> (nom et prénom, ou raison sociale), <b>adresse</b> (postale) et <b>contact_email</b> (adresse dédiée, par exemple contact@votre-domaine). Puis lancer l'action GitHub « Changer le nom » ou <i>python3 tools/build_legal.py</i> : l'appli, les pages web et ce PDF se mettent à jour. Tant que ces champs sont vides, les textes affichent « [à compléter] ».",
+             "<b>Adresse non publiée</b> : un éditeur non professionnel peut rester anonyme du public en donnant son identité à l'hébergeur (loi LCEN du 21 juin 2004, art. 6-III-2). Si vous choisissez cette voie, remplacez l'adresse par la mention correspondante et vérifiez avec l'hébergeur. Dès que le jeu rapporte de l'argent (publicité), l'activité devient en principe professionnelle : la déclaration d'activité et les coordonnées de l'éditeur deviennent alors nécessaires.",
+             "<b>Adresses des hébergeurs</b> (Render, GitHub) : vérifiées au moment de la rédaction ; à recontrôler sur leurs sites avant publication.",
+             "<b>Publicité réelle</b> : quand elle est activée (AdSense/AdMob), mettre à jour le paragraphe « Publicité », activer le bandeau de consentement, et remplir le formulaire « Sécurité des données » du Play Store de façon cohérente avec ce texte.",
+             "<b>Adresse publique pour le Play Store</b> : après publication du site, la politique est accessible à confidentialite.html (et en/privacy.html en anglais), à la racine du site du jeu.",
+             "<b>Relecture</b> : ces textes sont une base sérieuse mais n'ont pas été relus par un juriste ; une relecture professionnelle est recommandée avant de percevoir des revenus."]
+    h = charte.B("À faire avant la publication", "", faire, classe="hl")
     for cle in ("confidentialite", "mentions"):
-        t = fr[cle]; st.append(PageBreak()); st.append(Paragraph(t["titre"], T)); st.append(Paragraph(t["maj"], S)); st.append(Spacer(1, 6))
-        if t["intro"]: st.append(Paragraph(esc(t["intro"]), P))
+        t = fr[cle]
+        h += f'<h2 class="pb" style="font-size:19pt">{esc(t["titre"])}</h2><p class="petit">{esc(t["maj"])}</p>' + (f'<p class="intro">{esc(t["intro"])}</p>' if t["intro"] else "")
         for i, (titre, bl) in enumerate(t["sections"], 1):
-            st.append(Paragraph(f"{i}. {esc(titre)}", H))
-            for b in bl:
-                if isinstance(b, list): st += [Paragraph("• " + esc(x), P) for x in b]
-                else: st.append(Paragraph(esc(b), P))
-    out = ROOT / "docs" / "textes-juridiques.pdf"
-    SimpleDocTemplate(str(out), pagesize=A4, leftMargin=18*mm, rightMargin=18*mm, topMargin=15*mm, bottomMargin=15*mm, title=f"{nom} — textes juridiques", author="Claude").build(st)
-    idx = ROOT / "docs" / "index.json"; docs = json.loads(idx.read_text(encoding="utf-8"))
-    entree = {"titre": "Textes juridiques", "fichier": "textes-juridiques.pdf", "date": L.MAJ,
-              "description": "Politique de confidentialité et mentions légales (texte complet) + liste de ce qu'il faut compléter avant la publication (éditeur, adresse, contact, publicité)."}
-    docs = [x for x in docs if x["fichier"] != entree["fichier"]]; docs.insert(0, entree)
-    idx.write_text(json.dumps(docs, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-pdf()
+            h += f"<h3>{i}. {esc(titre)}</h3>" + blocs_html(bl)
+    charte.document("textes-juridiques.pdf", "Textes juridiques", "Politique de confidentialité et mentions légales", h, date_iso=L.MAJ,
+                    description="Politique de confidentialité et mentions légales (texte complet) + liste de ce qu'il faut compléter avant la publication (éditeur, adresse, contact, publicité).")
+try: pdf()
+except Exception as e: print("PDF non régénéré :", type(e).__name__, e)
 print("legal.js, pages web et PDF générés.")

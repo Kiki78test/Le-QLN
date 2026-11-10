@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: pip install pillow
+      - run: pip install pillow playwright && python3 -m playwright install --with-deps chromium   # (les documents PDF sont régénérés avec le nouveau nom)
       - name: Changer le nom
         env:
           NOM: ${{ inputs.nom }}

@@ -2,34 +2,16 @@
 # base de données, variables, secrets, API, automatismes.
 # Usage : python3 docs-src/services.py   -> docs/services-externes.pdf (date du jour, entrée docs/index.json mise à jour)
 # À METTRE À JOUR à chaque changement de service, de variable, de table ou d'abonnement.
-import base64, datetime, json, os, pathlib, zoneinfo
-ICI = pathlib.Path(__file__).resolve().parent; RACINE = ICI.parent
-M = json.loads((RACINE / "marque.json").read_text(encoding="utf-8")); NOM = M["nom"]
-now = datetime.datetime.now(zoneinfo.ZoneInfo("Europe/Paris")); D = now.strftime("%d/%m/%Y")
-f600 = base64.b64encode((RACINE / "fonts" / "barlow-condensed-latin-700-normal.woff2").read_bytes()).decode()
-f400 = base64.b64encode((RACINE / "fonts" / "barlow-latin-400-normal.woff2").read_bytes()).decode()
-f700 = base64.b64encode((RACINE / "fonts" / "barlow-latin-700-normal.woff2").read_bytes()).decode()
-css = """@font-face{font-family:T;src:url(data:font/woff2;base64,%s)}
-@font-face{font-family:B;src:url(data:font/woff2;base64,%s)}@font-face{font-family:B;font-weight:700;src:url(data:font/woff2;base64,%s)}
-@page{size:A4;margin:12mm}*{box-sizing:border-box}body{font:9.3pt/1.45 B,sans-serif;color:#1d2433;margin:0}
-h1{font:700 23pt T;margin:0;letter-spacing:.01em}h2{font:700 15pt T;color:#0f2a6b;margin:15px 0 5px;border-bottom:2px solid #f2c230;padding-bottom:2px;break-after:avoid}
-h3{font:700 11pt T;margin:6px 0 2px;color:#0f2a6b}
-.top{background:linear-gradient(135deg,#0b1a3a,#16357a);color:#fff;border-radius:12px;padding:16px 20px}.top p{margin:5px 0 0;color:#c8d4f0}.or{color:#ffd60a}
-.box{border:1px solid #d6dcea;border-radius:10px;padding:7px 11px;margin:6px 0;break-inside:avoid;background:#fbfcff}
-.warn{border-color:#e0563f;background:#fdeeea}.hl{border-color:#f2c230;background:#fffaea}
-ul{margin:2px 0;padding-left:16px}li{margin:1.5px 0}code{font:8.3pt ui-monospace,Consolas,monospace;background:#eef1f8;border-radius:4px;padding:0 3px}
-table{border-collapse:collapse;width:100%%;font-size:8.5pt;margin:4px 0;break-inside:auto}tr{break-inside:avoid}td,th{padding:3.5px 6px;border-bottom:1px solid #e6e9f2;vertical-align:top;text-align:left}th{background:#eef2fb;font-weight:700}
-.n{font-size:8.3pt;color:#5b6478}.pb{break-before:page}.ok{color:#1d7a3a;font-weight:700}.att{color:#b36b00;font-weight:700}.non{color:#8a8f9c}
-""" % (f600, f400, f700)
+import sys, pathlib
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+from charte import document, NOM, DATE_LONGUE as D
 def L(items): return "<ul>" + "".join("<li>%s</li>" % i for i in items) + "</ul>"
 def T(rows, head): return "<table><tr>" + "".join("<th>%s</th>" % x for x in head) + "</tr>" + "".join("<tr>" + "".join("<td>%s</td>" % c for c in r) + "</tr>" for r in rows) + "</table>"
 def B(titre, texte, items=None, warn=None, cls=""):
-    return '<div class="box %s"><h3>%s</h3>%s%s%s</div>' % (cls, titre, ("<p style='margin:0 0 3px'>%s</p>" % texte) if texte else "", L(items) if items else "", ("<p class='n' style='color:#b23a24;margin:4px 0 0'>⚠ %s</p>" % warn) if warn else "")
+    return '<div class="box %s"><h3>%s</h3>%s%s%s</div>' % (cls, titre, ("<p style='margin:0 0 3px'>%s</p>" % texte) if texte else "", L(items) if items else "", ("<p class='petit' style='color:#b23a24;margin:4px 0 0'>⚠ %s</p>" % warn) if warn else "")
 OK, ATT, NON = "<span class='ok'>en place</span>", "<span class='att'>en attente</span>", "<span class='non'>pas encore</span>"
 
-h = "<meta charset=utf-8><style>" + css + "</style>"
-h += "<div class='top'><h1>%s · <span class='or'>Services externes</span> — note du développeur</h1><p>Chaque service, son rôle, où le régler, les variables et secrets, la base de données, l'API et les automatismes. Mise à jour : %s.</p></div>" % (NOM, D)
-
+h = ""
 h += "<h2>Vue d'ensemble</h2>" + T([
     ["<b>GitHub</b>", "Code (dépôt public <code>Kiki78test/Le-QLN</code>), site du jeu (GitHub Pages), tests et fabrications automatiques (Actions)", "github.com", "gratuit", OK],
     ["<b>Render</b>", "Serveur Node (multijoueur, comptes, classements, mots contestés, anti-triche) + base PostgreSQL, région Francfort", "dashboard.render.com", "web Free ; base Free → Basic 256 Mo ≈ 6 $/mois", OK],
@@ -88,7 +70,7 @@ h += "<h3>Variables d'environnement (Render → le-qln → Environment)</h3>" + 
     ["RESEND_API_KEY / MAIL_FROM", "Prévues pour « mot de passe oublié » (fonction à coder après l'achat du domaine).", NON]],
     ["Variable", "Rôle", "État"])
 
-h += "<h2>3. Base de données (PostgreSQL)</h2><p class='n'>Tables créées ou complétées automatiquement au démarrage du serveur (<code>server/api.js</code>, bloc SCHEMA). Suppression d'un compte = suppression en cascade de sa progression et de ses scores.</p>" + T([
+h += "<h2>3. Base de données (PostgreSQL)</h2><p class='petit'>Tables créées ou complétées automatiquement au démarrage du serveur (<code>server/api.js</code>, bloc SCHEMA). Suppression d'un compte = suppression en cascade de sa progression et de ses scores.</p>" + T([
     ["qln_joueurs", "id (uuid), email (unique), mdp (empreinte bcrypt), google_sub, pseudo, couleur, pays, cree_le, vu_le", "Comptes"],
     ["qln_progression", "joueur → qln_joueurs, donnees (jsonb : progression FR/EN, records), maj_le", "Progression synchronisée (fusion : le meilleur des deux appareils)"],
     ["qln_scores", "id, joueur, langue, mode (jour / defi / braquage), jour (date), score, detail (jsonb : cartes et mots trouvés), cree_le ; unique (joueur, langue, mode, jour)", "Classements ; défi du jour : seul le 1er essai compte"],
@@ -158,14 +140,7 @@ h += "<h2>8. Coûts et échéances</h2>" + T([
     ["Resend", "0 € (3 000 e-mails/mois)", "après le domaine"]],
     ["Poste", "Coût", "Quand"])
 
-out_html = ICI / "services.html"; out_html.write_text(h, encoding="utf-8")
-from playwright.sync_api import sync_playwright
-with sync_playwright() as p:
-    b = p.chromium.launch(); pg = b.new_page(); pg.goto(out_html.as_uri()); pg.wait_for_timeout(400)
-    pg.pdf(path=str(RACINE / "docs" / "services-externes.pdf"), format="A4", print_background=True, margin={"top": "0", "bottom": "0", "left": "0", "right": "0"}); b.close()
-idx = RACINE / "docs" / "index.json"; docs = json.loads(idx.read_text(encoding="utf-8"))
-docs = [x for x in docs if x["fichier"] != "services-externes.pdf"]
-docs.insert(0, {"titre": "Services externes (développeur)", "fichier": "services-externes.pdf", "date": now.strftime("%Y-%m-%d"),
-                "description": "Note technique : services (GitHub, Render, Google, Apple, Resend, Cloudflare, Wiktionnaire), variables d'environnement et secrets, tables de la base, API et multijoueur, anti-triche, stockage de l'appli, applis mobiles, tests, coûts et échéances."})
-idx.write_text(json.dumps(docs, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-print("docs/services-externes.pdf généré")
+document("services-externes.pdf", "Services externes — note du développeur",
+         "Chaque service, son rôle, où le régler, les variables et secrets, la base de données, l'API et les automatismes.", h,
+         titre_index="Services externes (développeur)",
+         description="Note technique : services (GitHub, Render, Google, Apple, Resend, Cloudflare, Wiktionnaire), variables d'environnement et secrets, tables de la base, API et multijoueur, anti-triche, stockage de l'appli, applis mobiles, tests, coûts et échéances.")

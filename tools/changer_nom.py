@@ -100,6 +100,11 @@ def main():
     print(f"{total} remplacements : {ancien} → {nouveau}")
     if (ROOT / "tools" / "build_en.py").exists(): (subprocess.run([sys.executable, str(ROOT / "tools" / "build_legal.py")], check=True, stdout=subprocess.DEVNULL), subprocess.run([sys.executable, str(ROOT / "tools" / "build_en.py")], check=True, stdout=subprocess.DEVNULL))
     if sigle: icones(sigle); android()
+    # documents PDF : même charte, nouveau nom (si Playwright est installé ; sinon : python3 docs-src/tout.py plus tard)
+    try:
+        import playwright  # noqa
+        subprocess.run([sys.executable, str(ROOT / "docs-src" / "tout.py")], check=False, stdout=subprocess.DEVNULL)
+    except ImportError: print("Documents PDF non régénérés (Playwright absent) : lancer python3 docs-src/tout.py")
     if len(nouveau) > 10: print("Attention : nom long (> 10 caractères) — vérifier le logo en haut de l'écran.")
 
 if __name__ == "__main__": main()
