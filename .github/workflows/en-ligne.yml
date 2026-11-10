@@ -1,6 +1,7 @@
 # Vérifie la version en ligne de Le-QLN :
 #  - après chaque mise en ligne du site (GitHub Pages) : l'appli publiée est testée dans Chromium (FR/EN, téléphone/ordinateur) ;
 #  - toutes les 6 heures : le site et le serveur Render répondent (et la base de données).
+# (les tests de l'appli publiée tournent en mode local : ils ne créent jamais de compte sur le vrai serveur.)
 # Adresse du serveur lue dans config.js (QLN_API_URL). En cas de panne : croix rouge dans l'onglet Actions et e-mail de GitHub.
 name: Version en ligne
 on:
@@ -44,4 +45,4 @@ jobs:
           cd tests && npm install --no-audit --no-fund && npx playwright install --with-deps chromium
           # l'appli publiée attend parfois quelques secondes la mise à jour du cache de GitHub Pages
           sleep 20
-          QLN_TEST_URL="$QLN_API_URL" node --test --test-concurrency=1 appli.test.js
+          node --test --test-concurrency=1 appli.test.js

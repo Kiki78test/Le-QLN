@@ -14,8 +14,11 @@ const bcrypt = require("bcryptjs");
 const SECRET = process.env.SECRET || crypto.randomBytes(32).toString("hex");
 if(!process.env.SECRET) console.warn("[api] SECRET non défini : les sessions seront perdues au redémarrage.");
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || "";
-const SSL = /render\.com|amazonaws|neon\.tech|supabase/.test(process.env.DATABASE_URL || "") ? {rejectUnauthorized:false} : false;
-const pool = new Pool({connectionString: process.env.DATABASE_URL, ssl: SSL, max: 5});
+// SSL : toujours, sauf base locale (localhost, socket Unix) ou si l'adresse demande explicitement sslmode=disable.
+// (l'adresse interne de Render n'a pas « render.com » dans son nom : l'ancienne détection la laissait sans SSL)
+const DB_URL = process.env.DATABASE_URL || "";
+const SSL = /localhost|127\.0\.0\.1|[?&]host=\/|sslmode=disable/.test(DB_URL) ? false : {rejectUnauthorized:false};
+const pool = new Pool({connectionString: DB_URL, ssl: SSL, max: 5});
 
 /* ---------- Schéma (créé / complété au démarrage) ---------- */
 const SCHEMA = `
@@ -276,7 +279,11 @@ const ROUTES = {
     const {rows} = await pool.query("select mot from qln_mots where langue=$1 order by id", [langue]);
     return {mots: rows};
   },
-  async "GET /api/sante-api"(){ await pool.query("select 1"); return {ok:true}; },
+  async "GET /api/sante-api"(){
+    // diagnostic de la base : code d'erreur seulement (jamais l'adresse ni le mot de passe)
+    try{ await pool.query("select 1 from qln_joueurs limit 1"); return {ok:true}; }
+    catch(e){ console.error("[api] santé :", e.code, e.message); throw erreur(503, "Base de données inaccessible (" + (e.code || e.name || "erreur") + ")."); }
+  },
 };
 
 /* Point d'entrée appelé par le serveur HTTP ; renvoie false si la route n'est pas pour l'API */

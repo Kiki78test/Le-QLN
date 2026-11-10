@@ -21,7 +21,8 @@ async function ouvrir(lang, vue, {api = ""} = {}){
   p.on("pageerror", e => erreurs.push(e.message));
   p.on("console", m => { if(m.type() === "error" && !/Failed to load resource|net::ERR|favicon|googlesyndication|accounts\.google/i.test(m.text())) erreurs.push("console: " + m.text()); });
   await p.addInitScript(() => { try{ localStorage.setItem("qln:progres", JSON.stringify({tuto:"fait"})); localStorage.setItem("qln:pub", "false"); }catch(e){} });
-  if(api) await p.route(/\/config\.js(\?|$)/, r => r.fulfill({contentType:"application/javascript", body:`window.QLN_API_URL=${JSON.stringify(api)};window.QLN_WS_URL=${JSON.stringify(api.replace(/^http/, "ws") + "/ws")};window.QLN_GOOGLE_CLIENT_ID="";`}));
+  // config.js est toujours remplacé : serveur de test si fourni, sinon mode local (les tests ne touchent jamais au vrai serveur)
+  await p.route(/\/config\.js(\?|$)/, r => r.fulfill({contentType:"application/javascript", body:`window.QLN_API_URL=${JSON.stringify(api)};window.QLN_WS_URL=${JSON.stringify(api ? api.replace(/^http/, "ws") + "/ws" : "")};window.QLN_GOOGLE_CLIENT_ID="";`}));
   await p.goto(`${SITE}/${lang === "en" ? "en/" : ""}index.html`);
   await p.waitForSelector("#b-defi");
   await p.waitForFunction(() => typeof DICO !== "undefined" && DICO && DICO.v && DICO.v.length > 0, null, {timeout:15000});
