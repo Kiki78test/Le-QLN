@@ -1035,6 +1035,7 @@ async function chargerDico(){
   }
 }
 function tirerCarte(niv, rnd, deja){
+  if(P && P.cfg && P.cfg.tirer) return P.cfg.tirer(niv, rnd, deja);   // séries (thème, autre langue)
   const liste = DICO[niv];
   for(let essai=0; essai<60; essai++){
     const g = liste[Math.floor(rnd()*liste.length)];
@@ -1192,6 +1193,7 @@ const Definitions = (() => {
   }
   // préchargement groupé (une requête pour tous les mots encore inconnus)
   async function precharger(mots){
+    if(window.QLN_LANGUE_CARTE) return;
     const cles = [...new Set(mots.map(m => String(m).toLowerCase()))].filter(c => !cache.has(c) && !(disque[c] && Date.now() - disque[c].t < DUREE));
     if(!cles.length || !navigator.onLine) return;
     try{
@@ -1231,6 +1233,7 @@ const Definitions = (() => {
     const cible = e.target.closest("[data-def]");
     if(cible){
       e.preventDefault(); e.stopPropagation();
+      if(window.QLN_LANGUE_CARTE){ window.open("https://" + window.QLN_LANGUE_CARTE + ".wiktionary.org/wiki/" + encodeURIComponent(String(cible.dataset.def).toLowerCase()), "_blank", "noopener"); return; }
       if(bulle && bulle.dataset.pour === cible.dataset.def) return fermer();
       ouvrir(cible, cible.dataset.def);
       return;
@@ -1429,7 +1432,7 @@ function demarrerVitrine(){
 }
 
 function ecranAccueil(){
-  Definitions.fermer();
+  Definitions.fermer(); window.QLN_LANGUE_CARTE = null;
   if(typeof PlateauIA !== "undefined") PlateauIA.stop();
   arreterMinuteur(); P = null; composeurActif = null;
   app.classList.remove("large");
@@ -1633,6 +1636,11 @@ function fantome(p){
 let P = null, minuteur = null;
 function nouvellePartie(mode, nivEntrainement, opt={}){
   arreterVitrine();
+  // séries : cartes préparées d'abord (thème, ou dictionnaire de l'autre langue chargé à la demande)
+  if(mode==="serie" && !opt.cfg){
+    Series.config(opt.serie).then(cfg => cfg ? nouvellePartie("serie", null, {...opt, cfg}) : nouvellePartie("defi")).catch(() => toast(Series.TXT.echec, 4000));
+    return;
+  }
   Pub.avantPartie().then(() => demarrerPartie(mode, nivEntrainement, opt));
 }
 function demarrerPartie(mode, nivEntrainement, opt){
@@ -1643,9 +1651,11 @@ function demarrerPartie(mode, nivEntrainement, opt){
   else if(mode==="jour" || mode==="duel") cfg = {cartes:[...PARCOURS_DEFI], vies:VIES, regles:{...REGLES_JOUR}};
   else if(mode==="semaine"){ const t = TWISTS[cleSemaine() % TWISTS.length];
     cfg = {cartes:[...(t.cartes || PARCOURS_DEFI)], vies:t.vies || VIES, regles:{...REGLES_JOUR, ...(t.regles || {})}, tf:t.tf || 1, gm:t.gm || 1, sansJoker:!!t.sansJoker, twist:t}; }
+  else if(mode==="serie") cfg = opt.cfg;
   else if(mode==="festival"){ const F = FESTIVAL[opt.manche];
     cfg = {cartes:[...F.cartes], vies:F.vies, regles:{...REGLES_NULLES, ...F.regles}, tf:F.tf || 1, gm:F.gm || 1, coffrePos:F.coffrePos, legPos:F.legPos, F, manche:opt.manche}; }
   const R = cfg ? cfg.regles : {...REGLES_NULLES}, sans = !!(cfg && cfg.sansJoker);
+  window.QLN_LANGUE_CARTE = (cfg && cfg.langueCartes) || null;   // cartes dans l'autre langue : définitions et contestation adaptées
   P = { mode, rnd, nivEntrainement, cfg, regles:R, parcours: cfg ? cfg.cartes : null,
     chrono: mode==="entrainement" ? store.get("chronoEntr", false) : true,
     manche:0, banque:0, cagnotte:0, serie:0, vies: cfg ? cfg.vies : VIES, viesMax: cfg ? cfg.vies : VIES,
@@ -1811,6 +1821,7 @@ function ecranJeu(){
     <div class="legende-cmd" aria-hidden="true"><span>Effacer</span><span>Mélanger</span><span></span><span>Indice</span><span id="leg-passer">Passer</span></div>
     <div class="trouves" id="trouves"></div>
   </section>`;
+  if(typeof Series !== "undefined") Series.habiller(c);
   P.compo = Composeur($("#compo"), c, { onComplet: () => valider(), onValider: () => valider(), onChange: () => message(""),
     avantMelanger: () => { if(P.melanges <= 0) return false; if(P.melanges !== Infinity){ P.melanges--; P.jokersUtilises++; majJokers(); } } });
   $("#b-quitter").onclick = confirmerQuitter;
@@ -1881,12 +1892,13 @@ function valider(){
   const prop = compo.mot, c = P.carte;
   const raz = () => setTimeout(()=>{ if(P && !P.m.fini && P.compo===compo) compo.vider(); }, 650);
   const unique = P.m.evt && P.m.evt.cle==="double" && !P.m.trouves.length;
-  const rate = () => unique ? setTimeout(() => { if(P && !P.m.fini) finManche("essai"); }, 700) : raz();
+  const mc = P.m, rate = () => unique ? setTimeout(() => { if(P && P.m === mc && !mc.fini) finManche("essai"); }, 700) : raz();
   if(prop === norm(c.origine)){ message("C'est le mot de la carte. Cherchez-en un autre.", "ko"); compo.marquer("erreur"); Son.ko(); return rate(); }
   const mot = chercherMot(c, prop);
   if(!mot){
     compo.marquer("erreur"); Son.ko();
     if(unique){ message(`${prop} n'est pas dans le dictionnaire du jeu.`, "ko"); return rate(); }
+    if(window.QLN_LANGUE_CARTE){ message(`${prop} n'est pas dans le dictionnaire du jeu.`, "ko"); return raz(); }
     Contestation.proposer(prop); return raz();
   }
   if(P.m.trouves.some(w=>norm(w)===prop)){ message("Déjà trouvé.", "ko"); compo.marquer("erreur"); return raz(); }
@@ -1911,7 +1923,7 @@ function accepterMot(mot, compo, raz = () => {}){
   message(P.m.trouves.length===1 ? `Bravo ! ${mot.toUpperCase()}` : `Bonus ! ${mot.toUpperCase()}`, "ok");
   crediter(gain);
   majTrouves(); majJokers();
-  if(P.m.trouves.length === solutionsDe(c).length) return setTimeout(()=>finManche("fini"), 750);
+  if(P.m.trouves.length === solutionsDe(c).length){ const mc = P.m; return setTimeout(() => { if(P && P.m === mc) finManche("fini"); }, 750); }   // seulement si c'est toujours la même carte
   raz();
 }
 function demarrerMinuteur(){
@@ -2085,6 +2097,7 @@ function ecranSolo(){
     <p class="sous-titre">Choisissez votre partie.</p>
     <div class="modes">
       <button class="mode large piece c-vert" id="s-defi"><span class="filigrane" aria-hidden="true">A</span><span class="ico">${ICO.escalier}</span><span><span class="nom">Le Défi</span><span class="desc">Partie libre : 10 cartes, 3 vies, séries, événements et coffres${rec.defi ? " · record "+euros(rec.defi) : ""}</span></span></button>
+      <div class="serie-zone" id="serie-zone"></div>
     </div>
     <details class="reglages"><summary>Règles de la partie libre</summary>
       ${REGLES_INFO.map(([k,n,d]) => `<label class="interrupteur" for="rg-${k}"><span>${n}<small>${d}</small></span><input type="checkbox" id="rg-${k}" data-k="${k}" ${regles[k]?"checked":""}></label>`).join("")}
@@ -2100,7 +2113,13 @@ function ecranSolo(){
   </section>`;
   $("#b-retour").onclick = ecranAccueil;
   $$(".reglages input").forEach(i => i.onchange = () => { const r = {...REGLES_DEFAUT, ...store.get("reglesDefi", {})}; r[i.dataset.k] = i.checked; store.set("reglesDefi", r); });
-  $("#s-defi").onclick = () => nouvellePartie("defi");
+  // menu « Série » : Classique, autre langue, thèmes (débloqués par niveau)
+  const bd = $("#s-defi"), nomD = $(".nom", bd).textContent, descD = $(".desc", bd).textContent;
+  if(typeof Series !== "undefined") Series.menu($("#serie-zone"), x => {
+    $(".nom", bd).textContent = nomD;
+    $(".desc", bd).textContent = x.cle === "classique" ? descD : `${x.emoji} ${x.nom} · ${x.desc}`;
+  });
+  bd.onclick = () => { const k = typeof Series !== "undefined" ? Series.choisie() : "classique"; k !== "classique" ? nouvellePartie("serie", null, {serie:k}) : nouvellePartie("defi"); };
   $("#s-fest").onclick = ecranFestival;
   $("#s-braq").onclick = nouveauBraquage;
   $("#s-duel").onclick = () => nouvellePartie("duel");
@@ -2180,7 +2199,8 @@ function ecranFin(){
   if(nb>=1 || record || medailleNb>=0){ Son.fin(); setTimeout(()=>confettis(nb>=2||record||medailleNb>=1?180:90), 300); } else Son.echec();
   const mode = P.mode, man = P.cfg ? P.cfg.manche : 0;
   $("#b-menu").onclick = mode==="festival" ? ecranFestival : ecranAccueil;
-  $("#b-rejouer").onclick = mode==="jour" ? partager : () => nouvellePartie(mode, null, {manche:man});
+  const serieCle = P.cfg && P.cfg.serieCle;
+  $("#b-rejouer").onclick = mode==="jour" ? partager : () => nouvellePartie(mode, null, {manche:man, serie:serieCle});
   const sb = $("#b-suiv"); if(sb) sb.onclick = () => nouvellePartie("festival", null, {manche:man+1});
   Pub.animerBandeau();
 }
@@ -2231,6 +2251,7 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || (location.pr
 <script src="config.js"></script>
 <script src="multi.js"></script>
 <script src="legal.js"></script>
+<script src="series.js"></script>
 <script src="progres.js"></script>
 <script src="compte.js"></script>
 <script>

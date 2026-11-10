@@ -192,3 +192,30 @@ test("hors ligne : un score du défi du jour attend le réseau puis part (avec s
   await p.evaluate(async () => { const s = Compte.session(); await fetch(window.QLN_API_URL + "/api/moi", {method:"DELETE", headers:{Authorization:"Bearer " + s.jeton}}); });
   assert.deepEqual(erreurs.filter(e => !/Failed to fetch|NetworkError|ERR_INTERNET/i.test(e)), []); await ctx.close();
 });
+
+/* Séries du Défi : thème et autre langue (débloqués par niveau), cartes habillées, pas de classement. */
+for(const lang of ["fr", "en"]) test(`${lang} : séries à thème et par langue`, async () => {
+  const {p, ctx, erreurs} = await ouvrir(lang, "telephone");
+  // niveau 1 : la langue est verrouillée, 2 thèmes ouverts
+  await p.evaluate(() => ecranSolo()); await p.waitForSelector("#s-serie");
+  const ouverts1 = await p.evaluate(() => [...document.querySelectorAll("#s-serie option:not([disabled])")].length);
+  assert.equal(ouverts1, 3, "Classique + 2 thèmes au niveau 1");
+  // haut niveau : tout est ouvert
+  await p.evaluate(() => Progres.remplacer({...Progres.donnees(), xp:999999}));
+  await p.evaluate(() => ecranSolo()); await p.waitForSelector("#s-serie");
+  assert.equal(await p.evaluate(() => document.querySelectorAll("#s-serie option[disabled]").length), 0, "tout est débloqué à haut niveau");
+  for(const k of ["theme-animaux", "langue-" + (lang === "en" ? "fr" : "en")]){
+    await p.evaluate(() => ecranSolo()); await p.waitForSelector("#s-serie");
+    await p.selectOption("#s-serie", k);
+    await p.evaluate(() => document.querySelector("#s-defi").click());
+    await p.waitForSelector(".carte.carte-serie .serie-badge", {timeout:8000});
+    const etat = await p.evaluate(() => ({mode:P.mode, n:P.parcours.length, toutes:P.cartes.every(c => c.deco && c.mots.length >= 2)}));
+    assert.equal(etat.mode, "serie"); assert.ok(etat.toutes, "cartes de la série habillées");
+    // on trouve une anagramme de la 1re carte
+    const mot = await p.evaluate(() => norm(solutionsDe(P.carte)[0]));
+    await p.waitForTimeout(500); await p.keyboard.type(mot, {delay:20});
+    await p.waitForFunction(() => P && P.m && P.m.trouves.length === 1, null, {timeout:4000}).catch(async e => { throw new Error(k + " : " + JSON.stringify(await p.evaluate(() => [P && P.m && P.m.trouves, document.querySelector("#message")?.textContent, P && P.carte.origine, document.querySelector(".voile")?.textContent?.slice(0,120)]))); });
+    await p.evaluate(() => ecranAccueil());
+  }
+  sansErreur(erreurs); await ctx.close();
+});

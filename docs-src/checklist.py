@@ -45,7 +45,7 @@ h += sec("En cours chez vous", [
 ])
 h += sec("Décisions à prendre", [
     ("dec", "<b>Nom définitif</b> : présélection Qlinn, Anagold, Wordheist, Lexipot (voir « Choisir le nom du jeu »)."),
-    ("dec", "<b>Séries multilingues et à thème</b> : langues à ajouter, thèmes de départ, classement par série ?"),
+    ("vous", "<b>Relire les thèmes</b> : tableur « Thèmes des séries » (mettre un x pour retirer un mot, proposer des ajouts)."),
     ("dec", "<b>Règles</b> : propositions en attente (document « Propositions de règles »), vidéos récompense touchant aux règles."),
     ("dec", "<b>Mots douteux</b> : tableur à relire (gardés par défaut)."),
     ("dec", "<b>Organisation du dépôt</b> : garder le jeu à la racine, ou le ranger dans <code>app/</code> (publication par une action GitHub, même adresse)."),
@@ -59,6 +59,7 @@ h += sec("Prochaines étapes de Claude", [
     ("todo", "Changer le nom partout dès qu'il est choisi (action « Changer le nom »)."),
 ])
 h += sec("Fait", [
+    ("ok", "<b>10/11</b> — séries du Défi : 16 thèmes FR / 9 EN, série dans l'autre langue, design par thème, déblocage par niveau, sans classement ; vibrations plus douces, lueur de validation."),
     ("ok", "<b>10/11</b> — version Apple préparée (fabrication sur Mac GitHub, simulateur OK ; TestFlight dès le compte Apple) ; note « Services externes »."),
     ("ok", "<b>10/11</b> — jeu complet hors ligne (scores en attente, pubs en cache, démarrage rapide sur réseau lent, multi signalé)."),
     ("ok", "<b>10/11</b> — accueil multi (salons en attente) + Partie rapide ; anti-triche des classements ; confidentialité et mentions légales ; aide au choix du nom."),
