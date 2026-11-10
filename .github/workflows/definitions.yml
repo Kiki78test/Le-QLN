@@ -1,0 +1,21 @@
+# Cherche les définitions (Wiktionnaire) des mots listés dans docs-src/mots-a-definir.json et enregistre le résultat
+# dans docs-src/definitions.json (Actions → « Définitions (Wiktionnaire) » → Run workflow, ou à chaque mise à jour de la liste).
+name: Définitions (Wiktionnaire)
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['docs-src/mots-a-definir.json', 'tools/definitions_wiktionnaire.py']
+permissions:
+  contents: write
+jobs:
+  definitions:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 tools/definitions_wiktionnaire.py
+      - name: Enregistrer
+        run: |
+          git config user.name "github-actions"; git config user.email "actions@users.noreply.github.com"
+          git add docs-src/definitions.json
+          git diff --cached --quiet || (git commit -m "Définitions Wiktionnaire mises à jour" && git push)
