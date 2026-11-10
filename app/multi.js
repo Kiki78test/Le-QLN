@@ -255,7 +255,7 @@ const fermerSalon = () => { if(!S) return; if(typeof PlateauIA !== "undefined" &
 const onglet = () => { try{ let o = sessionStorage.getItem("qln-onglet"); if(!o){ o = Math.random().toString(36).slice(2,8); sessionStorage.setItem("qln-onglet", o); } return o; }catch(e){ return "x"; } };
 // langue et version du dictionnaire : la partie est rejouée à l'identique sur chaque appareil, il faut les mêmes cartes partout
 const LANGUE_JEU = document.documentElement.lang === "en" ? "en" : "fr";
-const DRAP = {fr:"🇫🇷", en:"🇬🇧"};
+const DRAP = new Proxy({fr:"🇫🇷", en:"🇬🇧"}, {get:(o, k) => typeof Series !== "undefined" && Series.drapeau ? Series.drapeau(k) : o[k]});   // (pastille si l'appareil n'affiche pas les drapeaux)
 const signatureDico = () => { try{ return Object.keys(DICO).map(k => DICO[k].length).join("."); }catch(e){ return ""; } };
 function joueurDepuisCompte(){ const c = Compte.get(); return {id:c.id+":"+onglet(), pseudo:c.pseudo, couleur:c.couleur, pret:false, vu:Date.now(), lang:LANGUE_JEU, dico:signatureDico()}; }
 function couleurLibre(souhait){

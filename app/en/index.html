@@ -859,6 +859,16 @@ body::before{background:radial-gradient(130% 95% at 50% 45%, transparent 55%, rg
 #scene .filet svg{display:block; width:100%; height:100%}
 @media (max-width:999px){ #scene .filet{bottom:6px; height:34px} #scene .lf{font-size:min(var(--t), 16vw)!important} }
 @media (prefers-reduced-motion:reduce){ #scene .rayons,#scene .lf,#scene .et{animation:none!important} }
+/* écran Solo : deux colonnes sur ordinateur (le Défi et ses séries à gauche, les campagnes à droite), donc plus grand */
+.solo-g,.solo-d{display:flex; flex-direction:column; gap:18px; min-width:0}
+@media (min-width:1000px){
+  .app:has(.ecran.solo){max-width:1180px}
+  .ecran.solo{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); column-gap:40px; row-gap:14px; align-items:start; align-content:start}
+  .ecran.solo > .entete-ecran,.ecran.solo > .sous-titre{grid-column:1/-1}
+  .ecran.solo .solo-d > .titre-section{margin-top:0}
+  .ecran.solo .mode{min-height:150px}
+  .ecran.solo .mode.large{min-height:120px}
+}
 /* le contenu s'arrête au-dessus du filet doré du bas (il ne passe jamais derrière) */
 .app:not(:has(.plateau-ecran)){padding-bottom:calc(28px + 34px)}
 @media (min-width:1000px){ .app:not(:has(.plateau-ecran)){padding-bottom:calc(28px + 52px)} }
@@ -2219,9 +2229,10 @@ function ecranSolo(){
   const sem = TWISTS[cleSemaine() % TWISTS.length], sc = store.get("semaine", {});
   const f = store.get("fantome", null), ombre = f && f.jour === aujourdhui() ? "your best game of the day" : "the shadow";
   app.innerHTML = `
-  <section class="ecran">
+  <section class="ecran solo">
     <div class="entete-ecran"><button class="icone-btn" id="b-retour" aria-label="Back">${ICO.retour}</button><h1>Solo mode</h1><span></span></div>
     <p class="sous-titre">Choose your game.</p>
+    <div class="solo-g">
     <div class="modes">
       <button class="mode large piece c-vert" id="s-defi"><span class="filigrane" aria-hidden="true">A</span><span class="ico">${ICO.escalier}</span><span><span class="nom">The Challenge</span><span class="desc">Free game: 10 cards, 3 lives, streaks, events and chests${rec.defi ? " · record "+euros(rec.defi) : ""}</span></span></button>
       <div class="serie-zone" id="serie-zone"></div>
@@ -2230,12 +2241,15 @@ function ecranSolo(){
       ${REGLES_INFO.map(([k,n,d]) => `<label class="interrupteur" for="rg-${k}"><span>${n}<small>${d}</small></span><input type="checkbox" id="rg-${k}" data-k="${k}" ${regles[k]?"checked":""}></label>`).join("")}
       <p class="note-regles">The record is only saved if all the rules are on.</p>
     </details>
+    </div>
+    <div class="solo-d">
     <h2 class="titre-section">Campaigns</h2>
     <div class="modes">
       <button class="mode piece c-violet" id="s-fest"><span class="filigrane" aria-hidden="true">F</span><span class="ico">${ICO.escalier}</span><span><span class="nom">The Festival</span><span class="desc">5 rounds with a target · ${nbMed}/5 medal${nbMed!==1?"s":""}</span></span></button>
       <button class="mode piece c-noir" id="s-braq"><span class="filigrane" aria-hidden="true">B</span><span class="ico">${ICO.indice}</span><span><span class="nom">The Heist</span><span class="desc">6 words, one clock${br.meilleur ? " · record "+fmtTemps(br.meilleur) : ""}</span></span></button>
       <button class="mode piece c-bleu" id="s-duel"><span class="filigrane" aria-hidden="true">D</span><span class="ico">${ICO.groupe}</span><span><span class="nom">Shadow duel</span><span class="desc">Today's cards against ${ombre}</span></span></button>
       <button class="mode piece c-orange" id="s-sem"><span class="filigrane" aria-hidden="true">S</span><span class="ico">${ICO.calendrier}</span><span><span class="nom">Weekly challenge</span><span class="desc">${esc(sem.nom)}${sc.cle===cleSemaine() ? " · ranked "+euros(sc.score) : " · 1 ranked attempt"}</span></span></button>
+    </div>
     </div>
   </section>`;
   $("#b-retour").onclick = ecranAccueil;

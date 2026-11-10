@@ -30,6 +30,19 @@ const LANGUES = [{lang:AUTRE, chemin: LG === "en" ? "../data/fr.json" : "en/data
 const DRAPEAU = {fr:{emoji:"🇫🇷", bandes:["#0055a4", "#ffffff", "#ef4135"]}, en:{emoji:"🇬🇧", bandes:["#012169", "#ffffff", "#c8102e"]},
                  es:{emoji:"🇪🇸", bandes:["#aa151b", "#f1bf00", "#aa151b"]}, de:{emoji:"🇩🇪", bandes:["#000000", "#dd0000", "#ffce00"]},
                  it:{emoji:"🇮🇹", bandes:["#009246", "#ffffff", "#ce2b37"]}};
+// drapeaux : Windows n'affiche pas les émojis de drapeaux (il écrit « FR », « GB »…) → pastille aux couleurs du pays
+const DRAPEAUX_OK = (() => { try{
+  const c = document.createElement("canvas"); c.width = c.height = 20; const x = c.getContext("2d", {willReadFrequently:true});
+  x.textBaseline = "top"; x.font = "16px sans-serif"; x.fillText("\u{1F1EB}\u{1F1F7}", 0, 0);
+  const d = x.getImageData(0, 0, 20, 20).data; for(let i = 0; i < d.length; i += 4) if(d[i+3] > 50 && Math.max(d[i], d[i+1], d[i+2]) - Math.min(d[i], d[i+1], d[i+2]) > 60) return true;
+  return false; }catch(e){ return true; } })();
+const CODES = {fr:"FR", en:"EN", es:"ES", de:"DE", it:"IT"};
+function drapeau(lang){
+  const d = DRAPEAU[lang]; if(!d) return "";
+  if(DRAPEAUX_OK) return d.emoji;
+  const b = d.bandes;
+  return `<span class="drap" style="background:linear-gradient(90deg,${b[0]} 0 33.3%,${b[1]} 33.3% 66.6%,${b[2]} 66.6%)">${CODES[lang] || lang.toUpperCase()}</span>`;
+}
 const LONGUEUR = 8;                      // cartes par série à thème
 const nivTheme = i => i < 2 ? 1 : i;     // 2 thèmes dès le niveau 1, puis un de plus à chaque niveau
 
@@ -51,7 +64,7 @@ async function chargerLangue(lang){
 async function catalogue(){
   const t = await chargerThemes(), nv = niveauJoueur();
   const liste = [{cle:"classique", nom:TXT.classique, emoji:"🎴", desc:TXT.classiqueD, requis:1, groupe:""}];
-  for(const x of LANGUES) liste.push({cle:"langue-" + x.lang, nom:TXT.nomLangue[x.lang], emoji:DRAPEAU[x.lang].emoji, desc:TXT.descLangue(x.lang), requis:x.requis, groupe:TXT.langues});
+  for(const x of LANGUES) liste.push({cle:"langue-" + x.lang, nom:TXT.nomLangue[x.lang], emoji:drapeau(x.lang), desc:TXT.descLangue(x.lang), requis:x.requis, groupe:TXT.langues});
   t.forEach((th, i) => liste.push({cle:"theme-" + th.cle, nom:th.nom, emoji:th.emoji, desc:TXT.descTheme(LONGUEUR, th.mots.length + " " + (LG === "en" ? "words in the theme" : "mots dans le thème")), requis:nivTheme(i), groupe:TXT.themes, th}));
   liste.forEach(x => x.ouvert = nv >= x.requis);
   return liste;
@@ -68,7 +81,7 @@ async function menu(zone, majBouton){
   const liste = await catalogue();
   let cle = choisie(); if(!liste.some(x => x.cle === cle && x.ouvert)) cle = "classique";
   const groupes = [...new Set(liste.map(x => x.groupe))];
-  const tuile = x => `<button class="serie-tuile ${x.ouvert ? "" : "verrou"}" data-serie="${x.cle}" role="radio" aria-checked="${x.cle === cle}" ${x.ouvert ? "" : "aria-disabled=\"true\""} style="--fond:${fondTuile(x)}" title="${esc(x.nom)}">
+  const tuile = x => `<button class="serie-tuile ${x.ouvert ? "" : "verrou"}" data-serie="${x.cle}" role="radio" aria-checked="${x.cle === cle}" ${x.ouvert ? "" : "aria-disabled=\"true\""} style="--fond:${fondTuile(x)}" aria-label="${esc(x.nom)}${x.ouvert ? "" : " — " + TXT.verrou(x.requis)}">
       <i class="st-fond" aria-hidden="true"></i><span class="st-emoji" aria-hidden="true">${x.emoji}</span><span class="st-nom">${esc(x.nom)}</span>${x.ouvert ? "" : `<span class="st-verrou">🔒 ${TXT.verrou(x.requis)}</span>`}</button>`;
   zone.innerHTML = `<div class="serie-choix"><span class="serie-lbl">${TXT.serie}</span>
     <div class="serie-bande" role="radiogroup" aria-label="${TXT.serie}">${groupes.map(g => (g ? `<span class="serie-groupe">${esc(g)}</span>` : "") + liste.filter(x => x.groupe === g).map(tuile).join("")).join("")}</div></div>
@@ -106,7 +119,7 @@ async function config(cle){
   if(cle.startsWith("langue-")){
     const lang = cle.slice(7); if(!LANGUES.some(x => x.lang === lang)) return null;
     const D = await chargerLangue(lang);
-    const deco = {type:"langue", lang, emoji:DRAPEAU[lang].emoji, nom:TXT.nomLangue[lang], bandes:DRAPEAU[lang].bandes};
+    const deco = {type:"langue", lang, emoji:drapeau(lang), nom:TXT.nomLangue[lang], bandes:DRAPEAU[lang].bandes};
     return {cartes:[...PARCOURS_DEFI], vies:VIES, regles, serieCle:cle, langueCartes:lang, deco,
       tirer(niv, rnd, deja){
         const liste = D[niv];
@@ -162,15 +175,19 @@ css.textContent = `
   -webkit-mask:linear-gradient(90deg, transparent, #000 18px, #000 calc(100% - 18px), transparent); mask:linear-gradient(90deg, transparent, #000 18px, #000 calc(100% - 18px), transparent)}
 .serie-bande::-webkit-scrollbar{display:none}
 .serie-groupe{flex:none; align-self:center; writing-mode:vertical-rl; transform:rotate(180deg); font:700 11px var(--f-ui); letter-spacing:.16em; text-transform:uppercase; color:var(--or); opacity:.85; padding:0 2px}
-.serie-tuile{flex:none; position:relative; width:86px; height:80px; border:0; border-radius:14px; padding:6px 6px 7px; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; gap:3px;
+.serie-tuile{flex:none; position:relative; width:92px; height:92px; border:0; border-radius:14px; padding:6px 6px 7px; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; gap:3px;
   color:#fff; cursor:pointer; scroll-snap-align:center; overflow:hidden; background:#0d2259;
   box-shadow:inset 0 0 0 1px rgba(255,255,255,.18), 0 4px 10px rgba(0,0,0,.35); transition:transform .15s, box-shadow .15s}
 .serie-tuile .st-fond{position:absolute; inset:0; background:var(--fond); opacity:.9}
 .serie-tuile .st-fond::after{content:""; position:absolute; inset:0; background:linear-gradient(180deg, rgba(255,255,255,.18), transparent 40%, rgba(0,0,0,.45))}
 .serie-tuile .st-emoji{position:relative; font-size:26px; line-height:1; filter:drop-shadow(0 2px 3px rgba(0,0,0,.45)); margin-bottom:auto; margin-top:4px}
-.serie-tuile .st-nom{position:relative; font:800 13px/1.05 var(--f-ui); letter-spacing:.02em; text-align:center; text-shadow:0 1px 3px rgba(0,0,0,.8);
+.serie-tuile .st-nom{position:relative; font:800 14px/1.05 var(--f-ui); letter-spacing:.02em; text-align:center; text-shadow:0 1px 3px rgba(0,0,0,.8);
   display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden}
-.serie-tuile .st-verrou{position:absolute; inset:auto 0 0 0; padding:2px 0; font:700 10.5px var(--f-ui); background:rgba(0,0,0,.6); color:#fff}
+.serie-tuile .st-verrou{position:absolute; inset:auto 0 0 0; padding:3px 0; font:700 11px var(--f-ui); background:rgba(0,0,0,.62); color:#fff; letter-spacing:.02em}
+.serie-tuile.verrou{padding-bottom:24px}
+.drap{display:inline-grid; place-items:center; min-width:30px; height:21px; padding:0 3px; border-radius:5px; font:800 11px/1 var(--f-ui); color:#fff; letter-spacing:.04em;
+  text-shadow:0 0 3px #000, 0 0 2px #000; box-shadow:inset 0 0 0 1px rgba(255,255,255,.35), 0 1px 3px rgba(0,0,0,.5); vertical-align:middle}
+.serie-tuile .st-emoji .drap{min-width:40px; height:28px; font-size:13px}
 .serie-tuile.verrou{cursor:default} .serie-tuile.verrou .st-fond{filter:grayscale(.85) brightness(.55)} .serie-tuile.verrou .st-emoji{opacity:.55}
 .serie-tuile[aria-checked="true"]{transform:translateY(-2px); box-shadow:0 0 0 2.5px #ffd84a, 0 0 18px rgba(255,207,58,.55), 0 6px 14px rgba(0,0,0,.4)}
 .serie-tuile:focus-visible{outline:2px solid var(--or); outline-offset:3px}
@@ -192,5 +209,5 @@ css.textContent = `
 `;
 document.head.appendChild(css);
 
-return {menu, config, habiller, choisie, catalogue, TXT};
+return {menu, config, habiller, choisie, catalogue, TXT, drapeau};
 })();
