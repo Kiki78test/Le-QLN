@@ -38,16 +38,29 @@ const drapeau = c => c ? String.fromCodePoint(...[...c].map(x => 0x1F1E6 + x.cha
 const actif = () => !!window.QLN_API_URL;
 const base = () => String(window.QLN_API_URL || "").replace(/\/$/, "");
 let session = store.get("session", null);   // {jeton, joueur}
+/* icône du compte (barre du haut) : disque coloré avec l'initiale du pseudo quand on est connecté, silhouette sinon */
+const ICONE_VIDE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>';
+function majIcone(){
+  const b = document.getElementById("ab-profil"); if(!b) return;
+  const j = connecte() ? session.joueur : null;
+  b.classList.toggle("connecte", !!j);
+  if(j){
+    const c = (lesPions()[j.couleur] || lesPions()[0]).c;
+    b.innerHTML = `<span class="ab-initiale" style="--pion:${c}">${esc(([...(j.pseudo || "?")][0] || "?").toUpperCase())}</span><i class="ab-point" aria-hidden="true"></i>`;
+    b.setAttribute("aria-label", TXT.compte + " · " + j.pseudo);
+  } else { b.innerHTML = ICONE_VIDE; b.setAttribute("aria-label", TXT.compte); }
+}
+function fixerSession(d){ session = d; store.set("session", d); majIcone(); }
 const connecte = () => !!(session && session.jeton);
 async function api(chemin, {methode="GET", corps=null, auth=true}={}){
   const r = await fetch(base() + "/api" + chemin, {method:methode, headers:{"Content-Type":"application/json", ...(auth && connecte() ? {Authorization:"Bearer " + session.jeton} : {})}, body:corps ? JSON.stringify(corps) : undefined});
   const d = await r.json().catch(() => ({}));
-  if(r.status === 401 && auth && connecte() && chemin !== "/connexion"){ session = null; store.set("session", null); }
+  if(r.status === 401 && auth && connecte() && chemin !== "/connexion"){ fixerSession(null); }
   if(!r.ok) throw Object.assign(new Error(d.erreur || TXT.horsLigne), {status:r.status});
   return d;
 }
 function ouvrirSession(d){
-  session = {jeton:d.jeton, joueur:d.joueur}; store.set("session", session);
+  fixerSession({jeton:d.jeton, joueur:d.joueur});
   // le profil local (multijoueur, contre l'IA) suit le compte
   const loc = store.get("compte", null) || {};
   store.set("compte", {...loc, id: loc.id || d.joueur.id, pseudo:d.joueur.pseudo, couleur:d.joueur.couleur, cree: loc.cree || Date.now()});
@@ -163,11 +176,11 @@ function ecranConnecte(){
     catch(e){ err.textContent = e.message; err.hidden = false; }
   };
   $("#ct-classements").onclick = () => ecranClassements();
-  $("#ct-sortir").onclick = () => { session = null; store.set("session", null); toast(TXT.deconnecte, 1800); ecranAccueil(); };
+  $("#ct-sortir").onclick = () => { fixerSession(null); toast(TXT.deconnecte, 1800); ecranAccueil(); };
   $("#ct-supprimer").onclick = () => {
     const v = panneau({classe:"c-rouge", titre:TXT.supprimer, corps:`<p class="texte-centre">${TXT.supprimerQ}</p><div class="duo"><button class="bouton piece c-noir" id="s-non">${TXT.annuler}</button><button class="bouton piece c-rouge" id="s-oui">${TXT.supprimer}</button></div>`});
     $("#s-non", v).onclick = () => v.remove();
-    $("#s-oui", v).onclick = async () => { try{ await api("/moi", {methode:"DELETE"}); }catch(e){ toast(e.message); return; } v.remove(); session = null; store.set("session", null); toast(TXT.supprimerOk, 2000); ecranAccueil(); };
+    $("#s-oui", v).onclick = async () => { try{ await api("/moi", {methode:"DELETE"}); }catch(e){ toast(e.message); return; } v.remove(); fixerSession(null); toast(TXT.supprimerOk, 2000); ecranAccueil(); };
   };
   synchroniser(true);
 }
@@ -259,6 +272,7 @@ document.head.appendChild(css);
 
 // au lancement : rafraîchir la session et la progression si l'on est connecté
 if(actif() && connecte()) setTimeout(() => synchroniser(true), 1500);
+majIcone(); document.addEventListener("DOMContentLoaded", majIcone);
 
 return { actif, connecte, ecranCompte, ecranClassements, synchroniser, session:() => session, TXT };
 })();

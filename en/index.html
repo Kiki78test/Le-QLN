@@ -702,6 +702,62 @@ body{box-sizing:border-box} .app{min-height:calc(100% - var(--ab-h))}
 .ct-mot{font:400 40px var(--f-titre); letter-spacing:.08em; color:var(--sombre)}
 #ct-boutons{grid-template-columns:1fr}
 .ct-ok{color:#13703f; font-weight:700} .ct-ko{color:#a3271d; font-weight:700} .ct-ko a{color:#1b47a3}
+
+/* =====================  V11 — icône de compte, hiérarchie du regard, écrans bas (PC)  ===================== */
+/* compte : silhouette si déconnecté ; disque coloré + initiale + point vert si connecté */
+#ab-profil{position:relative}
+#ab-profil:not(.connecte) svg{opacity:.8}
+#ab-profil.connecte{background:transparent; box-shadow:none}
+#ab-profil .ab-initiale{width:34px; height:34px; border-radius:50%; display:grid; place-items:center; font:800 19px/1 var(--f-titre); color:#10163a; padding-top:2px;
+  background:radial-gradient(circle at 35% 28%, #fff9 0, transparent 55%), var(--pion,#ffd60a); box-shadow:inset 0 -3px 5px rgba(0,0,0,.22), 0 0 0 2px rgba(255,255,255,.85), 0 2px 8px rgba(0,0,0,.4)}
+#ab-profil .ab-point{position:absolute; right:0; bottom:1px; width:11px; height:11px; border-radius:50%; background:#3ddc84; box-shadow:0 0 0 2px #0b1a3a, 0 0 8px rgba(61,220,132,.8)}
+
+/* carte : les lettres de la carte (à ne pas bouger) sont plus petites et plus sobres ; les lettres à déplacer sont grandes, vives, et leur ligne de réponse est repérable */
+.ecran .table-carte .mot .t{width:var(--tc, var(--tw)); height:calc(var(--tc, var(--tw))*1.08); font-size:calc(var(--tc, var(--tw))*.74)}
+.ecran[style*="--tc"] .table-carte .mot .t{filter:saturate(.45) brightness(.97); opacity:.92}
+.ecran[style*="--tc"] .carte-corps{gap:6px}
+.ecran[style*="--tc"] .slot:not(.plein){background:rgba(255,214,10,.07); box-shadow:inset 0 0 0 2px rgba(255,214,10,.3), inset 0 4px 10px rgba(0,0,0,.45)}
+.ecran[style*="--tc"] .reserve{filter:drop-shadow(0 0 16px rgba(80,255,190,.22))}
+.ecran[style*="--tc"] .reserve .lettre{box-shadow:inset 0 1px 0 rgba(255,255,255,.6), inset 0 -3px 0 rgba(0,0,0,.16), 0 4px 0 var(--o), 0 10px 16px rgba(0,0,0,.35)!important}
+.ecran[style*="--tc"] .reserve .lettre:not(.utilisee){outline:2px solid rgba(255,255,255,.22); outline-offset:1px}
+
+/* ordinateur à écran peu haut : tout tient sans défiler */
+@media (min-width:700px) and (max-height:820px){
+  .app{padding-block:6px 8px}
+  .ecran{gap:8px}
+  .carte{padding-bottom:8px}
+  .carte-bande{padding:5px 12px 4px 14px!important}
+  .carte-bande .niv,.carte-bande .val{font-size:22px!important}
+  .carte-bande .val{padding:2px 10px 1px!important}
+  .carte-corps{gap:4px!important; padding-top:8px!important}
+  .consigne{font-size:12px!important}
+  .indic{font-size:14px}
+  .legende-cmd{display:none}
+  .message{min-height:20px; font-size:16px}
+  .rond{width:46px; height:46px}
+  .bouton{min-height:46px; font-size:24px}
+  .hud .icone-btn{width:38px; height:38px}
+  .hud-titre{font-size:14px}
+  .serie-info{gap:6px}
+}
+@media (min-width:1000px) and (max-height:820px){
+  .ecran.accueil{gap:8px 32px; padding-top:0}
+  .accueil .acc-g,.accueil .acc-d{gap:10px}
+  .accueil .acc-d{padding-top:6px; top:calc(var(--bp-h,0px) + 8px)}
+  .accueil .heros{gap:6px}
+  .accueil .vitrine{height:calc(var(--tw,44px)*1.08 + 8px)}
+  .accueil .vitrine-legende{font-size:15px; min-height:18px; margin-top:-4px}
+  .accueil .modes{gap:10px}
+  .accueil .mode{min-height:0; padding:10px 14px; gap:6px; border-radius:16px}
+  .accueil .mode .ico{width:32px; height:32px} .accueil .mode .ico svg{width:19px; height:19px}
+  .accueil .mode .nom{font-size:25px}
+  .accueil .mode .desc{font-size:13px; margin-top:1px}
+  .accueil .mode .etiquette{top:9px}
+  .accueil .mode.large{padding:9px 48px 9px 14px; gap:12px}
+  .accueil .pg-carte{padding:8px 12px}
+  .accueil .stats{gap:8px}
+  .accueil .pied{gap:10px}
+}
 </style>
 </head>
 <body>
@@ -1194,6 +1250,8 @@ function largeurTuile(n, max=56, dispo){
   dispo = dispo || Math.min(window.innerWidth, 600) - 64;
   return Math.max(26, Math.min(max, Math.floor((dispo - (n-1)*7) / n)));
 }
+/* taille maximale des lettres à déplacer : grande, mais réduite sur un écran peu haut pour que tout tienne sans défiler */
+function tuileMax(){ const h = window.innerHeight, l = window.innerWidth; return l < 700 ? 60 : Math.max(36, Math.min(66, Math.floor((h - 360) / 3.9))); }
 function carteHTML(c, {consigne="Find an anagram of", indic="", chrono=false, inverse=false}={}){
   const N = NIVEAUX[c.niv];
   return `<div class="carte ${N.classe}">
@@ -1299,26 +1357,64 @@ function arreterVitrine(){ clearTimeout(vitrineTimer); vitrineTimer = null; }
 function demarrerVitrine(){
   arreterVitrine();
   const zone = $("#vitrine"), leg = $("#vitrine-legende"); if(!zone) return;
-  let i = Math.floor(Math.random()*VITRINE.length);
   const niveauDe = n => n<=5?"c-vert":n<=7?"c-bleu":n<=9?"c-rouge":"c-noir";
-  function poser(){
-    const [a,b] = VITRINE[i % VITRINE.length]; i++;
-    const n = a.length, w = zone.clientWidth || 300;
-    const tw = Math.max(28, Math.min(innerWidth < 1000 ? (innerHeight < 760 ? 38 : 44) : 54, Math.floor((w - (n-1)*7)/n))), gap = 7;
-    const x0 = (w - (n*tw + (n-1)*gap))/2;
-    zone.style.setProperty("--tw", tw+"px");
-    zone.innerHTML = a.split("").map((l,k)=>`<span class="tuile-v piece ${niveauDe(n)} entre" style="--x:${x0+k*(tw+gap)}px; animation-delay:${k*45}ms">${l}</span>`).join("");
-    leg.innerHTML = `<b>${a}</b>`;
-    // permutation a -> b (gestion des lettres en double)
-    const pris = new Set(), cible = a.split("").map(l => { for(let j=0;j<b.length;j++){ if(b[j]===l && !pris.has(j)){ pris.add(j); return j; } } return 0; });
-    vitrineTimer = setTimeout(() => {
-      if(!document.body.contains(zone)) return;
-      $$(".tuile-v", zone).forEach((t,k)=>{ t.classList.remove("entre"); if(cible[k]!==k) t.classList.add("saute"); t.style.setProperty("--x", (x0+cible[k]*(tw+gap))+"px"); });
-      leg.innerHTML = `${a} <span aria-hidden="true">⇄</span> <b>${b}</b>`;
-      vitrineTimer = setTimeout(() => { if(document.body.contains(zone)) poser(); }, 2600);
-    }, 1700);
+  /* un seul mot par visite, choisi parmi ceux qui ont beaucoup d'anagrammes ; les lettres tentent d'abord quelques
+     arrangements faux (qui font gagner du temps) avant de former une vraie anagramme, puis on recommence avec la suivante */
+  let groupe = null;
+  if(typeof DICO !== "undefined" && DICO){
+    const riches = [...(DICO.v || []), ...(DICO.b || [])].filter(g => g.length >= 4 && norm(g[0]).length >= 5 && norm(g[0]).length <= 7);
+    if(riches.length) groupe = riches[Math.floor(Math.random()*riches.length)].map(w => norm(w).toUpperCase());
   }
-  poser();
+  if(!groupe){ const [a, b] = VITRINE[Math.floor(Math.random()*VITRINE.length)]; groupe = [a, b]; }
+  const valides = new Set(groupe), depart = groupe[0], n = depart.length;
+  const suivantes = groupe.slice(1); let nb = Math.floor(Math.random()*suivantes.length);
+  const w = zone.clientWidth || 300, gap = 7;
+  const tw = Math.max(28, Math.min(innerWidth < 1000 ? (innerHeight < 760 ? 38 : 44) : 54, Math.floor((w - (n-1)*gap)/n)));
+  const x0 = (w - (n*tw + (n-1)*gap))/2;
+  zone.style.setProperty("--tw", tw+"px");
+  zone.innerHTML = depart.split("").map((l,k)=>`<span class="tuile-v piece ${niveauDe(n)} entre" style="--x:${x0+k*(tw+gap)}px; animation-delay:${k*45}ms">${l}</span>`).join("");
+  const tuiles = $$(".tuile-v", zone), lettres = depart.split(""), pos = lettres.map((_, k) => k);
+  leg.innerHTML = `<b>${depart}</b>`;
+  // place chaque tuile (identifiée par sa lettre) pour former le mot « cible » en bougeant le moins possible
+  function former(cible){
+    const prises = new Set(), nouvelle = new Array(n).fill(-1);
+    lettres.forEach((l, k) => { if(cible[pos[k]] === l && !prises.has(pos[k])){ prises.add(pos[k]); nouvelle[k] = pos[k]; } });
+    lettres.forEach((l, k) => { if(nouvelle[k] >= 0) return; for(let j = 0; j < n; j++) if(cible[j] === l && !prises.has(j)){ prises.add(j); nouvelle[k] = j; break; } });
+    tuiles.forEach((t, k) => {
+      if(nouvelle[k] === pos[k]) return;
+      t.classList.remove("entre", "saute"); void t.offsetWidth; t.classList.add("saute");
+      t.style.setProperty("--x", (x0 + nouvelle[k]*(tw+gap)) + "px");
+    });
+    nouvelle.forEach((j, k) => pos[k] = j);
+  }
+  const actuel = () => { const m = new Array(n); lettres.forEach((l, k) => m[pos[k]] = l); return m.join(""); };
+  function fausse(){ // arrangement qui n'est pas un mot du jeu, nettement différent de l'actuel
+    const cur = actuel();
+    for(let e = 0; e < 40; e++){
+      const m = lettres.slice().sort(() => Math.random() - .5), t = m.join("");
+      if(valides.has(t)) continue;
+      let diff = 0; for(let k = 0; k < n; k++) if(t[k] !== cur[k]) diff++;
+      if(diff >= Math.min(3, n)) return t;
+    }
+    return lettres.slice().reverse().join("");
+  }
+  let fauxRestants = 2 + Math.floor(Math.random()*2);
+  function suite(){
+    if(!document.body.contains(zone)) return;
+    if(!suivantes.length) return; // un seul mot connu : on le laisse affiché
+    if(fauxRestants > 0){
+      fauxRestants--; former(fausse());
+      leg.innerHTML = `<b>${depart}</b> <span aria-hidden="true">⇄ ?</span>`;
+      vitrineTimer = setTimeout(suite, 1500);
+    } else {
+      const mot = suivantes[nb % suivantes.length]; nb++;
+      former(mot);
+      leg.innerHTML = `${depart} <span aria-hidden="true">⇄</span> <b>${mot}</b>`;
+      fauxRestants = 2 + Math.floor(Math.random()*2);
+      vitrineTimer = setTimeout(suite, 3200);
+    }
+  }
+  vitrineTimer = setTimeout(suite, 2200);
 }
 
 function ecranAccueil(){
@@ -1678,7 +1774,7 @@ function ecranJeu(){
   const c = P.carte, n = norm(c.origine).length, nbSol = solutionsDe(c).length, brq = P.mode==="braquage";
   const piste = P.parcours ? `<div class="piste">${P.parcours.map((nv,i)=>{ const h=P.historique.filter(x=>!x.special)[i]; return `<i class="${NIVEAUX[nv].classe} ${h?(h.reussi?"fait":"rate"):(i===P.manche?"encours":"")}"></i>`; }).join("")}</div>` : "";
   app.innerHTML = `
-  <section class="ecran" style="--tw:${largeurTuile(n)}px">
+  <section class="ecran" style="--tw:${largeurTuile(n, tuileMax())}px; --tc:${largeurTuile(n, Math.min(38, tuileMax()))}px">
     <div class="hud">
       <button class="icone-btn" id="b-quitter" aria-label="Quit the game">${ICO.croix}</button>
       <div class="hud-centre"><span class="hud-titre">${P.parcours ? `${brq?"Word":"Card"} ${P.manche+1} of ${P.parcours.length}` : `Practice · card ${P.historique.length+1}`}</span>${piste}</div>
