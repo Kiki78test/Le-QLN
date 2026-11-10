@@ -21,7 +21,7 @@ css.textContent = `
 @media (min-width:980px){ .p-grille{grid-template-columns:minmax(0,1fr) 340px; align-items:start} .p-cote{position:sticky; top:12px} }
 .tapis-cadre{position:relative; border-radius:22px; padding:10px; background:linear-gradient(145deg,#f6dc8a 0%,#c8922a 28%,#8a5a12 52%,#e9c25c 78%,#9a6a1a 100%); box-shadow:inset 0 2px 0 rgba(255,255,255,.55), inset 0 -3px 0 rgba(0,0,0,.3), 0 3px 0 #5a3706, 0 26px 50px rgba(0,0,0,.6)}
 .tapis-cadre::before{content:""; position:absolute; inset:10px; border-radius:14px; box-shadow:inset 0 0 0 3px rgba(0,0,0,.45), inset 0 8px 24px rgba(0,0,0,.55); pointer-events:none; z-index:2}
-.tapis-scroll{background:radial-gradient(90% 90% at 40% 20%, #1f4fa6, #0d2a66 60%, #08183f)}
+.tapis-scroll{background:radial-gradient(30% 34% at 0% 0%, rgba(190,220,255,.55), transparent 70%), repeating-conic-gradient(from 100deg at 0 0, rgba(170,210,255,0) 0deg, rgba(170,210,255,.13) 2deg, rgba(170,210,255,0) 4.5deg, rgba(170,210,255,0) 8deg), radial-gradient(80% 75% at 50% 45%, #1546ba, #0b2a8c 55%, #061a5c)}
 .tapis-scroll{overflow-x:auto; overflow-y:hidden; border-radius:12px; -webkit-overflow-scrolling:touch; scrollbar-width:none}
 #tapis{display:block; width:100%; min-width:660px; height:auto}
 #tapis .case-g{transition:filter .2s} #tapis .case-g:not(.cible):hover{filter:brightness(1.08)}
@@ -1178,7 +1178,7 @@ function svgTapis(){
     + `<marker id="fl" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#000"/></marker>`
     + `<marker id="fl-c" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="4" markerHeight="4" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#cfe0ff"/></marker>`
     + `<pattern id="feutre" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="none"/><rect width="6" height="1" fill="#fff" opacity=".05"/><rect y="3" width="6" height="1" fill="#000" opacity=".1"/></pattern>`
-    + `<radialGradient id="lampe" cx=".42" cy=".25" r=".85"><stop offset="0" stop-color="#3f78d6" stop-opacity=".55"/><stop offset=".55" stop-color="#1c4aa0" stop-opacity=".12"/><stop offset="1" stop-color="#000" stop-opacity=".45"/></radialGradient>`
+    + `<radialGradient id="lampe" cx=".45" cy=".42" r=".8"><stop offset="0" stop-color="#2a63e0" stop-opacity=".35"/><stop offset=".6" stop-color="#0b2a8c" stop-opacity=".05"/><stop offset="1" stop-color="#020a30" stop-opacity=".4"/></radialGradient>`
     + `<linearGradient id="g-biseau" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".55"/><stop offset=".08" stop-color="#fff" stop-opacity="0"/><stop offset=".85" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".38"/></linearGradient>`
     + `<linearGradient id="g-or" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff3b0"/><stop offset=".5" stop-color="#ffcf3a"/><stop offset="1" stop-color="#b87d00"/></linearGradient>`
     + `<radialGradient id="g-halo-or" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ffe68f" stop-opacity=".5"/><stop offset="1" stop-color="#ffe68f" stop-opacity="0"/></radialGradient>`

@@ -97,6 +97,8 @@ css.textContent = `
 .infobulle b{display:block; color:var(--or); font-family:var(--f-titre); font-weight:400; font-size:20px; letter-spacing:.04em; line-height:1.05; margin-bottom:3px}
 .infobulle::before{content:""; position:absolute; left:var(--fx,50%); top:-6px; width:11px; height:11px; background:#05112e; transform:translateX(-50%) rotate(45deg); box-shadow:-1px -1px 0 rgba(255,207,58,.55)}
 .infobulle.dessus::before{top:auto; bottom:-6px; box-shadow:1px 1px 0 rgba(255,207,58,.55)}
+.infobulle.droite::before{top:var(--fy,50%); left:-6px; transform:translateY(-50%) rotate(45deg); box-shadow:-1px 1px 0 rgba(255,207,58,.55)}
+.infobulle.gauche::before{top:var(--fy,50%); left:auto; right:-6px; transform:translateY(-50%) rotate(45deg); box-shadow:1px -1px 0 rgba(255,207,58,.55)}
 .info-i{position:absolute; top:8px; right:8px; z-index:3; width:24px; height:24px; border-radius:50%; display:grid; place-items:center; font:700 14px/1 Georgia,serif; font-style:italic; cursor:help;
   background:rgba(0,0,0,.4); color:#fff; box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.55); transition:transform .12s, background .12s}
 .info-i:hover{background:var(--or); color:#1b1400; transform:scale(1.12)}
@@ -125,12 +127,21 @@ function montrer(el, t){
   b.innerHTML = `<b>${esc(titre)}</b>${esc(desc)}`;
   document.body.appendChild(b); bulle = b;
   const r = el.getBoundingClientRect(), w = b.offsetWidth, h = b.offsetHeight;
-  const left = Math.min(innerWidth - w - 12, Math.max(12, r.left + r.width/2 - w/2));
-  let top = r.bottom + 12, dessus = false;
-  if(top + h > innerHeight - 12 && r.top - h - 12 > 8){ top = r.top - h - 12; dessus = true; }
-  b.style.left = left + "px"; b.style.top = Math.max(8, top) + "px";
-  b.style.setProperty("--fx", Math.min(w - 14, Math.max(14, r.left + r.width/2 - left)) + "px");
-  b.classList.toggle("dessus", dessus);
+  // positions possibles : dessous, dessus, à droite, à gauche ; on garde celle qui ne cache pas les lettres du jeu
+  const cx = Math.min(innerWidth - w - 12, Math.max(12, r.left + r.width/2 - w/2)), cy = Math.min(innerHeight - h - 8, Math.max(8, r.top + r.height/2 - h/2));
+  const choix = [{left:cx, top:r.bottom + 12, sens:""}, {left:cx, top:r.top - h - 12, sens:"dessus"},
+                 {left:r.right + 12, top:cy, sens:"droite"}, {left:r.left - w - 12, top:cy, sens:"gauche"}];
+  const proteges = [...document.querySelectorAll(".reserve, .reponse, .table-carte .mot, .panneau-jeu .mot, .vitrine")].map(x => x.getBoundingClientRect()).filter(x => x.width && x.height);
+  const recouvre = (c, x) => Math.max(0, Math.min(c.left + w, x.right) - Math.max(c.left, x.left)) * Math.max(0, Math.min(c.top + h, x.bottom) - Math.max(c.top, x.top));
+  const cout = c => {
+    const hors = Math.max(0, 8 - c.left) + Math.max(0, c.left + w - innerWidth + 8) + Math.max(0, 8 - c.top) + Math.max(0, c.top + h - innerHeight + 8);
+    return hors * 1e4 + proteges.reduce((t, x) => t + recouvre(c, x), 0) * 10 + (c.sens === "droite" || c.sens === "gauche" ? 1 : 0);
+  };
+  const best = choix.reduce((m, c) => cout(c) < cout(m) ? c : m, choix[0]);
+  b.style.left = Math.min(innerWidth - w - 8, Math.max(8, best.left)) + "px"; b.style.top = Math.min(innerHeight - h - 8, Math.max(8, best.top)) + "px";
+  b.style.setProperty("--fx", Math.min(w - 14, Math.max(14, r.left + r.width/2 - best.left)) + "px");
+  b.style.setProperty("--fy", Math.min(h - 14, Math.max(14, r.top + r.height/2 - Math.max(8, best.top))) + "px");
+  b.classList.toggle("dessus", best.sens === "dessus"); b.classList.toggle("droite", best.sens === "droite"); b.classList.toggle("gauche", best.sens === "gauche");
   minuteurCache = setTimeout(cacher, 7000);
 }
 const souris = matchMedia("(hover: hover)");

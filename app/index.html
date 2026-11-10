@@ -659,7 +659,9 @@ body::after{opacity:.28}
 /* jetons des joueurs (anneau lumineux) : carrés, quelle que soit la taille prévue pour l'ancien pion */
 .pion-svg.jeton{width:auto !important; aspect-ratio:1; filter:drop-shadow(0 0 5px var(--cj)) drop-shadow(0 2px 3px rgba(0,0,0,.5)); overflow:visible}
 /* accueil : chevron « › » sur les tuiles de mode */
-.accueil .mode:not(.large) > .ico + span::after{content:""; position:absolute; right:10px; bottom:12px; width:22px; height:22px; background:#fff; opacity:.92;
+.accueil .mode:not(.large) > .ico + span{position:static; padding-right:24px}   /* le chevron se place sur le bord droit de la tuile */
+.accueil .mode:not(.large) > .ico + span > *{position:relative}
+.accueil .mode:not(.large) > .ico + span::after{content:""; position:absolute; right:12px; top:50%; margin-top:-11px; width:22px; height:22px; background:#fff; opacity:.92; z-index:1;
   -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M9 5l7 7-7 7' fill='none' stroke='%23000' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/contain no-repeat;
           mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M9 5l7 7-7 7' fill='none' stroke='%23000' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/contain no-repeat}
 /* carte : liseré doré lumineux ; titre du plateau encadré de filets dorés */
@@ -823,6 +825,37 @@ body{box-sizing:border-box} .app{min-height:calc(100% - var(--ab-h))}
   .accueil .stats{gap:8px}
   .accueil .pied{gap:10px}
 }
+/* ===== FOND V4 (d'après le visuel fourni) : bleu roi profond, faisceaux de lumière en haut à gauche, étincelles dorées,
+   grandes lettres fantômes inclinées sur les bords, filet doré au bas de l'écran avec lueur centrale ===== */
+body{background:
+    radial-gradient(70% 55% at 50% 42%, #1442b4 0%, transparent 72%),
+    radial-gradient(60% 50% at 0% 0%, rgba(90,160,255,.55) 0%, transparent 60%),
+    radial-gradient(70% 60% at 100% 100%, rgba(25,80,210,.45) 0%, transparent 65%),
+    linear-gradient(180deg, #0b2e9e 0%, #0a2585 45%, #071b62 80%, #05134a 100%); background-attachment:fixed}
+body::before{background:radial-gradient(130% 95% at 50% 45%, transparent 55%, rgba(2,8,40,.55) 100%); opacity:1; mix-blend-mode:normal}
+#scene .aurore{display:none}
+#scene::before{inset:0; filter:none;
+  background:radial-gradient(28% 22% at 4% 0%, rgba(210,230,255,.75), rgba(120,180,255,.25) 45%, transparent 75%),
+             radial-gradient(60% 45% at 50% 108%, rgba(30,90,230,.35), transparent 70%)}
+#scene .rayons{position:absolute; left:-12vmax; top:-12vmax; width:95vmax; height:95vmax; transform-origin:12vmax 12vmax; filter:blur(5px);
+  background:repeating-conic-gradient(from 96deg at 12vmax 12vmax, rgba(170,210,255,.0) 0deg, rgba(170,210,255,.26) 2.2deg, rgba(170,210,255,0) 5deg, rgba(170,210,255,0) 9deg);
+  -webkit-mask:radial-gradient(circle at 12vmax 12vmax, #000 0, rgba(0,0,0,.65) 22%, transparent 62%); mask:radial-gradient(circle at 12vmax 12vmax, #000 0, rgba(0,0,0,.65) 22%, transparent 62%);
+  animation:rayons 14s ease-in-out infinite alternate; mix-blend-mode:screen}
+@keyframes rayons{from{transform:rotate(-3deg); opacity:.8} to{transform:rotate(4deg); opacity:1}}
+#scene .gh{display:none}
+#scene .lf{position:absolute; font-family:var(--f-titre); font-weight:800; line-height:1; color:#4f7fe0; opacity:.17; filter:blur(1.2px);
+  text-shadow:0 0 24px rgba(120,170,255,.35); transform:rotate(var(--r)); animation:flotte-l 9s ease-in-out infinite alternate}
+@keyframes flotte-l{to{transform:rotate(calc(var(--r) + 4deg)) translateY(-10px)}}
+#scene .et{position:absolute; width:5px; height:5px; border-radius:50%; background:#fff3c4; box-shadow:0 0 6px 2px rgba(255,200,80,.85), 0 0 16px 4px rgba(255,190,60,.35);
+  animation:scintille ease-in-out infinite alternate}
+#scene .et.croix::before,#scene .et.croix::after{content:""; position:absolute; left:50%; top:50%; width:34px; height:1.5px; margin:-.75px 0 0 -17px; border-radius:2px;
+  background:linear-gradient(90deg, transparent, rgba(255,235,170,.95), transparent)}
+#scene .et.croix::after{transform:rotate(90deg)}
+@keyframes scintille{from{opacity:.25; transform:scale(.6)} to{opacity:1; transform:scale(1.15)}}
+#scene .filet{position:absolute; left:0; right:0; bottom:calc(var(--bb-h, 0px) + 10px); height:46px}
+#scene .filet svg{display:block; width:100%; height:100%}
+@media (max-width:999px){ #scene .filet{bottom:6px; height:34px} #scene .lf{font-size:min(var(--t), 16vw)!important} }
+@media (prefers-reduced-motion:reduce){ #scene .rayons,#scene .lf,#scene .et{animation:none!important} }
 </style>
 </head>
 <body>
@@ -2348,7 +2381,17 @@ chargerDico().then(() => Contestation.charger()).then(() => (typeof Legal !== "u
 (() => {
   const reduit = matchMedia("(prefers-reduced-motion: reduce)").matches;
   const sc = document.createElement("div"); sc.id = "scene"; sc.setAttribute("aria-hidden", "true");
-  sc.innerHTML = '<div class="aurore"></div>';
+  sc.innerHTML = '<div class="aurore"></div><div class="rayons"></div>'
+    // filet doré du bas : arrondi aux deux bouts, lueur au centre
+    + '<div class="filet"><svg viewBox="0 0 1000 46" preserveAspectRatio="none"><defs><linearGradient id="fil-or" x1="0" x2="1"><stop offset="0" stop-color="#b8861c"/><stop offset=".2" stop-color="#f2c230"/><stop offset=".5" stop-color="#fff2b8"/><stop offset=".8" stop-color="#f2c230"/><stop offset="1" stop-color="#b8861c"/></linearGradient><radialGradient id="fil-lueur"><stop offset="0" stop-color="#fff1b0" stop-opacity=".95"/><stop offset=".35" stop-color="#ffc84a" stop-opacity=".45"/><stop offset="1" stop-color="#ffb000" stop-opacity="0"/></radialGradient></defs>'
+    + '<path d="M0 6 C8 34 18 38 40 38 L960 38 C982 38 992 34 1000 6" fill="none" stroke="url(#fil-or)" stroke-width="2.6" vector-effect="non-scaling-stroke"/><ellipse cx="500" cy="38" rx="110" ry="9" fill="url(#fil-lueur)"/><ellipse cx="500" cy="38" rx="34" ry="2.5" fill="#fffbe6"/></svg></div>';
+  // grandes lettres fantômes sur les bords (comme sur le visuel) et étincelles dorées
+  [["Q", 3, 33, -14, 120], ["N", 13, 54, -16, 110], ["B", 10, 80, -18, 90], ["D", 72, 4, -14, 120], ["R", 92, 16, 8, 80], ["L", 88, 66, -8, 110]].forEach(([c, x, y, r, t], i) => {
+    const l = document.createElement("span"); l.className = "lf"; l.textContent = c;
+    l.style.cssText = `left:${x}%; top:${y}%; font-size:${t}px; --t:${t}px; --r:${r}deg; animation-delay:${-i*1.7}s`; sc.appendChild(l); });
+  [[4,20,1],[8,82,1],[16,7,0],[20,44,0],[29,12,0],[7,54,0],[2,66,0],[87,14,1],[95,8,0],[60,12,0],[98,43,0],[80,62,0],[97,78,1],[70,85,0],[28,82,0],[46,90,0],[56,4,0],[38,35,0]].forEach(([x, y, croix], i) => {
+    const e = document.createElement("i"); e.className = "et" + (croix ? " croix" : "");
+    e.style.cssText = `left:${x}%; top:${y}%; animation-duration:${2.2 + (i*0.7)%3}s; animation-delay:${-(i*0.9)%4}s; ${croix ? "" : `transform:scale(${.5 + (i%3)*.25})`}`; sc.appendChild(e); });
   if(!reduit){
     const L = "ABCDEILNOQRSTU";
     for(let i=0;i<12;i++){ const g = document.createElement("span"); g.className = "gh"; g.textContent = L[(i*7+3)%L.length];
