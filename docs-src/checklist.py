@@ -27,6 +27,10 @@ h += sec("En cours chez vous", [
     ("vous", "<b>Google Play Console</b> : validation d'identité en attente (statut « non professionnel » pour l'instant) ; puis confirmer l'accès à un appareil Android et le numéro de téléphone."),
     ("vous", "<b>Google Play — clé d'envoi</b> : créer le secret GitHub <code>ANDROID_KEYSTORE_PASSWORD</code> (20 caractères et plus, à garder précieusement), puis lancer l'action « Appli Android (Google Play) » ; prévoir 12 testeurs pendant 14 jours (document « Publier sur Google Play »)."),
     ("vous", "<b>AdMob</b> : compte créé, validation d'identité en attente. Ensuite : ajouter l'appli Android (puis iOS), créer 2 blocs (interstitiel, avec récompense) et le message RGPD, puis m'envoyer les identifiants (document « Vraies publicités (AdMob) »)."),
+    ("vous", "<b>Page d'administration</b> : sur Render → le-qln → Environment, saisir <code>ADMIN_EMAILS</code> = l'adresse de votre compte de jeu (pas un secret). Puis, connecté dans le jeu : Mon compte → « Administration » (voir « Administration et surveillance »)."),
+    ("vous", "<b>UptimeRobot</b> (gratuit) : créer le compte et une sonde HTTP(s) sur <code>https://le-qln.onrender.com/sante</code> toutes les 5 min, alerte par e-mail (pas à pas dans « Administration et surveillance »)."),
+    ("vous", "<b>Google Search Console</b> : ajouter la propriété <code>https://kiki78test.github.io/Le-QLN/</code> (préfixe d'URL) et déclarer <code>sitemap.xml</code> (pas à pas dans « Administration et surveillance »)."),
+    ("vous", "<b>Essayer les rappels</b> : Paramètres → Rappels sur votre téléphone (Android : Chrome ou l'appli ; iPhone : après « Sur l'écran d'accueil »), puis page admin → Rappels → « M'envoyer un rappel de test »."),
     ("vous", "<b>Cloudflare</b> : prêt à créer ; acheter le domaine quand le nom est choisi."),
     ("vous", "<b>Apple Developer</b> (99 €/an) : quand le nom est choisi ; puis clé API App Store Connect et 4 secrets GitHub (voir « Version Apple »)."),
     ("vous", "<b>Fiches des stores</b> : à copier dans la Play Console et App Store Connect le moment venu (document « Fiches des stores »)."),
@@ -56,12 +60,21 @@ h += sec("Règles à décider (document « Propositions de règles »)", [
     ("dec", "<b>R11 — Maître du Jeu</b> : dans l'appli, c'est le jeu ; pas de bonus de 50 €."),
     ("dec", "Vidéos récompense touchant aux règles."),
 ])
+h += sec("Idées notées (revue d'Airmony, à faire plus tard)", [
+    ("dec", "<b>Test d'intrusion</b> : simulation de piratage des comptes et du serveur (inscription, connexion, jetons, API admin, WebSocket, injection), avec rapport comme celui d'Airmony."),
+    ("dec", "<b>Kit de lancement</b> : plan sur 4 semaines, visuels Instagram et TikTok, messages types (sur le modèle d'Airmony)."),
+    ("dec", "<b>Aide en questions-réponses</b> : base de réponses consultable dans l'Aide, avec une IA en option (sur le modèle de l'assistant d'Airmony)."),
+    ("dec", "<b>Dépôt e-Soleau</b> du jeu de plateau et de l'appli (règles, visuels, code), sur le modèle du dossier Airmony (≈ 15 €)."),
+    ("dec", "<b>Rappels par e-mail</b> (en plus des notifications) : nécessite Resend et le domaine."),
+])
 h += sec("Prochaines étapes de Claude", [
     ("todo", "Saisir les identifiants <b>AdMob</b> dès réception (tout le reste est prêt), activer le texte « publicité réelle » de la politique de confidentialité, relancer les applis."),
     ("todo", "<b>Mot de passe oublié</b> (Resend) après l'achat du domaine."),
+    ("todo", "Surveiller la page admin (onglet Erreurs) après chaque mise en ligne et corriger les erreurs remontées."),
     ("todo", "Changer le nom partout dès qu'il est choisi (action « Changer le nom »)."),
 ])
 h += sec("Fait", [
+    ("ok", "<b>11/11</b> — repris d'Airmony : remontée des erreurs, page d'administration, surveillance horaire du serveur, contrôle automatique de la traduction anglaise, ≈ 10 400 pages « Anagrammes de… » + page de présentation + sitemap, parrainage (+200 XP), rappels par notification, 9 médailles bronze/argent/or, filtre des pseudos grossiers."),
     ("ok", "<b>10/11</b> — iPad : mise en page agrandie sur tablette, appli iOS pour iPhone et iPad, captures iPad 13 pouces."),
     ("ok", "<b>10/11</b> — AdMob prêt dans les applis (module, consentement RGPD, ATT iPhone, menu « Choix publicitaires », repli de démonstration, texte de confidentialité prêt) ; barre « Pub / No Pub » conservée."),
     ("ok", "<b>10/11</b> — fabrication de l'appli Android à publier (.aab signé, clé d'envoi créée et chiffrée automatiquement, version croissante) ; document « Publier sur Google Play »."),

@@ -1,5 +1,11 @@
 [
   {
+    "titre": "Administration et surveillance",
+    "fichier": "administration-et-surveillance.pdf",
+    "date": "2026-11-11",
+    "description": "Suivre le jeu en ligne : ouvrir la page d'administration (ADMIN_EMAILS sur Render), erreurs remontées, UptimeRobot, Google Search Console et sitemap des pages « Anagrammes de… », rappels par notification, parrainage, filtre des pseudos."
+  },
+  {
     "titre": "Vraies publicités (AdMob)",
     "fichier": "publicite-admob.pdf",
     "date": "2026-11-10",
@@ -50,13 +56,13 @@
   {
     "titre": "Check-list",
     "fichier": "check-list.pdf",
-    "date": "2026-11-10",
+    "date": "2026-11-11",
     "description": "Échéances (base Render en Basic avant le 10/12), démarches en cours de votre côté, décisions à prendre, prochaines étapes et ce qui est fait."
   },
   {
     "titre": "Services externes (développeur)",
     "fichier": "services-externes.pdf",
-    "date": "2026-11-10",
+    "date": "2026-11-11",
     "description": "Note technique : services (GitHub, Render, Google, Apple, Resend, Cloudflare, Wiktionnaire), variables d'environnement et secrets, tables de la base, API et multijoueur, anti-triche, stockage de l'appli, applis mobiles, tests, coûts et échéances."
   },
   {
@@ -98,7 +104,7 @@
   {
     "titre": "Fonctionnalités",
     "fichier": "fonctionnalites.pdf",
-    "date": "2026-11-10",
+    "date": "2026-11-11",
     "description": "Présentation complète de l'application : cartes, contestation des mots, modes de jeu, règles avancées, progression, comptes et classements, partage, confort, publicité ; chantiers restants et historique des versions."
   },
   {

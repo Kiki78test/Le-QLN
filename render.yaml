@@ -17,6 +17,7 @@ services:
       paths:
         - server/**
         - app/analyse.js
+        - app/filtre.js
         - app/data/**
         - app/en/data/**
     envVars:
@@ -28,6 +29,8 @@ services:
         generateValue: true
       - key: ORIGINES
         value: https://kiki78test.github.io,capacitor://localhost   # site + appli iOS (jeu embarqué)
+      - key: ADMIN_EMAILS        # adresse(s) du ou des comptes administrateurs (page admin.html), séparées par des virgules
+        sync: false
       - key: GOOGLE_CLIENT_ID    # facultatif
         sync: false
       - key: RESEND_API_KEY      # facultatif (mot de passe oublié, après l'achat du domaine)

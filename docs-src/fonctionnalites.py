@@ -4,7 +4,7 @@ exec(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "stylepdf.py"
 DATE = 'auto'   # document vivant : daté du jour à chaque régénération
 def ul(items): return [Paragraph("• "+x, P) for x in items]
 st=[]
-st+=[Paragraph("Le-QLN — Fonctionnalités",T),Spacer(1,2),Paragraph("Présentation complète de l'application · mise à jour le 10 novembre 2026",S),Spacer(1,8),
+st+=[Paragraph("Le-QLN — Fonctionnalités",T),Spacer(1,2),Paragraph("Présentation complète de l'application · mise à jour le 11 novembre 2026",S),Spacer(1,8),
  Paragraph("Le-QLN est l'adaptation en application du jeu de plateau d'anagrammes du même nom : sur chaque carte, trouver un autre mot formé exactement des mêmes lettres avant la fin du sablier. L'application fonctionne sur téléphone, tablette et ordinateur, s'installe comme une appli (PWA), marche hors ligne et existe en français et en anglais.",P)]
 
 st.append(Paragraph("1. Les cartes",H))
@@ -74,9 +74,10 @@ st.append(Paragraph("4. Progression du joueur",H))
 st+=ul(["<b>Partie guidée</b> proposée au premier lancement : une carte facile sans sablier, 6 bulles explicatives ; rejouable depuis les statistiques.",
  "<b>Niveaux et XP</b> : XP à chaque carte (selon la couleur, les mots bonus, la rapidité), à chaque fin de partie, au défi du jour, aux médailles, braquages et victoires contre l'IA ; titres Apprenti → Lettré → Virtuose → Maître des mots → Légende.",
  "<b>Série de jours</b> 🔥 : au moins une carte par jour ; série actuelle et record.",
- "<b>18 succès</b> (première carte, carte noire, carte parfaite, éclair < 5 s, 1 000 € en une partie, sans faute, séries de 3/7/30 jours, victoire contre l'IA, or au Festival, braquage, niveau 10…) avec bannière de déblocage.",
+ "<b>12 succès</b> (premiers pas, première carte, carte noire, carte parfaite, éclair < 5 s, 1 000 € en une partie, sans faute, défi du jour, victoire contre l'IA, or au Festival, braquage, niveau 10) avec bannière de déblocage.",
+ "<b>9 médailles à paliers</b> bronze, argent et or (27 marches) : Collectionneur (cartes gagnées 10/100/500), Assidu (série 3/7/30 jours), Vocabulaire (mots 50/500/2 000), Perfectionniste (cartes parfaites 5/50/200), Stratège (victoires IA 1/10/50), Nuit noire (cartes noires 1/10/50), Fidèle (jours joués 7/30/100), Fortune (gains cumulés 10 000/100 000/1 000 000 €), Ambassadeur (amis invités 1/3/10). Bannière à chaque marche franchie ; dans les statistiques, la prochaine marche et la progression. Les joueurs existants reçoivent sans annonce les médailles déjà méritées ; les médailles suivent le compte d'un appareil à l'autre.",
  "<b>Statistiques</b> : parties, cartes gagnées et taux de réussite, mots trouvés, cartes parfaites, meilleure partie, victoires IA, séries ; réussite et meilleur temps par couleur ; grille des succès ; remise à zéro.",
- "Sur l'accueil : carte de niveau (barre d'XP, série, succès) et records (Défi, Défi du jour, victoires IA)."])
+ "Sur l'accueil : carte de niveau (barre d'XP, série, succès, médailles) et records (Défi, Défi du jour, victoires IA)."])
 
 st.append(Paragraph("5. Partage",H))
 st+=ul(["Résultat du défi du jour en grille d'emojis façon Wordle (couleur des cartes gagnées, étoiles des mots bonus), score, étoiles, série et lien vers l'appli ; menu de partage natif sur téléphone, copie sur ordinateur.",
@@ -88,17 +89,21 @@ st+=ul(["<b>Mon compte</b> : création par e-mail et mot de passe (Google en opt
  "<b>Classements</b> : défi du jour, Défi et Braquage ; monde ou mon pays ; record ou semaine ; podium avec médailles et rang du joueur.",
  "<b>Anti-triche</b> : les mots trouvés accompagnent chaque score ; pour le défi du jour, le serveur refait le tirage des cartes (identique pour tous) et refuse un score si une carte n'est pas celle du jour, si un mot n'est pas une vraie anagramme ou si le score dépasse le maximum possible. Les mots ajoutés après contestation sont acceptés.",
  "<b>Hors ligne</b> : un score obtenu sans réseau (avion, métro) attend sur l'appareil et part tout seul au retour du réseau ; un défi du jour reste classable pendant 36 h.",
+ "<b>Parrainage</b> : dans Mon compte, « Invitez vos amis » donne un lien personnel (…?parrain=CODE) à copier ou partager. L'ami qui crée son compte avec ce lien (le code est aussi pré-rempli dans le formulaire) reçoit +200 XP ; le parrain reçoit +200 XP quand cet ami a vraiment joué (50 XP), jusqu'à 20 amis. Bonus jamais crédité deux fois, même avec plusieurs appareils.",
+ "<b>Pseudos corrects</b> : un pseudo grossier (insultes, propos haineux ou sexuels, en français et en anglais, y compris déguisés : « s4l0pe », « p.u.t.e », « puuute », chiffres collés) est refusé à la création du compte, à la modification du profil et dans le profil multijoueur ; ceux qui existeraient déjà sont remplacés par « Joueur » dans les salons et les classements. Les prénoms et mots ordinaires qui contiennent ces lettres (Violette, Computer, Château, Constance…) restent acceptés.",
  "Sans serveur, ces écrans indiquent « Bientôt disponible » et tout reste enregistré sur l'appareil."])
 
 st.append(Paragraph("6. Confort et appli",H))
 st+=ul(["<b>Installable</b> (PWA) et <b>hors ligne</b> : après une première visite, tout le jeu (hors multijoueur) fonctionne sans réseau — dictionnaire, modes, progression, pubs. Un réseau lent (wifi d'avion) ne bloque jamais le démarrage : au-delà de 3 s, la copie de l'appareil est utilisée. En ligne, la dernière version est chargée automatiquement (numéro visible en bas du menu). Hors connexion, l'écran multijoueur l'indique clairement.",
  "<b>Applis mobiles</b> : Android (enveloppe autour du site, appli de test publiée automatiquement) et iPhone / iPad (jeu embarqué dans l'appli, fabriqué sur un Mac de GitHub, testé au simulateur ; TestFlight dès que le compte Apple existe). Voir « Version Apple ».",
  "<b>Confidentialité et mentions légales</b> : liens en bas de l'accueil et à la création de compte ; aussi en pages web publiques (adresse exigée par le Play Store), en français et en anglais.",
- "<b>Barre du bas (ordinateur)</b> : Règles, Classement, Paramètres (son, vibrations) et Aide s'ouvrent dans un volet, sans quitter la partie ; en cours de partie, « Classement » montre le classement de la partie.",
+ "<b>Rappels</b> (Paramètres → Rappels) : « les cartes du jour sont prêtes » chaque jour et « nouveau défi de la semaine » le lundi, à l'heure choisie (8 h à 21 h, heure locale ; jamais après 22 h). Proposés une seule fois après le premier défi du jour. Navigateur et jeu installé sur l'écran d'accueil : notifications envoyées par le serveur ; applis Android et iOS : notifications programmées sur le téléphone. Sur iPhone, il faut d'abord ajouter le jeu à l'écran d'accueil.",
+ "<b>Paramètres</b> : son, vibrations et rappels, depuis la barre du bas (ordinateur) ou le menu ☰ (téléphone).",
+ "<b>Barre du bas (ordinateur)</b> : Règles, Classement, Paramètres (son, vibrations, rappels) et Aide s'ouvrent dans un volet, sans quitter la partie ; en cours de partie, « Classement » montre le classement de la partie.",
  "<b>Tablettes</b> (iPad, tablettes Android) : la mise en page du téléphone est agrandie à la taille de l'écran en portrait (fenêtre virtuelle de 500 à 680 px), sans rien perdre de la jouabilité au doigt.",
  "<b>Tout sur un écran (ordinateur)</b> : un écran un peu trop haut (réglages d'une partie, mode solo, multijoueur) est réduit automatiquement pour tenir sans défilement ; les écrans longs (règles, documentation, classements) défilent normalement.",
  "<b>Jetons des joueurs</b> : silhouette dans un anneau lumineux de leur couleur (panneaux, salons, podium) ; sur le plateau, jeton rond à l'initiale du joueur.",
- "<b>Barre du haut et menu ☰</b> : accueil, statistiques, compte, classements, partie guidée, règles, documentation, son, installation.",
+ "<b>Barre du haut et menu ☰</b> : accueil, statistiques, compte, classements, partie guidée, règles, documentation, paramètres et rappels, son, installation ; en bas du menu, liens vers la présentation du jeu et toutes les anagrammes.",
  "<b>Français / anglais</b> : bouton FR / EN en haut, dictionnaire propre à chaque langue.",
  "<b>Bouton retour</b> du téléphone géré (ne ferme plus l'appli en pleine partie) ; <b>pause automatique</b> si l'appli passe en arrière-plan pendant un sablier ; <b>écran maintenu allumé</b> pendant une partie ; croix pour quitter même quand une carte est affichée.",
  "<b>Sons</b> (fanfare de victoire, tic-tac du sablier qui s'accélère, dé, pièces) avec bouton de coupure ; <b>vibrations</b> légères.",
@@ -116,15 +121,23 @@ st+=ul(["<b>Vraies publicités (applis)</b> : Google AdMob prêt dans les applis
 st.append(Paragraph("8. Documentation intégrée",H))
 st+=ul(["Onglet Documentation (accueil) : PDF et tableurs datés — choix du nom, textes juridiques, mise en ligne du serveur, publicité réelle, idées de noms, monétisation publicitaire, propositions de règles, mots douteux, dictionnaire anglais, et ce document."])
 
-st.append(Paragraph("9. Ce qui reste à faire",H))
-st+=ul(["Multijoueur : reprendre une partie après une coupure (rejeu depuis l'hôte) ; relais de l'hôte si celui-ci quitte.",
- "Mot de passe oublié (service d'e-mail), amis ; chronos du défi du jour rejoués côté serveur (les mots et cartes sont déjà vérifiés).",
+st.append(Paragraph("9. Administration, suivi et visibilité",H))
+st+=ul(["<b>Remontée des erreurs</b> : chaque erreur rencontrée par un joueur (navigateur ou appli) est envoyée au serveur, une fois par session et par message, regroupée avec un compteur (message, fichier, ligne, version, écran, langue, appareil — aucune donnée personnelle).",
+ "<b>Page d'administration</b> (adresse du jeu + admin.html ; lien « Administration » dans Mon compte pour les administrateurs) : tableau de bord (comptes, actifs 24 h / 7 j / 30 j, défis du jour, scores, parrainages, abonnés aux rappels, mots ajoutés, erreurs), activité sur 30 jours, pays, état du serveur ; onglets Erreurs (détail, effacement), Joueurs (recherche), Mots ajoutés (retrait d'un mot contesté), Rappels (envoi d'un rappel de test). Accès réservé aux adresses de la variable ADMIN_EMAILS (Render).",
+ "<b>Surveillance</b> : vérification du serveur et de la base toutes les heures par GitHub (e-mail en cas de panne), qui réveille aussi le serveur gratuit pour les rappels ; UptimeRobot en complément (toutes les 5 min). Voir « Administration et surveillance ».",
+ "<b>Pages publiques pour Google</b> (site seulement, pas dans l'appli) : une page par mot du jeu, « Anagrammes de CHIEN » (environ 8 200 pages en français, 2 200 en anglais) avec les autres mots de la carte, sa couleur, les définitions du Wiktionnaire et un bouton « Jouer » ; index par lettre ; page de présentation du jeu (principe, couleurs, modes, progression, captures, questions fréquentes) en français et en anglais ; plan du site sitemap.xml à déclarer dans Google Search Console.",
+ "<b>Contrôle de la traduction</b> : un test parcourt les écrans de la version anglaise et échoue si un texte français y est visible."])
+
+st.append(Paragraph("10. Ce qui reste à faire",H))
+st+=ul([ "Mot de passe oublié (service d'e-mail), amis ; chronos du défi du jour rejoués côté serveur (les mots et cartes sont déjà vérifiés).",
  "Renseigner l'éditeur, l'adresse et le contact légaux (marque.json) ; relecture des textes juridiques.",
- "Vraie régie publicitaire : comptes Play Console et AdMob créés (validation d'identité en cours), applis Android et iOS prêtes ; reste à brancher AdMob, le consentement et l'achat « Sans pub ».",
+ "Vraie régie publicitaire : AdMob et consentement prêts dans les applis ; reste à mettre les identifiants AdMob réels et l'achat « Sans pub ».",
+ "Pistes notées (check-list) : test d'intrusion, kit de lancement réseaux sociaux, aide en questions-réponses avec IA, dépôt e-Soleau.",
  "Hébergement : base Render à passer en Basic avant le 10/12/2026, serveur en Starter à l'ouverture au public ; domaine (Cloudflare) quand le nom est choisi.",
  "Décisions en attente : vidéos récompense touchant aux règles, propositions de règles, mots douteux, nom définitif."])
 st.append(Paragraph("Historique des versions",H))
-st+=ul(["<b>10 nov. 2026 (nuit)</b> — écran Solo sur ordinateur en deux colonnes équilibrées (Partie libre / Campagnes) ; bande des séries : nombre de séries affiché, flèches ‹ › quand il en reste d'un côté, petit aller-retour de démonstration à la première visite.",
+st+=ul(["<b>11 nov. 2026</b> — repris d'Airmony : remontée des erreurs et page d'administration, surveillance horaire du serveur, contrôle automatique de la traduction anglaise, pages publiques « Anagrammes de… » et page de présentation (référencement), parrainage (+200 XP de part et d'autre), rappels par notification (défi du jour, défi de la semaine), 9 médailles bronze / argent / or, filtre des pseudos grossiers ; entrée « Paramètres et rappels » dans le menu ☰.",
+ "<b>10 nov. 2026 (nuit)</b> — écran Solo sur ordinateur en deux colonnes équilibrées (Partie libre / Campagnes) ; bande des séries : nombre de séries affiché, flèches ‹ › quand il en reste d'un côté, petit aller-retour de démonstration à la première visite.",
  "<b>10 nov. 2026 (nuit)</b> — choix de la série en tuiles (au lieu du menu déroulant) ; le contenu ne passe plus derrière le filet doré du bas.",
  "<b>10 nov. 2026 (nuit)</b> — tablettes (iPad…) : la mise en page du téléphone est agrandie à la taille de l'écran ; appli iOS pour iPhone et iPad, captures iPad 13 pouces pour l'App Store.",
  "<b>10 nov. 2026 (nuit)</b> — appli Android à publier (.aab signé, clé d'envoi chiffrée) ; vraies publicités AdMob prêtes dans les applis (consentement RGPD, ATT, menu « Choix publicitaires »).",

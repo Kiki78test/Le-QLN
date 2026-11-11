@@ -16,7 +16,7 @@ def preparer():
     www = os.path.join(MOBILE, "www")
     shutil.rmtree(www, ignore_errors=True); os.makedirs(www)
     # tous les scripts et pages de la racine (un nouveau module .js est ainsi embarqué automatiquement)
-    fichiers = sorted(f for f in os.listdir(APP) if f.endswith((".js", ".html")) and f != "sw.js") + ["manifest.webmanifest"]
+    fichiers = sorted(f for f in os.listdir(APP) if f.endswith((".js", ".html")) and f not in ("sw.js", "admin.html")) + ["manifest.webmanifest"]
     for f in fichiers: shutil.copy(os.path.join(APP, f), os.path.join(www, f))
     shutil.copy(os.path.join(RACINE, "marque.json"), os.path.join(www, "marque.json"))
     for d in ["data", "fonts", "icons", "pubs", "en"]:

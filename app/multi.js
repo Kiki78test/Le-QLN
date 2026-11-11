@@ -159,6 +159,7 @@ function ecranProfil(apres){
   const valider = () => {
     const pseudo = $("#m-pseudo").value.trim();
     if(pseudo.length < 2){ toast(TXT.pseudoCourt); $("#m-pseudo").focus(); return; }
+    if(typeof Filtre !== "undefined" && Filtre.grossier(pseudo)){ toast(document.documentElement.lang === "en" ? "This name is not accepted. Please choose another one." : "Ce pseudo n'est pas accepté. Choisissez-en un autre.", 3000); $("#m-pseudo").focus(); return; }
     const nouveau = Compte.get() ? {...Compte.get(), pseudo, couleur} : Compte.nouveau(pseudo, couleur);
     Compte.set(nouveau); Son.ok(); vibre(20); toast(TXT.profilOk, 1800);
     apres ? apres(true) : ecranAccueil();
@@ -257,7 +258,8 @@ const onglet = () => { try{ let o = sessionStorage.getItem("qln-onglet"); if(!o)
 const LANGUE_JEU = document.documentElement.lang === "en" ? "en" : "fr";
 const DRAP = new Proxy({fr:"🇫🇷", en:"🇬🇧"}, {get:(o, k) => typeof Series !== "undefined" && Series.drapeau ? Series.drapeau(k) : o[k]});   // (pastille si l'appareil n'affiche pas les drapeaux)
 const signatureDico = () => { try{ return Object.keys(DICO).map(k => DICO[k].length).join("."); }catch(e){ return ""; } };
-function joueurDepuisCompte(){ const c = Compte.get(); return {id:c.id+":"+onglet(), pseudo:c.pseudo, couleur:c.couleur, pret:false, vu:Date.now(), lang:LANGUE_JEU, dico:signatureDico()}; }
+const masquer = p => typeof Filtre !== "undefined" ? Filtre.masquer(p, document.documentElement.lang === "en" ? "Player" : "Joueur") : p;
+function joueurDepuisCompte(){ const c = Compte.get(); return {id:c.id+":"+onglet(), pseudo:masquer(c.pseudo), couleur:c.couleur, pret:false, vu:Date.now(), lang:LANGUE_JEU, dico:signatureDico()}; }
 function couleurLibre(souhait){
   const prises = new Set(S.joueurs.map(j => j.couleur));
   if(!prises.has(souhait)) return souhait;
@@ -360,6 +362,7 @@ function recevoir(m){
         if(S.joueurs.length >= MAX){ envoyer({t:"refus", pour:m.de, raison:"plein"}); break; }
         if((m.joueur.lang || "fr") !== LANGUE_JEU || (m.joueur.dico && m.joueur.dico !== signatureDico())){ envoyer({t:"refus", pour:m.de, raison:"version"}); break; }
         const couleur = couleurLibre(m.joueur.couleur);
+        m.joueur.pseudo = masquer(String(m.joueur.pseudo || "").slice(0, 14));   // pseudo grossier : remplacé pour tous (filtre.js)
         S.joueurs.push({...m.joueur, couleur, pret:!!S.auto, vu:Date.now(), hote:false});
         if(couleur !== m.joueur.couleur) envoyer({t:"info", pour:m.de, texte:"couleurPrise"});
         toast(TXT.rejoint(m.joueur.pseudo), 2200); Son.ok(); vibre(15);

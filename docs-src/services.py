@@ -22,6 +22,9 @@ h += "<h2>Vue d'ensemble</h2>" + T([
     ["<b>Apple Developer</b>", "Publication iPhone / iPad (TestFlight, App Store)", "developer.apple.com", "99 € / an", NON],
     ["<b>Cloudflare</b>", "Nom de domaine, DNS, plus tard proxy ; racine du site pour <code>app-ads.txt</code>", "dash.cloudflare.com", "domaine ≈ 10 €/an", NON + " (nom à choisir)"],
     ["<b>Resend</b>", "E-mails du compte (mot de passe oublié) — nécessite le domaine", "resend.com", "gratuit jusqu'à 3 000/mois", NON],
+    ["<b>UptimeRobot</b>", "Surveillance du serveur toutes les 5 min, alerte par e-mail (ou SMS), page d'état ; garde aussi le serveur gratuit éveillé", "uptimerobot.com", "gratuit (50 sondes)", ATT + " (compte à créer)"],
+    ["<b>Google Search Console</b>", "Référencement : déclarer le plan du site <code>sitemap.xml</code> (pages « Anagrammes de… » et présentation), suivre les recherches", "search.google.com/search-console", "gratuit", ATT + " (à déclarer)"],
+    ["<b>Services de notification des navigateurs</b>", "Acheminent les rappels Web Push (Google pour Chrome/Android, Mozilla, Apple pour Safari/iPhone) ; aucun compte, clés VAPID créées par le serveur", "—", "gratuit", OK],
     ["<b>Lexique 3.83</b>", "Source du dictionnaire français (fichier, pas un service en ligne)", "lexique.org", "CC BY-SA 4.0", OK]],
     ["Service", "Rôle", "Où", "Coût", "État"])
 h += B("Règles d'or", "", [
@@ -40,9 +43,10 @@ h += B("Dépôt et site", "Dépôt <b>Kiki78test/Le-QLN</b> (public), branche <c
     "Pages juridiques <b>générées</b> : <code>python3 tools/build_legal.py</code> depuis <code>tools/legal_texte.py</code> et <code>marque.json</code>.",
     "Service worker : à chaque version, incrémenter <code>VERSION</code> dans <code>app/sw.js</code> et la paire correspondante dans <code>tools/build_en.py</code>."])
 h += "<h3>Actions (onglet Actions)</h3>" + T([
-    ["Publication du site", "envoi touchant app/ ou docs/", "Assemble le jeu et la documentation (<code>tools/site.py</code>) et publie sur GitHub Pages"],
-    ["Tests", "chaque envoi", "Tests serveur (PostgreSQL 16 de test) + appli dans Chromium : FR/EN, téléphone/ordinateur, partie rapide, hors ligne, comptes, anti-triche, pages juridiques"],
+    ["Publication du site", "envoi touchant app/ ou docs/", "Assemble le jeu et la documentation (<code>tools/site.py</code>), ajoute les pages publiques (<code>tools/pages_publiques.py</code> : ≈ 10 400 pages « Anagrammes de… », présentation, <code>sitemap.xml</code>) et publie sur GitHub Pages"],
+    ["Tests", "chaque envoi", "Tests serveur (PostgreSQL 16 de test) + appli dans Chromium : FR/EN, téléphone/ordinateur, partie rapide, hors ligne, comptes, anti-triche, pages juridiques ; nouveautés (<code>fonctions.test.js</code>) : filtre des pseudos, médailles, rappels, erreurs et page admin, parrainage, pages publiques, contrôle de la traduction anglaise"],
     ["Version en ligne", "après chaque publication du site + toutes les 6 h", "Mêmes tests sur le site publié et le vrai serveur (<code>/sante</code>, <code>/api/sante-api</code>)"],
+    ["Surveillance du serveur", "toutes les heures", "Le serveur et la base répondent (e-mail de GitHub sinon) ; réveille le serveur gratuit, pour que les rappels partent"],
     ["Sécurité", "chaque semaine", "Audit des dépendances (<code>npm audit</code>)"],
     ["Appli Android", "modification de <code>mobile/</code> ou des icônes", "APK de test signé avec la clé de test (<code>mobile/native/android/qln-test.jks</code>), publié dans Releases → « appli-android »"],
     ["Appli Android (Google Play)", "à la demande", "Fichier <code>.aab</code> signé avec la clé d'envoi (créée et chiffrée au premier lancement), numéro de version automatique, empreinte du certificat dans le résumé"],
@@ -69,6 +73,7 @@ h += "<h3>Variables d'environnement (Render → le-qln → Environment)</h3>" + 
     ["SECRET", "Signe les jetons de session (90 jours). Générée une fois par Render. <b>Ne jamais la changer.</b>", OK],
     ["ORIGINES", "<code>https://kiki78test.github.io,capacitor://localhost</code> : site + appli iOS. Ajouter le futur domaine (ex. <code>https://nomdujeu.com</code>).", OK],
     ["PORT", "Fourni par Render (8080 par défaut en local).", OK],
+    ["ADMIN_EMAILS", "Adresse(s) e-mail des comptes administrateurs (page <code>admin.html</code>), séparées par des virgules. Pas un secret. À saisir dans Render (le Blueprint la crée vide).", ATT],
     ["GOOGLE_CLIENT_ID", "Facultatif : connexion Google sur le site (même valeur dans <code>config.js</code>).", NON],
     ["RESEND_API_KEY / MAIL_FROM", "Prévues pour « mot de passe oublié » (fonction à coder après l'achat du domaine).", NON]],
     ["Variable", "Rôle", "État"])
@@ -77,7 +82,11 @@ h += "<h2>3. Base de données (PostgreSQL)</h2><p class='petit'>Tables créées 
     ["qln_joueurs", "id (uuid), email (unique), mdp (empreinte bcrypt), google_sub, pseudo, couleur, pays, cree_le, vu_le", "Comptes"],
     ["qln_progression", "joueur → qln_joueurs, donnees (jsonb : progression FR/EN, records), maj_le", "Progression synchronisée (fusion : le meilleur des deux appareils)"],
     ["qln_scores", "id, joueur, langue, mode (jour / defi / braquage), jour (date), score, detail (jsonb : cartes et mots trouvés), cree_le ; unique (joueur, langue, mode, jour)", "Classements ; défi du jour : seul le 1er essai compte"],
-    ["qln_mots", "id, langue, mot, nature, joueur, cree_le ; unique (langue, mot)", "Mots ajoutés après contestation (vérifiés sur le Wiktionnaire), partagés avec tous et acceptés par l'anti-triche"]],
+    ["qln_mots", "id, langue, mot, nature, joueur, cree_le ; unique (langue, mot)", "Mots ajoutés après contestation (vérifiés sur le Wiktionnaire), partagés avec tous et acceptés par l'anti-triche ; retirables depuis la page admin"],
+    ["qln_joueurs (ajouts)", "code_parrain (unique, 6 caractères), parrain → qln_joueurs", "Parrainage"],
+    ["qln_erreurs", "empreinte (unique), message, source, ligne, pile, version, ecran, langue, natif, agent, nombre, premiere, derniere", "Erreurs de l'appli regroupées (1 000 plus récentes gardées) — <code>server/admin.js</code>"],
+    ["qln_push", "endpoint (unique), cles, langue, joueur, jour, semaine, heure, decalage, dernier_jour, derniere_semaine, echecs", "Abonnements aux rappels Web Push — <code>server/rappels.js</code>"],
+    ["qln_config", "cle, valeur (jsonb)", "Clés VAPID des rappels, créées au premier démarrage (<b>ne pas supprimer</b> : tous les abonnements seraient perdus)"]],
     ["Table", "Colonnes", "Usage"])
 
 h += "<h2>4. API du serveur (<code>/api/…</code>, JSON)</h2>" + T([
@@ -89,7 +98,11 @@ h += "<h2>4. API du serveur (<code>/api/…</code>, JSON)</h2>" + T([
     ["POST /api/scores", "mode, langue, score, jour, detail.historique (vérifié par <code>server/jour.js</code>)", "60 / h / joueur"],
     ["GET /api/classement", "mode, langue, jour, pays, période, limite", "public"],
     ["POST · GET /api/mots", "mot contesté (vérifié sur le Wiktionnaire) / liste des mots ajoutés", "30 / h / IP"],
-    ["GET /api/sante-api", "diagnostic de la base (code d'erreur seulement)", "public"]],
+    ["GET /api/sante-api", "diagnostic de la base (code d'erreur seulement)", "public"],
+    ["GET /api/parrainage", "code d'invitation (créé à la demande), amis inscrits, amis pris en compte (≥ 50 XP, 20 au plus)", "connecté"],
+    ["POST /api/log", "erreur de l'appli : message, fichier, ligne, pile, version, écran, langue", "40 / h / IP"],
+    ["GET /api/rappels/cle · POST /api/rappels/abonner · /desabonner", "clé publique VAPID ; abonnement (jour, semaine, heure, décalage horaire, langue)", "30 / h / IP"],
+    ["/api/admin/… (resume, activite, erreurs, joueurs, mots, rappel-test)", "statistiques et gestion — réservé aux adresses ADMIN_EMAILS", "administrateur"]],
     ["Route", "Données", "Limite anti-abus"])
 h += B("Multijoueur (WebSocket <code>wss://le-qln.onrender.com/ws</code>)", "Relais : le serveur ne joue pas, il transmet. L'hôte de chaque salon détient l'état et le diffuse.", [
     "Messages au serveur : <code>annuaire</code> / <code>annuaire-stop</code> (liste des salons en attente + nombre de joueurs en ligne), <code>entrer</code> (rejoindre ou créer un canal), <code>publier</code> (résumé public du salon, nettoyé et borné par le serveur), <code>sortir</code> ; tout autre message est relayé aux membres du salon.",
@@ -111,6 +124,11 @@ h += "<h3>config.js (racine du site)</h3>" + T([
     ["QLN_SITE_URL", "adresse publique du jeu (liens d'invitation depuis l'appli iOS)"],
     ["QLN_NATIVE", "vrai dans les applis Android/iOS (agent utilisateur <code>LeQLNApp/</code>)"]],
     ["Variable", "Rôle"])
+h += B("Rappels par notification", "", [
+    "Navigateur et jeu ajouté à l'écran d'accueil : <b>Web Push</b>. Le serveur crée ses clés VAPID au premier démarrage (table <code>qln_config</code>) : rien à fabriquer ni à recopier. Toutes les 5 minutes, il envoie les rappels dus (heure locale de l'abonné, jamais après 22 h).",
+    "Le serveur gratuit s'endort : l'action horaire « Surveillance du serveur » et UptimeRobot le réveillent ; les rappels partent alors dans l'heure. En offre Starter, à l'heure pile.",
+    "Applis Android et iOS : notifications <b>locales</b> programmées sur le téléphone (<code>@capacitor/local-notifications</code>), sans serveur ; permission Android <code>POST_NOTIFICATIONS</code>.",
+    "iPhone/iPad dans Safari : les notifications ne marchent qu'après « Sur l'écran d'accueil » (iOS 16.4 et plus)."])
 h += "<h3>marque.json</h3>" + T([
     ["nom, sigle", "nom du jeu et sigle du logo/icône — changer avec l'action « Changer le nom »"],
     ["editeur, adresse, contact_email", "coordonnées légales (vides = « [à compléter] » dans les mentions légales et la politique)"]],
@@ -121,7 +139,9 @@ h += "<h3>Stockage sur l'appareil (localStorage, préfixe <code>qln:</code> en f
     ["scoresEnAttente", "scores obtenus hors ligne, envoyés au retour du réseau"],
     ["motsAjoutes", "mots acceptés après contestation"],
     ["serie, serieVus, seriesVues", "série choisie, cartes déjà vues par thème, nombre de séries débloquées (annonce des nouvelles)"],
-    ["pub, pubStats, son, vibrations, reglesDefi, chronoEntr, cfgIA", "réglages (pub, son, vibrations, règles, IA)"]],
+    ["pub, pubStats, son, vibrations, reglesDefi, chronoEntr, cfgIA", "réglages (pub, son, vibrations, règles, IA)"],
+    ["rappels, rappelsSync, rappelsPropose", "choix des rappels (jour, semaine, heure), dernier envoi de l'abonnement, proposition déjà faite"],
+    ["parrain", "code d'invitation reçu par lien, en attente de la création du compte"]],
     ["Clés", "Contenu"])
 h += B("Hors ligne", "Service worker (<code>sw.js</code>) : tout le jeu est en cache après la première visite, vidéos de pub comprises. Réseau d'abord pour le code et les documents, mais 3 s au plus quand une copie existe.")
 
@@ -130,6 +150,7 @@ h += "<h2>6. Applis mobiles (dossier <code>mobile/</code>, Capacitor 8)</h2>" + 
     ["Android", "enveloppe qui ouvre le site (<code>server.url</code> dans <code>capacitor.config.json</code>) : chaque mise à jour du jeu arrive sans réinstaller ; réglages dans <code>native/android/patch_android.py</code>"],
     ["iOS", "jeu embarqué dans l'appli (exigence Apple) ; réglages dans <code>native/ios/patch_ios.py</code> ; origine <code>capacitor://localhost</code> autorisée par le serveur"],
     ["Connexion", "e-mail + mot de passe uniquement (pas de Google dans les applis)"],
+    ["Rappels", "<code>@capacitor/local-notifications</code> : notifications programmées sur le téléphone (défi du jour, défi de la semaine)"],
     ["Publicité", "Google AdMob prêt dans les applis : module <code>@capacitor-community/admob</code>, identifiants dans <code>app/config.js</code> (<code>QLN_ADMOB</code>, lus aussi par <code>patch_android.py</code> et <code>patch_ios.py</code>), consentement UMP, ATT iOS, repli de démonstration ; politique de confidentialité basculée par <code>marque.json</code> → <code>pub_reelle</code>. Valeurs actuelles : annonces de test."]],
     ["", ""])
 

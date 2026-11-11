@@ -12,7 +12,7 @@ for root, dirs, files in os.walk(res):
         rel = os.path.relpath(os.path.join(root, f), res); dst = os.path.join(app, 'src', 'main', 'res', rel)
         os.makedirs(os.path.dirname(dst), exist_ok=True); shutil.copy(os.path.join(root, f), dst)
 man = os.path.join(app, 'src', 'main', 'AndroidManifest.xml'); s = open(man).read()
-perms = ['INTERNET', 'VIBRATE', 'WAKE_LOCK', 'ACCESS_NETWORK_STATE']
+perms = ['INTERNET', 'VIBRATE', 'WAKE_LOCK', 'ACCESS_NETWORK_STATE', 'POST_NOTIFICATIONS', 'RECEIVE_BOOT_COMPLETED']  # rappels : notifications locales (sans SCHEDULE_EXACT_ALARM, restreinte par Google Play)
 # publicité AdMob : identifiant d'appli (obligatoire dès que le module est présent), lu dans app/config.js (QLN_ADMOB)
 racine = os.path.normpath(os.path.join(here, '..', '..', '..'))
 cfg = open(os.path.join(racine, 'app', 'config.js'), encoding='utf-8').read()

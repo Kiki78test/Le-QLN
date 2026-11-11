@@ -22,7 +22,7 @@ for fn, mod in FILES.items():
     src = re.sub(r'(\$\{[^{}]+\}|\b\d[\d,]*) ?€(?!\w)', lambda m: "€"+m.group(1), src)
     src = src.replace('qln:"+k','qln-en:"+k')
     src = src.replace('data/en.json','data/en.json')
-    src = src.replace('href="manifest.webmanifest"','href="manifest.webmanifest"').replace('href="icons/','href="../icons/').replace('url(fonts/','url(../fonts/').replace('"pubs/spot','"../pubs/spot').replace('fetch("docs/index.json"','fetch("../docs/index.json"').replace('<script src="config.js">','<script src="../config.js">').replace('<script src="analyse.js">','<script src="../analyse.js">').replace('"docs/${encodeURI','"../docs/${encodeURI')
+    src = src.replace('href="manifest.webmanifest"','href="manifest.webmanifest"').replace('href="icons/','href="../icons/').replace('url(fonts/','url(../fonts/').replace('"pubs/spot','"../pubs/spot').replace('fetch("docs/index.json"','fetch("../docs/index.json"').replace('<script src="config.js">','<script src="../config.js">').replace('<script src="analyse.js">','<script src="../analyse.js">').replace('<script src="erreurs.js">','<script src="../erreurs.js">').replace('<script src="filtre.js">','<script src="../filtre.js">').replace('<script src="rappels.js">','<script src="../rappels.js">').replace('"docs/${encodeURI','"../docs/${encodeURI')
     (EN/fn).write_text(src, encoding="utf-8")
     # leftover scan: only inside string literals / template text / HTML text
     segs = re.findall(r'"((?:[^"\\\n]|\\.)*)"|\'((?:[^\'\\\n]|\\.)*)\'|`((?:[^`\\]|\\.)*)`|>([^<>{}`\n]{3,})<', src)
@@ -37,8 +37,8 @@ for fn, mod in FILES.items():
             if t1 not in seen and not re.match(r"^[\w\s.#:\[\]=\-,>*()\"'~]*$", t1) or (t1 not in seen and any(w in STOP for w in words)):
                 seen.add(t1); print(f"[{fn}] {t1}")
 # service worker + manifest
-sw = (APP/"sw.js").read_text(encoding="utf-8").replace("qln-v49","qln-en-v41").replace("data/fr.json","data/en.json").replace('"pubs/spot1.jpg", "pubs/spot2.jpg", "pubs/spot3.jpg", "pubs/spot1.mp4", "pubs/spot2.mp4", "pubs/spot3.mp4", "icons/icon-192.png", "icons/icon-512.png", "icons/apple-touch-icon.png"','"../pubs/spot1.jpg", "../pubs/spot2.jpg", "../pubs/spot3.jpg", "../pubs/spot1.mp4", "../pubs/spot2.mp4", "../pubs/spot3.mp4", "../icons/icon-192.png", "../icons/icon-512.png", "../icons/apple-touch-icon.png"')
-sw = sw.replace('"en/data/en.json"','"../data/fr.json"').replace('data/themes-fr.json','data/themes-en.json').replace('"config.js", ','"../config.js", ').replace('"legal.js", ','"../legal.js", ').replace('"analyse.js", ','"../analyse.js", ').replace('"fonts/','"../fonts/').replace('"data/langues/','"../data/langues/')
+sw = (APP/"sw.js").read_text(encoding="utf-8").replace("qln-v50","qln-en-v42").replace("data/fr.json","data/en.json").replace('"pubs/spot1.jpg", "pubs/spot2.jpg", "pubs/spot3.jpg", "pubs/spot1.mp4", "pubs/spot2.mp4", "pubs/spot3.mp4", "icons/icon-192.png", "icons/icon-512.png", "icons/apple-touch-icon.png"','"../pubs/spot1.jpg", "../pubs/spot2.jpg", "../pubs/spot3.jpg", "../pubs/spot1.mp4", "../pubs/spot2.mp4", "../pubs/spot3.mp4", "../icons/icon-192.png", "../icons/icon-512.png", "../icons/apple-touch-icon.png"')
+sw = sw.replace('"en/data/en.json"','"../data/fr.json"').replace('data/themes-fr.json','data/themes-en.json').replace('"config.js", ','"../config.js", ').replace('"legal.js", ','"../legal.js", ').replace('"analyse.js", ','"../analyse.js", ').replace('"erreurs.js", "filtre.js", "rappels.js", ','"../erreurs.js", "../filtre.js", "../rappels.js", ').replace('"fonts/','"../fonts/').replace('"data/langues/','"../data/langues/')
 sw = sw.replace(NOM+" — service worker : jeu jouable hors connexion après la première visite.",NOM+" (EN) — service worker: playable offline after the first visit.")
 (EN/"sw.js").write_text(sw, encoding="utf-8")
 import json

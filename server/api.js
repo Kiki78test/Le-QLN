@@ -5,6 +5,7 @@
      SECRET           clé secrète pour signer les jetons de session (longue chaîne aléatoire)
      GOOGLE_CLIENT_ID (facultatif) identifiant OAuth « Web » pour la connexion Google
      ORIGINES         origines autorisées, séparées par des virgules (ex. https://kiki78test.github.io)
+     ADMIN_EMAILS     (facultatif) adresses des comptes administrateurs (page admin.html), séparées par des virgules
    Toutes les routes sont sous /api ; réponses JSON. */
 "use strict";
 const crypto = require("crypto");
@@ -59,11 +60,20 @@ create table if not exists qln_mots(
   cree_le timestamptz not null default now(),
   unique(langue, mot)
 );
+alter table qln_joueurs add column if not exists code_parrain text unique;
+alter table qln_joueurs add column if not exists parrain uuid references qln_joueurs(id) on delete set null;
+create index if not exists qln_joueurs_parrain on qln_joueurs(parrain);
 `;
 async function initialiser(){
   // la base peut démarrer après le service (Render) : on réessaie jusqu'à ce qu'elle réponde
   for(let essai = 1; ; essai++){
-    try{ await pool.query("create extension if not exists pgcrypto"); await pool.query(SCHEMA); console.log("[api] base prête"); return; }
+    try{
+      await pool.query("create extension if not exists pgcrypto"); await pool.query(SCHEMA);
+      for(const m of MODULES) if(m.schema) await pool.query(m.schema);
+      console.log("[api] base prête");
+      if(rappels) rappels.demarrer().catch(e => console.error("[rappels] démarrage :", e.message));
+      return;
+    }
     catch(e){ console.error(`[api] base injoignable (essai ${essai}) : ${e.message}`); await new Promise(r => setTimeout(r, Math.min(30000, 2000*essai))); }
   }
 }
@@ -92,6 +102,11 @@ setInterval(() => { const t = Date.now(); for(const [k,e] of compteurs) if(t - e
 /* ---------- Validation ---------- */
 const PAYS = /^[A-Z]{2}$/;
 const nettoiePseudo = p => String(p || "").replace(/[\u0000-\u001f<>]/g, "").trim().slice(0, 14);
+const Filtre = require("../app/filtre.js");
+// pseudo refusé s'il est grossier (insultes, propos haineux, y compris déguisés : voir app/filtre.js)
+function pseudoAccepte(p){ if(Filtre.grossier(p)) throw erreur(400, "Ce pseudo n'est pas accepté. Choisissez-en un autre."); return p; }
+const ALPHA = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+const nouveauCode = () => Array.from(crypto.randomBytes(6), b => ALPHA[b % ALPHA.length]).join("");
 const emailValide = e => /^[^\s@]{1,64}@[^\s@]{1,190}\.[^\s@]{2,}$/.test(e);
 const verif = require("./jour");
 // mots ajoutés après contestation : acceptés aussi par l'anti-triche (cache 1 min)
@@ -103,7 +118,20 @@ async function motsAjoutes(langue){
 }
 const MODES = {jour:{max:20000}, defi:{max:20000}, braquage:{max:400}, festival:{max:20000}};
 const LANGUES = new Set(["fr", "en"]);
-const public_ = j => ({id:j.id, pseudo:j.pseudo, couleur:j.couleur, pays:j.pays, email:j.email || null, google:!!j.google_sub});
+const public_ = j => ({id:j.id, pseudo:j.pseudo, couleur:j.couleur, pays:j.pays, email:j.email || null, google:!!j.google_sub, ...(Admin && Admin.estAdmin(j) ? {admin:true} : {})});
+/* ---------- Parrainage : un filleul compte quand il a vraiment joué (50 XP), 20 au plus ---------- */
+const XP_FILLEUL = 50, MAX_FILLEULS = 20;
+async function filleulsValides(id){
+  const {rows:[r]} = await pool.query(`select count(*)::int n from qln_joueurs j join qln_progression p on p.joueur = j.id
+    where j.parrain = $1 and greatest(coalesce((p.donnees->'fr'->>'xp')::int, 0), coalesce((p.donnees->'en'->>'xp')::int, 0)) >= $2`, [id, XP_FILLEUL]);
+  return Math.min(MAX_FILLEULS, r.n);
+}
+async function parrainDe(code, ip){
+  const c = String(code || "").trim().toUpperCase();
+  if(!/^[A-Z0-9]{6}$/.test(c)) return null;
+  const {rows:[p]} = await pool.query("select id from qln_joueurs where code_parrain=$1", [c]);
+  return p ? p.id : null;
+}
 
 /* ---------- Fusion de progression (deux appareils) : on garde le meilleur de chaque côté ---------- */
 function fusionner(a = {}, b = {}){
@@ -113,6 +141,11 @@ function fusionner(a = {}, b = {}){
   if((a.dernierJour || 0) > (b.dernierJour || 0)){ r.dernierJour = a.dernierJour; r.serie = a.serie; } else { r.dernierJour = b.dernierJour; r.serie = b.serie; }
   r.succes = {...(a.succes || {}), ...(b.succes || {})};
   if(a.tuto === "fait" || b.tuto === "fait") r.tuto = "fait";
+  // médailles à paliers : le meilleur niveau de chaque côté ; parrainage : bonus déjà crédités (jamais deux fois)
+  const pa = a.paliers || {}, pb = b.paliers || {}; r.paliers = {};
+  for(const k of new Set([...Object.keys(pa), ...Object.keys(pb)])) r.paliers[k] = Math.max(+pa[k] || 0, +pb[k] || 0);
+  const ga = a.parrainage || {}, gb = b.parrainage || {};
+  r.parrainage = {credites:Math.max(+ga.credites || 0, +gb.credites || 0), filleul:!!(ga.filleul || gb.filleul)};
   const sa = a.st || {}, sb = b.st || {}, st = {};
   for(const k of new Set([...Object.keys(sa), ...Object.keys(sb)])){
     const x = sa[k], y = sb[k];
@@ -168,16 +201,18 @@ const erreur = (code, message) => Object.assign(new Error(message), {code});
 
 const ROUTES = {
   async "POST /api/inscription"({corps, ip}){
-    if(limite("insc:"+ip, 10, 3600e3)) throw erreur(429, "Trop de tentatives, réessayez plus tard.");
+    if(limite("insc:"+ip, +process.env.LIMITE_INSCRIPTIONS || 10, 3600e3)) throw erreur(429, "Trop de tentatives, réessayez plus tard.");
     const email = String(corps.email || "").trim().toLowerCase(), mdp = String(corps.mdp || ""), pseudo = nettoiePseudo(corps.pseudo);
     if(!emailValide(email)) throw erreur(400, "Adresse e-mail invalide.");
     if(mdp.length < 8) throw erreur(400, "Le mot de passe doit faire au moins 8 caractères.");
     if(pseudo.length < 2) throw erreur(400, "Le pseudo doit faire au moins 2 caractères.");
+    pseudoAccepte(pseudo);
     const pays = PAYS.test(corps.pays || "") ? corps.pays : null, couleur = Math.max(0, Math.min(5, +corps.couleur || 0));
+    const parrain = await parrainDe(corps.parrain);
     const h = await bcrypt.hash(mdp, 10);
     try{
-      const {rows:[j]} = await pool.query("insert into qln_joueurs(email, mdp, pseudo, couleur, pays) values($1,$2,$3,$4,$5) returning *", [email, h, pseudo, couleur, pays]);
-      return {jeton:signer(j.id), joueur:public_(j)};
+      const {rows:[j]} = await pool.query("insert into qln_joueurs(email, mdp, pseudo, couleur, pays, parrain) values($1,$2,$3,$4,$5,$6) returning *", [email, h, pseudo, couleur, pays, parrain]);
+      return {jeton:signer(j.id), joueur:public_(j), parraine:!!parrain};
     }catch(e){ if(e.code === "23505") throw erreur(409, "Un compte existe déjà avec cette adresse."); throw e; }
   },
   async "POST /api/connexion"({corps, ip}){
@@ -197,14 +232,19 @@ const ROUTES = {
     const email = g.email_verified === "true" || g.email_verified === true ? String(g.email).toLowerCase() : null;
     let {rows:[j]} = await pool.query("select * from qln_joueurs where google_sub=$1 or ($2::text is not null and email=$2) order by google_sub nulls last limit 1", [g.sub, email]);
     if(j && !j.google_sub) ({rows:[j]} = await pool.query("update qln_joueurs set google_sub=$1 where id=$2 returning *", [g.sub, j.id]));
-    if(!j) ({rows:[j]} = await pool.query("insert into qln_joueurs(email, google_sub, pseudo, pays) values($1,$2,$3,$4) returning *",
-      [email, g.sub, nettoiePseudo(corps.pseudo || g.given_name || "Joueur"), PAYS.test(corps.pays || "") ? corps.pays : null]));
-    return {jeton:signer(j.id), joueur:public_(j)};
+    let parraine = false;
+    if(!j){
+      const parrain = await parrainDe(corps.parrain); parraine = !!parrain;
+      ({rows:[j]} = await pool.query("insert into qln_joueurs(email, google_sub, pseudo, pays, parrain) values($1,$2,$3,$4,$5) returning *",
+        [email, g.sub, Filtre.masquer(nettoiePseudo(corps.pseudo || g.given_name || "Joueur")), PAYS.test(corps.pays || "") ? corps.pays : null, parrain]));
+    }
+    return {jeton:signer(j.id), joueur:public_(j), parraine};
   },
   async "GET /api/moi"({moi}){ return {joueur:public_(moi)}; },
   async "PATCH /api/moi"({moi, corps}){
     const pseudo = corps.pseudo != null ? nettoiePseudo(corps.pseudo) : moi.pseudo;
     if(pseudo.length < 2) throw erreur(400, "Le pseudo doit faire au moins 2 caractères.");
+    if(pseudo !== moi.pseudo) pseudoAccepte(pseudo);
     const couleur = corps.couleur != null ? Math.max(0, Math.min(5, +corps.couleur || 0)) : moi.couleur;
     const pays = corps.pays === null ? null : (PAYS.test(corps.pays || "") ? corps.pays : moi.pays);
     const {rows:[j]} = await pool.query("update qln_joueurs set pseudo=$1, couleur=$2, pays=$3 where id=$4 returning *", [pseudo, couleur, pays, moi.id]);
@@ -228,7 +268,17 @@ const ROUTES = {
       d["records_"+langue] = r;
     }
     await pool.query("insert into qln_progression(joueur, donnees, maj_le) values($1,$2,now()) on conflict (joueur) do update set donnees=$2, maj_le=now()", [moi.id, d]);
-    return {progres:d[langue], records:d["records_"+langue] || null};
+    return {progres:d[langue], records:d["records_"+langue] || null, filleuls: await filleulsValides(moi.id)};
+  },
+  async "GET /api/parrainage"({moi}){
+    let code = moi.code_parrain;
+    for(let essai = 0; !code && essai < 5; essai++){
+      const c = nouveauCode();
+      const {rowCount} = await pool.query("update qln_joueurs set code_parrain=$1 where id=$2 and code_parrain is null and not exists (select 1 from qln_joueurs where code_parrain=$1)", [c, moi.id]);
+      if(rowCount) code = c; else ({rows:[{code_parrain:code}]} = await pool.query("select code_parrain from qln_joueurs where id=$1", [moi.id]));
+    }
+    const {rows:[r]} = await pool.query("select count(*)::int n from qln_joueurs where parrain=$1", [moi.id]);
+    return {code, inscrits:r.n, filleuls: await filleulsValides(moi.id), xpRequis:XP_FILLEUL, max:MAX_FILLEULS};
   },
   async "POST /api/scores"({moi, corps}){
     if(limite("score:"+moi.id, 60, 3600e3)) throw erreur(429, "Trop de scores envoyés.");
@@ -272,7 +322,7 @@ const ROUTES = {
       select r.rang, r.total, r.score, j.id, j.pseudo, j.couleur, j.pays from rangs r join qln_joueurs j on j.id = r.joueur
       where r.rang <= $5 or j.id = $6 order by r.rang`;
     const {rows} = await pool.query(sql, [langue, mode, jour, pays, limiteN, moi ? moi.id : null]);
-    const ligne = r => ({rang:+r.rang, score:r.score, pseudo:r.pseudo, couleur:r.couleur, pays:r.pays, moi:!!moi && r.id === moi.id});
+    const ligne = r => ({rang:+r.rang, score:r.score, pseudo:Filtre.masquer(r.pseudo), couleur:r.couleur, pays:r.pays, moi:!!moi && r.id === moi.id});
     return {mode, langue, jour, pays, total: rows.length ? +rows[0].total : 0, lignes: rows.filter(r => +r.rang <= limiteN).map(ligne), moi: rows.filter(r => moi && r.id === moi.id).map(ligne)[0] || null};
   },
   async "POST /api/mots"({corps, ip, moi}){
@@ -298,6 +348,15 @@ const ROUTES = {
   },
 };
 
+/* ---------- Modules : erreurs + administration, rappels ---------- */
+let etatRelais = null;
+const ctx = {pool, erreur, limite, etatRelais: () => etatRelais ? etatRelais() : {}};
+const rappels = require("./rappels")(ctx);
+const Admin = require("./admin")({...ctx, rappels});
+const MODULES = [Admin, rappels];
+const PUBLIQUES = new Set(["POST /api/inscription", "POST /api/connexion", "POST /api/google", "GET /api/classement", "GET /api/sante-api", "POST /api/mots", "GET /api/mots"]);
+for(const m of MODULES){ Object.assign(ROUTES, m.routes); for(const r of m.publiques || []) PUBLIQUES.add(r); }
+
 /* Point d'entrée appelé par le serveur HTTP ; renvoie false si la route n'est pas pour l'API */
 async function traiter(req, res, origines){
   const url = new URL(req.url, "http://x");
@@ -317,9 +376,12 @@ async function traiter(req, res, origines){
     const query = Object.fromEntries(url.searchParams);
     const id = verifier(String(req.headers.authorization || "").replace(/^Bearer /, ""));
     let moi = null;
-    if(id){ ({rows:[moi]} = await pool.query("select * from qln_joueurs where id=$1", [id])); }
-    const publiques = ["POST /api/inscription", "POST /api/connexion", "POST /api/google", "GET /api/classement", "GET /api/sante-api", "POST /api/mots", "GET /api/mots"];
-    if(!moi && !publiques.includes(req.method + " " + url.pathname)) throw erreur(401, "Connexion requise.");
+    if(id){
+      ({rows:[moi]} = await pool.query("select * from qln_joueurs where id=$1", [id]));
+      // dernière visite (statistiques d'activité de la page admin), au plus une écriture toutes les 10 minutes
+      if(moi && Date.now() - new Date(moi.vu_le).getTime() > 600e3) pool.query("update qln_joueurs set vu_le=now() where id=$1", [moi.id]).catch(() => {});
+    }
+    if(!moi && !PUBLIQUES.has(req.method + " " + url.pathname)) throw erreur(401, "Connexion requise.");
     envoyer(200, await route({corps, query, moi, ip}));
   }catch(e){
     const code = e.code && Number.isInteger(e.code) ? e.code : 500;
@@ -329,4 +391,4 @@ async function traiter(req, res, origines){
   return true;
 }
 
-module.exports = { initialiser, traiter, fusionner, _pool: pool };
+module.exports = { initialiser, traiter, fusionner, _pool: pool, brancherRelais: f => { etatRelais = f; } };

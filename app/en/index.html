@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script src="../erreurs.js"></script>
 <script>/* tablettes tactiles (iPad…) : la mise en page « téléphone » est agrandie à la taille de l'écran (fenêtre virtuelle de 500 à 680 px de large) */
 (function(){ try{ var s = Math.min(screen.width, screen.height); if(matchMedia("(pointer:coarse)").matches && s >= 700){ var w = Math.round(Math.max(500, Math.min(680, s / 1.55)));
   document.querySelector('meta[name="viewport"]').setAttribute("content", "width=" + w + ", viewport-fit=cover"); document.documentElement.classList.add("tablette"); } }catch(e){} })();</script>
@@ -327,6 +328,7 @@ button.piece:active, .piece.enfonce{transform:translateY(calc(var(--lip) - 1px))
 .trois b{font-family:var(--f-titre); font-weight:400; font-size:56px; line-height:1}
 .trois small{font-family:var(--f-ui); font-weight:700; letter-spacing:.08em; text-transform:uppercase; font-size:13px; opacity:.9}
 .titre-section{font-family:var(--f-titre); font-weight:400; font-size:30px; letter-spacing:.05em; margin:6px 0 -4px; color:var(--or-2)}
+.ti-liens a{color:inherit; text-decoration:underline; text-underline-offset:2px}
 .reglages{background:rgba(3,10,30,.45); border-radius:var(--rayon); padding:6px 12px 10px; box-shadow:inset 0 0 0 1px rgba(255,255,255,.06)}
 .reglages summary{cursor:pointer; font-family:var(--f-ui); font-weight:800; letter-spacing:.08em; text-transform:uppercase; font-size:14px; color:var(--brume); padding:8px 0}
 .reglages .interrupteur{margin-top:8px}
@@ -893,10 +895,11 @@ body::before{background:radial-gradient(130% 95% at 50% 45%, transparent 55%, rg
   <button data-nav="tuto"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6V14M12 17.5v.01"/></svg><span>Guided game</span></button>
   <button data-nav="regles"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19V5"/></svg><span>Game rules</span></button>
   <button data-nav="docs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/></svg><span>Documentation</span></button>
+  <button data-nav="parametres"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M18.7 5.3l-2.1 2.1M7.4 16.6l-2.1 2.1"/></svg><span>Settings and reminders</span></button>
   <button data-nav="son"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5L6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg><span>Sound</span><em id="ti-son"></em></button>
   <button id="ti-pubchoix" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg>Ad choices</button>
   <button data-nav="installer" id="ti-installer" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg><span>Install the app</span></button>
-  <p class="tiroir-pied">The anagram game that pays<small>English dictionary: web2, wordfreq, lemminflect (open data)</small><small id="ti-version"></small></p>
+  <p class="tiroir-pied">The anagram game that pays<small>English dictionary: web2, wordfreq, lemminflect (open data)</small><small id="ti-version"></small><small class="ti-liens" id="ti-liens"><a href="presentation.html">About the game</a> · <a href="anagrams/">All anagrams</a></small></p>
 </nav>
 <div class="app" id="app"><div class="chargement"><div class="logo" style="--taille:64px"><span>LE - QLN</span></div>Loading the dictionary…</div></div>
 <canvas id="confettis" aria-hidden="true"></canvas>
@@ -2394,12 +2397,14 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || (location.pr
 <script src="plateau.js"></script>
 <script src="../analyse.js"></script>
 <script src="../config.js"></script>
+<script src="../filtre.js"></script>
 <script src="multi.js"></script>
 <script src="../legal.js"></script>
 <script src="series.js"></script>
 <script src="barre.js"></script>
 <script src="progres.js"></script>
 <script src="compte.js"></script>
+<script src="../rappels.js"></script>
 <script>
 chargerDico().then(() => Contestation.charger()).then(() => (typeof Legal !== "undefined" && Legal.lienDirect()) || (typeof Multi !== "undefined" && Multi.lienDirect()) || ecranAccueil()).catch(() => {
   app.innerHTML = `<p class="chargement">Could not load the dictionary. Check your connection and reload the page.</p>`;
@@ -2576,6 +2581,8 @@ chargerDico().then(() => Contestation.charger()).then(() => (typeof Legal !== "u
   bm.onclick = () => t.hidden ? ouvrir() : fermer();
   // version réellement en service (nom du cache du service worker) : utile pour vérifier une mise à jour
   try{ caches.keys().then(k => { const v = k.filter(x => /^qln/.test(x)).sort().pop(); const e = $("#ti-version"); if(e && v) e.textContent = "Version " + v.replace(/^qln-(en-)?/, ""); }); }catch(e){}
+  // liens vers les pages publiques du site (absentes de l'appli iOS, où le jeu est embarqué)
+  { const l = $("#ti-liens"); if(l && !/^https?:$/.test(location.protocol)) l.hidden = true; }
   v.onclick = fermer; $("#ti-fermer").onclick = fermer;
   document.addEventListener("keydown", e => { if(e.key === "Escape" && !t.hidden) fermer(); });
   $("#ab-logo").onclick = () => aller(ecranAccueil);
@@ -2588,6 +2595,7 @@ chargerDico().then(() => Contestation.charger()).then(() => (typeof Legal !== "u
     tuto: () => aller(() => typeof Progres !== "undefined" ? Progres.lancerTuto() : ecranAccueil()),
     regles: () => aller(ecranRegles),
     docs: () => aller(ecranDocs),
+    parametres: () => { fermer(); if(typeof BarreBas !== "undefined") BarreBas.parametres(); },
     son: () => { Son.actif = !Son.actif; store.set("son", Son.actif); majSon(); const b = $("#b-son"); if(b) b.outerHTML = boutonSon(); brancherSon(); },
     installer: () => { fermer(); if(installEvt){ installEvt.prompt(); installEvt = null; } },
   };

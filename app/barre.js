@@ -93,7 +93,9 @@ function classement(){
 }
 function parametres(){
   const ligne = (id, titre, desc, actif) => `<div class="bb-ligne"><span></span><span><b>${titre}</b><small>${desc}</small></span><button class="bouton-plat" id="${id}" aria-pressed="${actif}">${actif ? T.oui : T.non}</button></div>`;
-  const v = volet(T.parametres, ligne("bb-son", T.son, T.sonD, Son.actif) + ligne("bb-vib", T.vib, T.vibD, store.get("vibrations", true)));
+  const v = volet(T.parametres, ligne("bb-son", T.son, T.sonD, Son.actif) + ligne("bb-vib", T.vib, T.vibD, store.get("vibrations", true))
+    + (typeof Rappels !== "undefined" ? Rappels.html() : ""));
+  if(typeof Rappels !== "undefined") Rappels.brancher(v, parametres);
   $("#bb-son", v).onclick = () => { Son.actif = !Son.actif; store.set("son", Son.actif); const b = $("#b-son"); if(b) b.innerHTML = Son.actif ? ICO.son : ICO.muet; parametres(); };
   $("#bb-vib", v).onclick = () => { store.set("vibrations", !store.get("vibrations", true)); parametres(); };
 }

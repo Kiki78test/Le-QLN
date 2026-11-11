@@ -1,7 +1,7 @@
 // Le-QLN (EN) — service worker: playable offline after the first visit.
-const VERSION = "qln-en-v41";
+const VERSION = "qln-en-v42";
 const FICHIERS = [
-  "./", "index.html", "plateau.js", "multi.js", "../legal.js", "series.js", "barre.js", "progres.js", "compte.js", "../analyse.js", "../config.js", "pub.js", "infos.js", "manifest.webmanifest", "data/en.json", "data/themes-en.json", "../data/fr.json", "../data/langues/es.json", "../data/langues/de.json", "../data/langues/it.json",
+  "./", "index.html", "plateau.js", "multi.js", "../legal.js", "series.js", "barre.js", "progres.js", "compte.js", "../analyse.js", "../config.js", "pub.js", "infos.js", "../erreurs.js", "../filtre.js", "../rappels.js", "manifest.webmanifest", "data/en.json", "data/themes-en.json", "../data/fr.json", "../data/langues/es.json", "../data/langues/de.json", "../data/langues/it.json",
   "pubs/spot1.jpg", "pubs/spot2.jpg", "pubs/spot3.jpg", "pubs/spot1.mp4", "pubs/spot2.mp4", "pubs/spot3.mp4", "../fonts/barlow-condensed-latin-500-normal.woff2", "../fonts/barlow-condensed-latin-600-normal.woff2", "../fonts/barlow-condensed-latin-700-normal.woff2", "../fonts/barlow-condensed-latin-800-italic.woff2", "../fonts/barlow-condensed-latin-800-normal.woff2", "../fonts/barlow-latin-400-normal.woff2", "../fonts/barlow-latin-500-normal.woff2", "../fonts/barlow-latin-600-normal.woff2", "../fonts/barlow-latin-700-normal.woff2", "icons/icon-192.png", "icons/icon-512.png", "icons/apple-touch-icon.png",
 ];
 
@@ -43,4 +43,20 @@ self.addEventListener("fetch", e => {
       return rep;
     }))
   );
+});
+
+/* ---------- Rappels (Web Push, envoyés par le serveur : server/rappels.js) ---------- */
+self.addEventListener("push", e => {
+  let d = {};
+  try{ d = e.data ? e.data.json() : {}; }catch(x){ d = {texte: e.data ? e.data.text() : ""}; }
+  const ic = new URL((self.registration.scope.endsWith("/en/") ? "../" : "") + "icons/icon-192.png", self.registration.scope).href;
+  e.waitUntil(self.registration.showNotification(d.titre || "Le-QLN", {body:d.texte || "", icon:ic, badge:ic, tag:d.tag || "qln", renotify:false, data:{url:d.url || self.registration.scope}}));
+});
+self.addEventListener("notificationclick", e => {
+  e.notification.close();
+  const url = (e.notification.data && e.notification.data.url) || self.registration.scope;
+  e.waitUntil(clients.matchAll({type:"window", includeUncontrolled:true}).then(l => {
+    for(const c of l) if(c.url.startsWith(self.registration.scope) && "focus" in c) return c.focus();
+    return clients.openWindow(url);
+  }));
 });

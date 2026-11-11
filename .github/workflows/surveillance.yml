@@ -1,0 +1,27 @@
+# Surveillance du serveur Le-QLN (Render), toutes les heures :
+#  - vérifie que le serveur et la base répondent (sinon : croix rouge dans l'onglet Actions et e-mail de GitHub) ;
+#  - réveille le service gratuit de Render, qui s'endort après 15 min sans visite : les rappels par notification
+#    (server/rappels.js) partent ainsi au moins une fois par heure.
+# En complément, UptimeRobot (gratuit) vérifie toutes les 5 minutes et prévient par e-mail ou SMS
+# (voir docs/administration-et-surveillance.pdf).
+name: Surveillance du serveur
+on:
+  schedule:
+    - cron: '7 * * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verifier:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - name: Le serveur et la base répondent
+        run: |
+          API=$(sed -n 's/^window.QLN_API_URL = "\([^"]*\)".*/\1/p' app/config.js)
+          if [ -z "$API" ]; then echo "Pas de serveur dans config.js."; exit 0; fi
+          # réveil (jusqu'à 3 min)
+          for i in $(seq 1 36); do curl -sf -m 10 "$API/sante" > /dev/null && break; sleep 5; done
+          curl -sSf -m 10 "$API/sante"; echo
+          curl -sSf -m 15 "$API/api/sante-api"; echo

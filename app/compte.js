@@ -29,6 +29,31 @@ const TXT = {
   secondes:s=>`${s} s`, mineurs:"Moins de 15 ans ? Demandez l'accord d'un parent avant de créer un compte.",
   confidentialite:"Seuls votre pseudo, votre pion et votre pays apparaissent dans les classements. Votre e-mail n'est jamais affiché.",
 };
+/* Parrainage et administration : textes FR/EN dans ce fichier */
+const EN_ = document.documentElement.lang === "en";
+const TP = EN_ ? {
+  inviter:"Invite your friends", inviterD:(x, n) => `Each friend who creates an account with your link and plays gets <b>+${x} XP</b>, and so do you (up to ${n} friends).`,
+  lien:"Your invitation link", copier:"Copy", partager:"Share", copie:"Link copied.", invites:(i, f) => `${i} friend${i > 1 ? "s" : ""} signed up · ${f} counted`,
+  partageTxt:"Join me on Le-QLN, the anagram game! Create your account with my link and we both get bonus XP:",
+  code:"Invitation code (optional)", invitePar:x => `You were invited by a friend: create your account to get +${x} XP!`, bonusFilleul:x => `Welcome bonus: +${x} XP`,
+  bonusParrain:x => `A friend you invited is playing: +${x} XP!`, admin:"Administration", grossier:"This name is not accepted. Please choose another one.",
+} : {
+  inviter:"Invitez vos amis", inviterD:(x, n) => `Chaque ami qui crée son compte avec votre lien et joue reçoit <b>+${x} XP</b>, et vous aussi (jusqu'à ${n} amis).`,
+  lien:"Votre lien d'invitation", copier:"Copier", partager:"Partager", copie:"Lien copié.", invites:(i, f) => `${i} ami${i > 1 ? "s" : ""} inscrit${i > 1 ? "s" : ""} · ${f} pris en compte`,
+  partageTxt:"Rejoins-moi sur Le-QLN, le jeu d'anagrammes ! Crée ton compte avec mon lien et on gagne tous les deux de l'XP en bonus :",
+  code:"Code d'invitation (facultatif)", invitePar:x => `Un ami vous invite : créez votre compte pour recevoir +${x} XP !`, bonusFilleul:x => `Bonus de bienvenue : +${x} XP`,
+  bonusParrain:x => `Un ami invité joue : +${x} XP !`, admin:"Administration", grossier:"Ce pseudo n'est pas accepté. Choisissez-en un autre.",
+};
+// lien d'invitation reçu (…?parrain=CODE) : gardé jusqu'à la création du compte
+(function(){
+  try{
+    const u = new URL(location.href), c = (u.searchParams.get("parrain") || "").toUpperCase();
+    if(/^[A-Z0-9]{6}$/.test(c)){
+      store.set("parrain", c); u.searchParams.delete("parrain"); history.replaceState(history.state, "", u.pathname + u.search + u.hash);
+      if(!(store.get("session", null) || {}).jeton) setTimeout(() => toast(TP.invitePar(typeof Progres !== "undefined" ? Progres.XP_PARRAIN : 200), 5000), 2500);
+    }
+  }catch(e){}
+})();
 const PAYS = [["FR","France"],["BE","Belgique"],["CH","Suisse"],["CA","Canada"],["LU","Luxembourg"],["MC","Monaco"],["MA","Maroc"],["DZ","Algérie"],["TN","Tunisie"],["SN","Sénégal"],["CI","Côte d'Ivoire"],["CM","Cameroun"],
   ["GB","Royaume-Uni"],["IE","Irlande"],["US","États-Unis"],["AU","Australie"],["NZ","Nouvelle-Zélande"],["DE","Allemagne"],["ES","Espagne"],["IT","Italie"],["PT","Portugal"],["NL","Pays-Bas"],["IN","Inde"],["ZA","Afrique du Sud"]];
 const lesPions = () => typeof PIONS !== "undefined" ? PIONS : [{nom:"Jaune",c:"#ffd60a"},{nom:"Rose",c:"#ff4fa3"},{nom:"Cyan",c:"#35e0ff"},{nom:"Blanc",c:"#f2f2f2"},{nom:"Lilas",c:"#c59bff"},{nom:"Orange",c:"#ff8a1f"}];
@@ -76,6 +101,7 @@ async function synchroniser(muet = true){
       const local = Progres.donnees(), records = store.get("records", {});
       const d = await api("/progression?langue=" + TXT.langue, {methode:"PUT", corps:{progres:local, records:{defi:records.defi || 0, jour:records.jour || 0}}});
       if(d.progres) Progres.remplacer(d.progres);
+      if(d.filleuls != null){ const g = Progres.bonusParrainage({filleuls:d.filleuls}); if(g){ toast(TP.bonusParrain(g), 3500); setTimeout(() => synchroniser(true), 1500); } }
       if(d.records){ const r = store.get("records", {}); for(const k of ["defi","jour"]) if((d.records[k]||0) > (r[k]||0)) r[k] = d.records[k]; store.set("records", r); }
       if(!muet) toast(TXT.synchro, 1800);
     }catch(e){ if(!muet) toast(e.status ? e.message : TXT.synchroKo, 3000); }
@@ -138,7 +164,8 @@ function ecranCompte(onglet = "connexion"){
     <form class="m-carte ct-form" id="ct-form" novalidate>
       ${onglet === "inscription" ? `
       <label class="lbl" for="ct-pseudo">${TXT.pseudo}</label><input class="champ" id="ct-pseudo" maxlength="14" autocomplete="nickname" value="${esc(local.pseudo || "")}" required>
-      <label class="lbl" for="ct-pays">${TXT.pays}</label><select class="champ" id="ct-pays"><option value="">${TXT.paysAucun}</option>${opt}</select>` : ""}
+      <label class="lbl" for="ct-pays">${TXT.pays}</label><select class="champ" id="ct-pays"><option value="">${TXT.paysAucun}</option>${opt}</select>
+      <label class="lbl" for="ct-parrain">${TP.code}</label><input class="champ" id="ct-parrain" maxlength="6" autocapitalize="characters" autocomplete="off" value="${esc(store.get("parrain", "") || "")}" style="text-transform:uppercase; letter-spacing:.2em">` : ""}
       <label class="lbl" for="ct-email">${TXT.email}</label><input class="champ" id="ct-email" type="email" autocomplete="email" inputmode="email" required>
       <label class="lbl" for="ct-mdp">${TXT.mdp}</label><input class="champ" id="ct-mdp" type="password" autocomplete="${onglet === "inscription" ? "new-password" : "current-password"}" minlength="8" required>
       ${onglet === "inscription" ? `<div class="m-aide">${TXT.mdpAide}</div><div class="m-aide">${TXT.accepteLegal} <button type="button" class="bouton-plat" id="ct-politique">${TXT.politique}</button>.</div>` : ""}
@@ -158,9 +185,14 @@ function ecranCompte(onglet = "connexion"){
     const err = $("#ct-erreur"), bouton = $("#ct-ok"); err.hidden = true; bouton.disabled = true;
     try{
       const corps = {email:$("#ct-email").value.trim(), mdp:$("#ct-mdp").value};
-      if(onglet === "inscription"){ corps.pseudo = $("#ct-pseudo").value.trim(); corps.pays = $("#ct-pays").value || null; corps.couleur = local.couleur || 0; }
+      if(onglet === "inscription"){
+        corps.pseudo = $("#ct-pseudo").value.trim(); corps.pays = $("#ct-pays").value || null; corps.couleur = local.couleur || 0;
+        corps.parrain = ($("#ct-parrain").value || "").trim().toUpperCase() || undefined;
+        if(typeof Filtre !== "undefined" && Filtre.grossier(corps.pseudo)) throw Object.assign(new Error(TP.grossier), {status:400});
+      }
       const d = await api(onglet === "inscription" ? "/inscription" : "/connexion", {methode:"POST", corps, auth:false});
       ouvrirSession(d); Son.ok(); toast(TXT.bienvenue(d.joueur.pseudo), 2200);
+      if(d.parraine){ store.set("parrain", null); const g = Progres.bonusParrainage({filleul:true}); if(g) setTimeout(() => toast(TP.bonusFilleul(g), 3000), 2400); }
       await synchroniser(true);
       ecranConnecte();
     }catch(e){ err.textContent = e.status ? e.message : TXT.horsLigne; err.hidden = false; bouton.disabled = false; Son.ko && Son.ko(); }
@@ -171,7 +203,8 @@ function brancherGoogle(){
   const monter = () => {
     if(!window.google || !google.accounts || !$("#ct-google")) return;
     google.accounts.id.initialize({client_id:window.QLN_GOOGLE_CLIENT_ID, callback: async r => {
-      try{ const d = await api("/google", {methode:"POST", corps:{credential:r.credential, pays:$("#ct-pays")?.value || null}, auth:false}); ouvrirSession(d); Son.ok(); toast(TXT.bienvenue(d.joueur.pseudo), 2200); await synchroniser(true); ecranConnecte(); }
+      try{ const d = await api("/google", {methode:"POST", corps:{credential:r.credential, pays:$("#ct-pays")?.value || null, parrain:($("#ct-parrain")?.value || store.get("parrain", "") || "").toUpperCase() || undefined}, auth:false}); ouvrirSession(d); Son.ok();
+        if(d.parraine){ store.set("parrain", null); Progres.bonusParrainage({filleul:true}); } toast(TXT.bienvenue(d.joueur.pseudo), 2200); await synchroniser(true); ecranConnecte(); }
       catch(e){ const err = $("#ct-erreur"); if(err){ err.textContent = e.message; err.hidden = false; } }
     }});
     google.accounts.id.renderButton($("#ct-google"), {theme:"filled_black", size:"large", shape:"pill", text:"continue_with", width: Math.min(360, $("#ct-google").clientWidth || 320), locale:TXT.langue});
@@ -194,13 +227,17 @@ function ecranConnecte(){
       <p class="ct-erreur" id="ct-erreur" role="alert" hidden></p>
       <button class="bouton piece c-jaune" type="submit">${TXT.enregistrer}</button>
     </form>
+    <div class="m-carte ct-parrain" id="ct-parrainage"><b class="ct-p-titre">🎁 ${TP.inviter}</b><p class="m-aide">${TP.inviterD(Progres.XP_PARRAIN, 20)}</p>
+      <div class="ct-p-lien"><input class="champ" id="ct-lien" readonly aria-label="${TP.lien}" value="…"><button class="bouton-plat" id="ct-copier">${TP.copier}</button></div>
+      <button class="bouton piece c-vert" id="ct-inviter">${ICO.partager || ""} ${TP.partager}</button><small class="m-aide" id="ct-invites"></small></div>
     <div class="duo"><button class="bouton piece c-noir" id="ct-classements">${TXT.classements}</button><button class="bouton piece c-noir" id="ct-sortir">${TXT.deconnexion}</button></div>
-    <div class="pied"><button class="bouton-plat" id="ct-supprimer">${TXT.supprimer}</button></div>
+    <div class="pied">${j.admin ? `<a class="bouton-plat" id="ct-admin" href="${EN_ ? "../" : ""}admin.html">${TP.admin}</a>` : ""}<button class="bouton-plat" id="ct-supprimer">${TXT.supprimer}</button></div>
   </section>`;
   $("#b-retour").onclick = ecranAccueil;
   $$("#ct-couleurs button").forEach(b => b.onclick = () => { couleur = +b.dataset.i; $$("#ct-couleurs button").forEach(x => x.setAttribute("aria-pressed", x === b)); Son.tap(); });
   $("#ct-form").onsubmit = async ev => {
     ev.preventDefault(); const err = $("#ct-erreur"); err.hidden = true;
+    if(typeof Filtre !== "undefined" && Filtre.grossier($("#ct-pseudo").value)){ err.textContent = TP.grossier; err.hidden = false; return; }
     try{ const d = await api("/moi", {methode:"PATCH", corps:{pseudo:$("#ct-pseudo").value.trim(), pays:$("#ct-pays").value || null, couleur}}); ouvrirSession({jeton:session.jeton, joueur:d.joueur}); toast(TXT.enregistre, 1800); ecranConnecte(); }
     catch(e){ err.textContent = e.message; err.hidden = false; }
   };
@@ -212,6 +249,26 @@ function ecranConnecte(){
     $("#s-oui", v).onclick = async () => { try{ await api("/moi", {methode:"DELETE"}); }catch(e){ toast(e.message); return; } v.remove(); fixerSession(null); toast(TXT.supprimerOk, 2000); ecranAccueil(); };
   };
   synchroniser(true);
+  brancherParrainage();
+}
+async function brancherParrainage(){
+  const zone = $("#ct-parrainage"); if(!zone) return;
+  let lien = "";
+  try{
+    const d = await api("/parrainage");
+    const site = window.QLN_NATIVE || !/^https?:/.test(location.protocol) ? String(window.QLN_SITE_URL || "") : location.origin + location.pathname.replace(/(en\/)?[^/]*$/, "");
+    lien = site.replace(/\/?$/, "/") + (EN_ ? "en/" : "") + "?parrain=" + d.code;
+    if(!$("#ct-lien")) return;
+    $("#ct-lien").value = lien; $("#ct-invites").textContent = TP.invites(d.inscrits, d.filleuls);
+    if(d.filleuls != null){ const g = Progres.bonusParrainage({filleuls:d.filleuls}); if(g){ toast(TP.bonusParrain(g), 3500); synchroniser(true); } }
+  }catch(e){ zone.hidden = true; return; }
+  const copier = () => { try{ navigator.clipboard.writeText(lien).then(() => toast(TP.copie, 1800), () => { $("#ct-lien").select(); }); }catch(x){ $("#ct-lien").select(); } };
+  $("#ct-copier").onclick = copier;
+  $("#ct-lien").onclick = () => $("#ct-lien").select();
+  $("#ct-inviter").onclick = () => {
+    if(navigator.share) navigator.share({text:TP.partageTxt + " " + lien}).catch(() => {});
+    else copier();
+  };
 }
 function ecranBientot(titre, autre){
   app.innerHTML = `
@@ -295,12 +352,14 @@ css.textContent = `
 .ct-nom{font:700 16px var(--f-ui); color:#fff; overflow:hidden; text-overflow:ellipsis; white-space:nowrap} .ct-nom i{font-style:normal}
 .ct-ligne b{font:400 22px var(--f-titre); color:#ffe68f; font-variant-numeric:tabular-nums}
 .ct-ligne.podium{background:linear-gradient(90deg, rgba(255,214,90,.14), rgba(255,255,255,.03))} .ct-ligne.podium .ct-rang{font-size:24px}
+.ct-parrain{display:grid; gap:8px} .ct-p-titre{font:400 24px var(--f-titre); color:#ffe68f}
+.ct-p-lien{display:flex; gap:8px; align-items:center} .ct-p-lien .champ{flex:1; min-width:0; font-size:14px; padding:9px 10px}
 .ct-ligne.moi{box-shadow:inset 0 0 0 1.5px #ffd84a; background:rgba(255,214,90,.12)}
 `;
 document.head.appendChild(css);
 
 // au lancement : rafraîchir la session et la progression si l'on est connecté
-if(actif() && connecte()) setTimeout(() => synchroniser(true), 1500);
+if(actif() && connecte()) setTimeout(() => { synchroniser(true); api("/moi").then(d => { if(d.joueur && connecte()) fixerSession({jeton:session.jeton, joueur:d.joueur}); }).catch(() => {}); }, 1500);
 majIcone(); document.addEventListener("DOMContentLoaded", majIcone);
 
 return { actif, connecte, ecranCompte, ecranClassements, synchroniser, session:() => session, TXT };

@@ -51,11 +51,43 @@ const TXT = {
   },
 };
 
+/* ---------- Médailles à paliers (bronze, argent, or) : textes FR/EN dans ce fichier ---------- */
+const EN = document.documentElement.lang === "en";
+const TM = EN ? {
+  medailles:"Medals", metal:["Bronze", "Silver", "Gold"], medaille:m => `${m} medal`, prochain:(v, s) => `${v} / ${s}`, complet:"Complete",
+  P:{collection:["Collector", "Cards won"], assiduite:["Regular", "Days in a row (best streak)"], vocabulaire:["Wordsmith", "Words found"],
+     perfection:["Perfectionist", "Perfect cards"], stratege:["Strategist", "Wins against the AI"], noires:["Night owl", "Black cards won"],
+     fidele:["Loyal", "Days played"], fortune:["Fortune", "Total winnings (€)"], ambassadeur:["Ambassador", "Friends invited who played"]},
+} : {
+  medailles:"Médailles", metal:["Bronze", "Argent", "Or"], medaille:m => `Médaille ${m === "Or" ? "d'or" : m === "Argent" ? "d'argent" : "de bronze"}`, prochain:(v, s) => `${v} / ${s}`, complet:"Complet",
+  P:{collection:["Collectionneur", "Cartes gagnées"], assiduite:["Assidu", "Jours d'affilée (meilleure série)"], vocabulaire:["Vocabulaire", "Mots trouvés"],
+     perfection:["Perfectionniste", "Cartes parfaites"], stratege:["Stratège", "Victoires contre l'IA"], noires:["Nuit noire", "Cartes noires gagnées"],
+     fidele:["Fidèle", "Jours joués"], fortune:["Fortune", "Gains cumulés (€)"], ambassadeur:["Ambassadeur", "Amis invités qui ont joué"]},
+};
+const PALIERS = [
+  {id:"collection", seuils:[10, 100, 500], val:d => Object.values(d.st.cartes).reduce((s, c) => s + c[1], 0)},
+  {id:"assiduite", seuils:[3, 7, 30], val:d => d.serieMax || 0},
+  {id:"vocabulaire", seuils:[50, 500, 2000], val:d => d.st.mots || 0},
+  {id:"perfection", seuils:[5, 50, 200], val:d => d.st.parfaites || 0},
+  {id:"stratege", seuils:[1, 10, 50], val:d => d.st.victoiresIA || 0},
+  {id:"noires", seuils:[1, 10, 50], val:d => (d.st.cartes.n || [0,0])[1]},
+  {id:"fidele", seuils:[7, 30, 100], val:d => d.st.jours || 0},
+  {id:"fortune", seuils:[10000, 100000, 1000000], val:d => d.st.gains || 0},
+  {id:"ambassadeur", seuils:[1, 3, 10], val:d => (d.parrainage && d.parrainage.credites) || 0},
+];
+// succès devenus des médailles : toujours enregistrés, mais plus affichés ni annoncés à part
+const FUSION = new Set(["cartes-10", "cartes-100", "cartes-500", "serie-3", "serie-7", "serie-30"]);
+const succesVisibles = () => Object.keys(TXT.S).filter(id => !FUSION.has(id));
+const METAUX = [["#f3c79a", "#c8793a", "#7a4316"], ["#ffffff", "#c9d3e2", "#7d8aa3"], ["#fff3b0", "#ffcf3a", "#c98a12"]];
+
 /* ---------- Données ---------- */
-const VIDE = () => ({xp:0, serie:0, serieMax:0, dernierJour:null, succes:{}, tuto:null,
+function niveauPalier(p, d){ const v = p.val(d); return p.seuils.filter(s => v >= s).length; }
+const VIDE = () => ({xp:0, serie:0, serieMax:0, dernierJour:null, succes:{}, tuto:null, paliers:{}, parrainage:{credites:0, filleul:false},
   st:{parties:0, cartes:{v:[0,0], b:[0,0], r:[0,0], n:[0,0]}, mots:0, parfaites:0, indices:0, temps:{}, gains:0, meilleure:0, victoiresIA:0, partiesIA:0, jours:0}});
-let D = Object.assign(VIDE(), store.get("progres", {}));
+const _brut = store.get("progres", {});
+let D = Object.assign(VIDE(), _brut);
 D.st = Object.assign(VIDE().st, D.st || {});
+if(!_brut.paliers){ D.paliers = {}; for(const p of PALIERS) D.paliers[p.id] = niveauPalier(p, D); }   // joueurs existants : médailles déjà méritées, sans annonce
 const sauver = () => store.set("progres", D);
 let xpPartie = 0;      // XP gagnée pendant la partie en cours (affichée à la fin)
 
@@ -82,12 +114,26 @@ const file = []; let affiche = false;
 function debloquer(id){
   if(D.succes[id] || !TXT.S[id]) return;
   D.succes[id] = aujourdhui(); sauver();
+  if(FUSION.has(id)) return;                   // annoncé par la médaille correspondante
   file.push(id); if(!affiche) suivantSucces();
+}
+/* médailles : nouvelle marche franchie → annonce (bronze, argent ou or) */
+function verifierPaliers(){
+  if(!D.paliers) D.paliers = {};
+  for(const p of PALIERS){
+    const n = niveauPalier(p, D), avant = D.paliers[p.id] || 0;
+    if(n > avant){ D.paliers[p.id] = n; file.push({palier:p, n}); }
+  }
+  sauver(); if(file.length && !affiche) suivantSucces();
 }
 function suivantSucces(){
   const id = file.shift(); if(!id){ affiche = false; return; }
   affiche = true;
   const el = document.createElement("div"); el.className = "pg-succes"; el.setAttribute("role", "status");
+  if(typeof id === "object"){
+    const [nom] = TM.P[id.palier.id], m = TM.metal[id.n - 1];
+    el.innerHTML = `<span class="pg-medaille">${medailleSVG(true, id.n)}</span><span><small>${esc(TM.medaille(m))}</small><b>${esc(nom)}</b><em>${esc(TM.P[id.palier.id][1])} : ${nombre(id.palier.seuils[id.n - 1])}</em></span>`;
+  } else
   el.innerHTML = `<span class="pg-medaille">${medailleSVG(true)}</span><span><small>${TXT.succesDebloque}</small><b>${esc(TXT.S[id][0])}</b><em>${esc(TXT.S[id][1])}</em></span>`;
   document.body.appendChild(el); Son.piece(); try{ navigator.vibrate && store.get("vibrations", true) && navigator.vibrate([8,40,8]); }catch(e){}
   setTimeout(() => { el.classList.add("sort"); setTimeout(() => { el.remove(); suivantSucces(); }, 400); }, 3200);
@@ -115,7 +161,7 @@ function carte({niv, reussi, nbTrouves=0, nbSol=1, temps=null, chrono=false, ind
     if(chrono && temps != null){ if(temps < 5000) debloquer("eclair"); if(!D.st.temps[niv] || temps < D.st.temps[niv]) D.st.temps[niv] = Math.round(temps); }
     ajouterXp({v:10, b:15, r:20, n:30}[niv] + 5*Math.max(0, nbTrouves-1) + (chrono && temps != null && temps < 10000 ? 5 : 0));
   } else ajouterXp(2);
-  sauver();
+  sauver(); verifierPaliers();
 }
 /* fin de partie : mode, total, vies restantes, record, médaille… → bloc « +XP » affiché sur l'écran de fin */
 function finPartie({mode, total=0, viesPerdues=null, medaille=-2, victoire=false, braquageOk=false}={}){
@@ -129,7 +175,7 @@ function finPartie({mode, total=0, viesPerdues=null, medaille=-2, victoire=false
   if(mode === "braquage" && braquageOk){ ajouterXp(60); debloquer("braquage"); }
   if(mode === "multi" && victoire) ajouterXp(80);
   if(mode === "ia"){ D.st.partiesIA++; if(victoire){ D.st.victoiresIA++; ajouterXp(80); debloquer("ia"); } }
-  sauver();
+  sauver(); verifierPaliers();
   try{ document.dispatchEvent(new CustomEvent("qln:fin-partie", {detail:{mode, total, viesPerdues, medaille, victoire, braquageOk}})); }catch(e){}
   const gagne = xpPartie; xpPartie = 0;
   if(gagne > 0) afficherGain(gagne, avant);
@@ -152,7 +198,7 @@ function blocAccueil(){
       <span class="pg-badge grand">${nv.n}</span>
       <span class="pg-infos"><span class="pg-ligne1"><b>${TXT.niveau} ${nv.n}</b><span class="pg-titre">${esc(titreDe(nv.n))}</span>${s ? `<span class="pg-flamme" title="${TXT.serieInfo}">🔥 ${s}</span>` : ""}</span>
         <span class="pg-barre"><i style="width:${Math.round(100*nv.dans/nv.besoin)}%"></i></span>
-        <span class="pg-ligne2"><span>${nv.dans} / ${nv.besoin} ${TXT.xp}</span><span>${Object.keys(D.succes).length}/${Object.keys(TXT.S).length} ${TXT.succes.toLowerCase()} ›</span></span></span>
+        <span class="pg-ligne2"><span>${nv.dans} / ${nv.besoin} ${TXT.xp}</span><span>${succesVisibles().filter(id => D.succes[id]).length}/${succesVisibles().length} ${TXT.succes.toLowerCase()} · ${nbMedailles()}/${PALIERS.length*3} 🏅 ›</span></span></span>
     </button>
     ${ligne ? `<button class="bouton-plat pg-partager" id="pg-partager">${ICO.partager || "↗"} ${TXT.partagerJour}</button>` : ""}`;
 }
@@ -291,8 +337,13 @@ function ecranStats(){
         <span class="pg-c-milieu"><span class="pg-barre fine"><i class="${n.classe}" style="width:${pct(r,j)}%"></i></span><small>${j ? `${r} ${TXT.sur} ${j} · ${pct(r,j)} % ${TXT.taux}` : TXT.aucune}</small></span>
         <span class="pg-c-temps">${st.temps[n.cle] ? `${tps(st.temps[n.cle])}<small>${TXT.meilleurTemps}</small>` : ""}</span></div>`; }).join("")}
     </div>` : `<p class="sous-titre">${TXT.vide}</p>`}
-    <div class="pg-bloc"><span class="lbl">${TXT.succes} · ${Object.keys(D.succes).length}/${Object.keys(TXT.S).length}</span>
-      <div class="pg-succes-grille">${Object.entries(TXT.S).map(([id,[nom,desc]]) => `<div class="pg-s ${D.succes[id] ? "ok" : ""}"><span class="pg-medaille">${medailleSVG(!!D.succes[id])}</span><span><b>${esc(nom)}</b><small>${esc(desc)}</small></span></div>`).join("")}</div>
+    <div class="pg-bloc"><span class="lbl">${TM.medailles} · ${nbMedailles()}/${PALIERS.length*3}</span>
+      <div class="pg-succes-grille">${PALIERS.map(p => { const n = D.paliers[p.id] || 0, v = p.val(D), cible = p.seuils[Math.min(n, 2)];
+        return `<div class="pg-s pg-p ${n ? "ok" : ""}" data-palier="${p.id}" data-niveau="${n}"><span class="pg-medaille">${medailleSVG(n > 0, n || 1)}</span><span class="pg-p-txt"><b>${esc(TM.P[p.id][0])}${n ? ` <i class="pg-metal m${n}">${TM.metal[n-1]}</i>` : ""}</b><small>${esc(TM.P[p.id][1])}</small>
+          <span class="pg-p-pas">${[0,1,2].map(k => `<i class="${k < n ? "m" + (k+1) : ""}" title="${TM.metal[k]} : ${nombre(p.seuils[k])}"></i>`).join("")}<em>${n >= 3 ? TM.complet : TM.prochain(nombre(Math.min(v, cible)), nombre(cible))}</em></span></span></div>`; }).join("")}</div>
+    </div>
+    <div class="pg-bloc"><span class="lbl">${TXT.succes} · ${succesVisibles().filter(id => D.succes[id]).length}/${succesVisibles().length}</span>
+      <div class="pg-succes-grille">${Object.entries(TXT.S).filter(([id]) => !FUSION.has(id)).map(([id,[nom,desc]]) => `<div class="pg-s ${D.succes[id] ? "ok" : ""}"><span class="pg-medaille">${medailleSVG(!!D.succes[id])}</span><span><b>${esc(nom)}</b><small>${esc(desc)}</small></span></div>`).join("")}</div>
     </div>
     <div class="pied"><button class="bouton-plat" id="pg-tuto">${TXT.revoirTuto}</button><button class="bouton-plat" id="pg-raz">${TXT.reinit}</button></div>
   </section>`;
@@ -304,9 +355,14 @@ function ecranStats(){
     $("#r-oui", v).onclick = () => { v.remove(); const t = D.tuto; D = VIDE(); D.tuto = t; sauver(); toast(TXT.reinitOk, 2000); ecranStats(); };
   };
 }
-function medailleSVG(ok){
-  return `<svg viewBox="0 0 40 40" aria-hidden="true"><path d="M13 2h6l3 10-6 3zM27 2h-6l-3 10 6 3z" fill="${ok?"#e2463c":"#4a5577"}"/><circle cx="20" cy="25" r="12" fill="${ok?"url(#pg-or)":"#3a4466"}" stroke="${ok?"#8a5a0a":"#2a3150"}" stroke-width="2"/><path d="M20 18l2.1 4.3 4.7.7-3.4 3.3.8 4.7-4.2-2.2-4.2 2.2.8-4.7-3.4-3.3 4.7-.7z" fill="${ok?"#fff6c8":"#56608a"}"/><defs><linearGradient id="pg-or" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff3b0"/><stop offset=".5" stop-color="#ffcf3a"/><stop offset="1" stop-color="#c98a12"/></linearGradient></defs></svg>`;
+let _idMed = 0;
+// metal : 1 bronze, 2 argent, 3 or (or par défaut, pour les succès)
+function medailleSVG(ok, metal = 3){
+  const [c1, c2, c3] = METAUX[metal - 1], g = "pg-m" + (++_idMed), ruban = ["#2f6fd6", "#8a96b0", "#e2463c"][metal - 1];
+  return `<svg viewBox="0 0 40 40" aria-hidden="true"><path d="M13 2h6l3 10-6 3zM27 2h-6l-3 10 6 3z" fill="${ok?ruban:"#4a5577"}"/><circle cx="20" cy="25" r="12" fill="${ok?`url(#${g})`:"#3a4466"}" stroke="${ok?c3:"#2a3150"}" stroke-width="2"/><path d="M20 18l2.1 4.3 4.7.7-3.4 3.3.8 4.7-4.2-2.2-4.2 2.2.8-4.7-3.4-3.3 4.7-.7z" fill="${ok?"#fffaf0":"#56608a"}" opacity="${ok ? .9 : 1}"/><defs><linearGradient id="${g}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${c1}"/><stop offset=".5" stop-color="${c2}"/><stop offset="1" stop-color="${c3}"/></linearGradient></defs></svg>`;
 }
+const nbMedailles = () => PALIERS.reduce((s, p) => s + (D.paliers[p.id] || 0), 0);
+const nombre = n => Number(n).toLocaleString(EN ? "en-GB" : "fr-FR");
 
 /* =========================================================================
    Partage du défi du jour (grille d'emojis façon Wordle)
@@ -381,7 +437,14 @@ css.textContent = `
 @media (min-width:560px){ .pg-succes-grille{grid-template-columns:1fr 1fr} .pg-grille{grid-template-columns:repeat(4,1fr)} }
 .pg-s{display:flex; gap:10px; align-items:center; padding:8px 10px; border-radius:14px; background:rgba(255,255,255,.04); opacity:.55}
 .pg-s.ok{opacity:1; background:linear-gradient(160deg, rgba(255,216,74,.14), rgba(255,255,255,.03)); box-shadow:inset 0 0 0 1px rgba(255,216,74,.25)}
-.pg-s .pg-medaille{width:38px; height:38px} .pg-s b{display:block; font:700 15px var(--f-ui); color:#fff} .pg-s small{display:block; font:500 12.5px var(--f-ui); color:var(--brume-2)}
+.pg-s .pg-medaille{width:38px; height:38px}
+.pg-p-txt{display:grid; gap:2px; min-width:0; flex:1}
+.pg-metal{font:800 10.5px var(--f-ui); font-style:normal; letter-spacing:.08em; text-transform:uppercase; padding:1px 6px; border-radius:6px; margin-left:4px; vertical-align:2px}
+.pg-metal.m1{background:#c8793a; color:#fff} .pg-metal.m2{background:#c9d3e2; color:#25324d} .pg-metal.m3{background:#ffcf3a; color:#3a2a00}
+.pg-p-pas{display:flex; align-items:center; gap:4px; margin-top:3px} .pg-p-pas i{width:16px; height:6px; border-radius:3px; background:rgba(255,255,255,.14)}
+.pg-p-pas i.m1{background:#c8793a} .pg-p-pas i.m2{background:#c9d3e2} .pg-p-pas i.m3{background:#ffcf3a}
+.pg-p-pas em{font:700 12px var(--f-ui); font-style:normal; color:var(--brume); margin-left:6px}
+.pg-s.pg-p{opacity:.8} .pg-s.pg-p.ok{opacity:1} .pg-s b{display:block; font:700 15px var(--f-ui); color:#fff} .pg-s small{display:block; font:500 12.5px var(--f-ui); color:var(--brume-2)}
 /* partie guidée */
 .pg-coach{position:fixed; inset:0; z-index:110; pointer-events:none}
 .pg-spot{position:fixed; border-radius:18px; box-shadow:0 0 0 3px #ffd84a, 0 0 24px 4px rgba(255,216,74,.5), 0 0 0 9999px rgba(2,6,20,.62); transition:all .35s cubic-bezier(.2,.8,.2,1); pointer-events:none}
@@ -398,5 +461,15 @@ css.textContent = `
 `;
 document.head.appendChild(css);
 
-return { donnees:() => D, remplacer:d => { D = Object.assign(VIDE(), d); D.st = Object.assign(VIDE().st, d.st || {}); sauver(); }, carte, finPartie, brancherAccueil, ecranStats, lancerTuto, enregistrerJour, partagerTexte, niveau:() => niveauDe(D.xp), TXT, enTuto:() => !!coach };
+/* parrainage : bonus d'XP (filleul à l'inscription, parrain quand un ami invité a joué) */
+const XP_PARRAIN = 200;
+function bonusParrainage({filleul = false, filleuls = null} = {}){
+  D.parrainage = D.parrainage || {credites:0, filleul:false};
+  let gain = 0;
+  if(filleul && !D.parrainage.filleul){ D.parrainage.filleul = true; gain += XP_PARRAIN; }
+  if(filleuls != null && filleuls > (D.parrainage.credites || 0)){ gain += XP_PARRAIN * (filleuls - (D.parrainage.credites || 0)); D.parrainage.credites = filleuls; }
+  if(gain){ ajouterXp(gain); xpPartie = 0; sauver(); verifierPaliers(); }
+  return gain;
+}
+return { donnees:() => D, bonusParrainage, XP_PARRAIN, verifierPaliers, PALIERS, remplacer:d => { D = Object.assign(VIDE(), d); D.st = Object.assign(VIDE().st, d.st || {}); if(!D.paliers || !Object.keys(D.paliers).length){ D.paliers = {}; for(const p of PALIERS) D.paliers[p.id] = niveauPalier(p, D); } sauver(); }, carte, finPartie, brancherAccueil, ecranStats, lancerTuto, enregistrerJour, partagerTexte, niveau:() => niveauDe(D.xp), TXT, enTuto:() => !!coach };
 })();

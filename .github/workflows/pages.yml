@@ -6,7 +6,7 @@ name: Publication du site
 on:
   push:
     branches: [main]
-    paths: ['app/**', 'docs/**', 'tools/site.py', '.github/workflows/pages.yml']
+    paths: ['app/**', 'docs/**', 'tools/site.py', 'tools/pages_publiques.py', 'docs-src/definitions.json', 'marque.json', '.github/workflows/pages.yml']
   workflow_dispatch:
 permissions:
   contents: read

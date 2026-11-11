@@ -14,6 +14,7 @@ const ORIGINES = (process.env.ORIGINES || "").split(",").map(s => s.trim()).filt
 const api = process.env.DATABASE_URL ? require("./api") : null;
 if(api) api.initialiser().catch(e => console.error("[api] initialisation impossible :", e.message));
 
+const Filtre = require("../app/filtre.js");   // pseudos grossiers masqués dans l'annuaire des salons
 const salons = new Map();   // code -> {resume, hote:ws, membres:Set<ws>, vu}
 const annuaire = new Set(); // sockets abonnées à la liste
 
@@ -33,8 +34,8 @@ let _dA = null; const diffuserBientot = () => { if(_dA) return; _dA = setTimeout
 // résumé public d'un salon : on ne garde que des champs simples et bornés (le client est hors de confiance)
 const nettoyerResume = (r, code) => {
   const t = (v, n) => String(v == null ? "" : v).slice(0, n);
-  return {code, hote:t(r.hote, 24), lang:t(r.lang, 2), couleur:Number(r.couleur)|0, nb:Math.min(6, Number(r.nb)|0), max:Math.min(6, Number(r.max)|0 || 6), phase:t(r.phase, 10), auto:!!r.auto,
-    joueurs:(Array.isArray(r.joueurs) ? r.joueurs : []).slice(0, 6).map(j => ({pseudo:t(j && j.pseudo, 24), couleur:Number(j && j.couleur)|0})), t:Date.now()};
+  return {code, hote:Filtre.masquer(t(r.hote, 24)), lang:t(r.lang, 2), couleur:Number(r.couleur)|0, nb:Math.min(6, Number(r.nb)|0), max:Math.min(6, Number(r.max)|0 || 6), phase:t(r.phase, 10), auto:!!r.auto,
+    joueurs:(Array.isArray(r.joueurs) ? r.joueurs : []).slice(0, 6).map(j => ({pseudo:Filtre.masquer(t(j && j.pseudo, 24)), couleur:Number(j && j.couleur)|0})), t:Date.now()};
 };
 
 function quitterSalon(ws){
@@ -88,5 +89,8 @@ setInterval(() => {
   const t = Date.now();
   for(const [code, s] of salons) if(t - s.vu > 2*3600e3){ for(const m of s.membres) envoyer(m, {t:"ferme", code, de:"serveur"}); salons.delete(code); }
 }, 30000);
+
+// état du relais pour la page d'administration
+if(api) api.brancherRelais(() => ({salons:salons.size, clients:wss.clients.size}));
 
 server.listen(PORT, () => console.log("Le-QLN relais sur le port", PORT));
