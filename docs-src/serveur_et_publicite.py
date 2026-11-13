@@ -58,7 +58,7 @@ st+=puces(["<b>Mineurs</b> : déclarer un public 13+ sur le Play Store évite le
 
 st.append(Paragraph("7. Calendrier type",H))
 st.append(tbl([["Étape","Qui","État / durée"],
-["Choix du nom, achat du domaine","vous","<span class='non'>À faire</span> — présélection dans « Choisir le nom du jeu »"],
+["Choix du nom, achat du domaine","vous","<span class='non'>À faire</span> — piste favorite AnagramX (à confirmer)"],
 ["Comptes AdMob + Play Console, fiscalité","vous","<span class='att'>En cours</span> — comptes créés, identité en cours de validation"],
 ["Projet Android et politique de confidentialité","Claude","<span class='ok'>Fait</span>"],
 ["Module AdMob, consentement, annonces de test","Claude","<span class='non'>À faire</span> — dès réception des identifiants AdMob"],

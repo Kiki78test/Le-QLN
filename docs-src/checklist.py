@@ -38,7 +38,7 @@ h += sec("En cours chez vous", [
     ("vous", "<b>Entreprise</b> : micro-entreprise conseillée pour Airmony et Le-QLN ensemble, juste avant d'activer de vraies publicités."),
 ])
 h += sec("Décisions à prendre", [
-    ("dec", "<b>Nom définitif</b> : piste favorite <b>AnagramX</b> (12/11) ; autres : Qlinn, Anagold, Wordheist, Lexipot (voir « Choisir le nom du jeu »). Avant de valider AnagramX : recherche de marque INPI / EUIPO (classes 9, 28, 41), disponibilité du domaine (.com / .fr) et des noms sur le Play Store et l'App Store. Ensuite : action « Changer le nom » (jeu, pages publiques, applis, documents)."),
+    ("dec", "<b>Nom définitif</b> : piste favorite <b>AnagramX</b> (12/11), à confirmer. Avant de valider AnagramX : recherche de marque INPI / EUIPO (classes 9, 28, 41), disponibilité du domaine (.com / .fr) et des noms sur le Play Store et l'App Store. Ensuite : action « Changer le nom » (jeu, pages publiques, applis, documents)."),
     ("dec", "<b>Valider les réglages des nouveautés du 11/11</b> : bonus de parrainage (+200 XP de chaque côté, ami compté à 50 XP, 20 amis au plus) et seuils des 9 médailles bronze / argent / or (document « Fonctionnalités », §4)."),
     ("vous", "<b>Relire les séries de langue</b> : tableur « Séries en espagnol, allemand, italien » (mots à retirer)."),
     ("vous", "<b>Relire les thèmes</b> : tableur « Thèmes des séries » (mettre un x pour retirer un mot, proposer des ajouts)."),

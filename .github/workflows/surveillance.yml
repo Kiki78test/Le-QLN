@@ -25,3 +25,7 @@ jobs:
           for i in $(seq 1 36); do curl -sf -m 10 "$API/sante" > /dev/null && break; sleep 5; done
           curl -sSf -m 10 "$API/sante"; echo
           curl -sSf -m 15 "$API/api/sante-api"; echo
+          # nouvelles fonctions branchées : rappels (clé publique) et routes d'administration (refus sans connexion = 401)
+          echo "rappels : $(curl -s -o /dev/null -w '%{http_code}' -m 15 "$API/api/rappels/cle")"
+          code=$(curl -s -o /dev/null -w '%{http_code}' -m 15 "$API/api/admin/resume"); echo "admin : $code"
+          [ "$code" = "401" ] || { echo "Routes d'administration absentes du serveur."; exit 1; }
