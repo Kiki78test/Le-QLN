@@ -68,7 +68,7 @@ jobs:
         with:
           name: Le-QLN-Google-Play
           path: Le-QLN-*.aab
-          retention-days: 90
+          retention-days: 7
       - name: Résumé
         run: |
           echo "### Fichier à déposer dans la Play Console : Le-QLN-${QLN_VERSION_NAME}.aab (artefact « Le-QLN-Google-Play » ci-dessous)" >> $GITHUB_STEP_SUMMARY

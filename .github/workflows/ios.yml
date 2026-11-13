@@ -64,7 +64,7 @@ jobs:
           path: |
             mobile/Le-QLN-iOS-simulateur.zip
             mobile/capture-iphone.png
-          retention-days: 30
+          retention-days: 3
       # ---------- avec le compte Apple : archive signée → TestFlight ----------
       - name: Clé App Store Connect
         if: env.HAS_APPLE == 'true'
