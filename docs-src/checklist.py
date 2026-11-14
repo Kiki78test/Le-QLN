@@ -61,7 +61,7 @@ h += sec("Idées notées (revue d'Airmony, à faire plus tard)", [
     ("dec", "<b>Rappels par e-mail</b> (en plus des notifications) : nécessite Resend et le domaine."),
 ])
 h += sec("Prochaines étapes de Claude", [
-    ("todo", "À la publication sur Google Play : passer AdMob en annonces réelles (config.js : \"test\": false) ; identifiants iOS à saisir dès réception."),
+    ("todo", "À la publication sur Google Play : passer AdMob en annonces réelles (config.js : \"test\": false) ."),
     ("todo", "<b>Mot de passe oublié</b> (Resend) après l'achat du domaine."),
     ("todo", "Surveiller la page admin (onglet Erreurs) après chaque mise en ligne et corriger les erreurs remontées."),
     ("todo", "Changer le nom partout dès qu'il est choisi (action « Changer le nom »)."),
