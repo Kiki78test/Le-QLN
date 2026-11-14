@@ -28,7 +28,6 @@ h += sec("En cours chez vous", [
     ("vous", "<b>Google Play — clé d'envoi</b> : créer le secret GitHub <code>ANDROID_KEYSTORE_PASSWORD</code> (20 caractères et plus, à garder précieusement), puis lancer l'action « Appli Android (Google Play) » ; prévoir 12 testeurs pendant 14 jours (document « Publier sur Google Play »)."),
     ("vous", "<b>AdMob</b> : applis Android et iOS et leurs 2 blocs créés (14/11, identifiants en place, annonces de test). Reste : après la publication sur les stores, relier chaque appli à sa fiche dans AdMob ; fichier app-ads.txt sur le futur domaine."),
     ("vous", "<b>Page d'administration</b> : sur Render → le-qln → Environment, saisir <code>ADMIN_EMAILS</code> = l'adresse de votre compte de jeu (pas un secret). Puis, connecté dans le jeu : Mon compte → « Administration » (voir « Administration et surveillance »)."),
-    ("vous", "<b>UptimeRobot</b> (gratuit) : créer le compte et une sonde HTTP(s) sur <code>https://le-qln.onrender.com/sante</code> toutes les 5 min, alerte par e-mail (pas à pas dans « Administration et surveillance »)."),
     ("vous", "<b>Google Search Console</b> : ajouter la propriété <code>https://kiki78test.github.io/Le-QLN/</code> (préfixe d'URL) et déclarer <code>sitemap.xml</code> (pas à pas dans « Administration et surveillance »)."),
     ("vous", "<b>Essayer les rappels</b> : Paramètres → Rappels sur votre téléphone (Android : Chrome ou l'appli ; iPhone : après « Sur l'écran d'accueil »), puis page admin → Rappels → « M'envoyer un rappel de test »."),
     ("vous", "<b>Cloudflare</b> : prêt à créer ; acheter le domaine quand le nom est choisi."),
@@ -67,6 +66,7 @@ h += sec("Prochaines étapes de Claude", [
     ("todo", "Changer le nom partout dès qu'il est choisi (action « Changer le nom »)."),
 ])
 h += sec("Fait", [
+    ("ok", "<b>14/11</b> — UptimeRobot en place : 3 sondes toutes les 5 min (serveur /sante, base /api/sante-api, site). À l'achat du domaine : changer l'adresse de la sonde « site » (et des sondes serveur si le serveur prend une adresse du domaine)."),
     ("ok", "<b>14/11</b> — règles de l'auteur appliquées ; documentation rangée par dossiers (documents dépassés retirés, synthèse « Listes de mots ») ; mesure d'audience d'Airmony dans la page admin (visites, durée, carte, sources, journal, tunnel)."),
     ("ok", "<b>11/11</b> — repris d'Airmony : remontée des erreurs, page d'administration, surveillance horaire du serveur, contrôle automatique de la traduction anglaise, ≈ 10 400 pages « Anagrammes de… » + page de présentation + sitemap, parrainage (+200 XP), rappels par notification, 9 médailles bronze/argent/or, filtre des pseudos grossiers."),
     ("ok", "<b>10/11</b> — iPad : mise en page agrandie sur tablette, appli iOS pour iPhone et iPad, captures iPad 13 pouces."),
