@@ -148,6 +148,7 @@ async function partieMulti(lang, api, {depart = false} = {}){
       if(type === "offre") return r < .8 ? 0 : -1;
       if(type === "prison") return ["payer", "aide", "attendre"][Math.floor(r*3)];
       if(type === "garant") return r < .5;
+      if(type === "serie") return r < .6;
       return null;
     };
   });

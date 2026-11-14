@@ -14,6 +14,10 @@
 const Multi = (() => {
 
 /* ---------- Textes (une seule table : la version EN remplace ce bloc) ---------- */
+/* durée de la partie (R2), choisie par l'hôte : textes FR/EN dans ce fichier */
+const TD = document.documentElement.lang === "en"
+  ? {duree:"Game length", courte:"Short", courteD:"die 1 to 6", longue:"Long", longueD:"die 1 to 3", choixHote:"The host chooses."}
+  : {duree:"Durée de la partie", courte:"Courte", courteD:"dé 1 à 6", longue:"Longue", longueD:"dé 1 à 3", choixHote:"Choisie par l'hôte."};
 const TXT = {
   multi:"Multiplayer", sousTitre:"2 to 6 players, each on their own phone.",
   profil:"My profile", creerProfil:"Create my profile", modifier:"Edit",
@@ -85,6 +89,7 @@ css.textContent = `
 .m-joueur .etat i{width:10px; height:10px; border-radius:50%; background:#6b7ca3; box-shadow:0 0 0 2px rgba(0,0,0,.3)}
 .m-joueur.pret .etat{color:#9be15d} .m-joueur.pret .etat i{background:#9be15d; box-shadow:0 0 10px #9be15d}
 .m-joueur.absent{opacity:.45}
+.m-duree{display:grid; gap:8px} .m-duree .segment button:disabled{opacity:1; cursor:default} .m-duree .segment button[aria-pressed="false"]:disabled{opacity:.45}
 .m-salon{grid-template-columns:40px 1fr auto} .m-salon .bouton-plat{font-size:15px; padding:6px 10px; color:#ffe68f}
 .m-joueur .bulle{position:absolute; right:12px; top:-18px; font-size:26px; animation:bulle 2.2s forwards}
 .m-joueur{position:relative}
@@ -240,7 +245,7 @@ const Annuaire = {
   depublier(code){ if(!enLigne()){ try{ this.canalPub().postMessage({t:"depublier", code}); }catch(e){} } },
   canalPub(){ if(!this.pub){ this.pub = new BroadcastChannel("qln-annuaire"); this.pub.onmessage = e => { if(e.data && e.data.t === "demande" && S && estHote()) publierSalon(); }; } return this.pub; },
 };
-function resumeSalon(){ const h = S.joueurs.find(j => j.hote) || S.moi; return {code:S.code, lang:LANGUE_JEU, hote:h.pseudo, couleur:h.couleur, nb:S.joueurs.length, max:MAX, phase:S.phase, auto:!!S.auto, joueurs:S.joueurs.slice(0, MAX).map(j => ({pseudo:j.pseudo, couleur:j.couleur})), t:Date.now()}; }
+function resumeSalon(){ const h = S.joueurs.find(j => j.hote) || S.moi; return {code:S.code, lang:LANGUE_JEU, duree:S.duree || "courte", hote:h.pseudo, couleur:h.couleur, nb:S.joueurs.length, max:MAX, phase:S.phase, auto:!!S.auto, joueurs:S.joueurs.slice(0, MAX).map(j => ({pseudo:j.pseudo, couleur:j.couleur})), t:Date.now()}; }
 function publierSalon(){ if(S && estHote()) Annuaire.publier(resumeSalon()); }
 
 /* =========================================================================
@@ -268,13 +273,13 @@ function couleurLibre(souhait){
 }
 const delaiAuto = n => n >= MAX ? 3 : (window.QLN_RAPIDE_DELAI || 10);
 function resteAuto(){ return S && S.auto && S.depart ? Math.max(0, Math.ceil((S.depart - Date.now())/1000)) : null; }
-function diffuserEtat(){ if(!estHote()) return; envoyer({t:"etat", joueurs:S.joueurs.map(({id,pseudo,couleur,pret,hote})=>({id,pseudo,couleur,pret,hote})), phase:S.phase, auto:!!S.auto, reste:resteAuto(),
+function diffuserEtat(){ if(!estHote()) return; envoyer({t:"etat", joueurs:S.joueurs.map(({id,pseudo,couleur,pret,hote})=>({id,pseudo,couleur,pret,hote})), phase:S.phase, auto:!!S.auto, reste:resteAuto(), duree:S.duree || "courte",
   ...(S.phase === "jeu" ? {graine:S.graine, partie:S.partie} : {})}); }
 
 function creerSalon(opt = {}){
   Annuaire.arreter();
   const j = {...joueurDepuisCompte(), hote:true, pret:!!opt.auto};
-  S = {code:codeAleatoire(), hote:true, moi:j, joueurs:[j], canal:null, timers:{}, phase:"attente", rendu:null, auto:!!opt.auto, depart:null, nbAvant:1};
+  S = {code:codeAleatoire(), hote:true, moi:j, joueurs:[j], canal:null, timers:{}, phase:"attente", rendu:null, auto:!!opt.auto, depart:null, nbAvant:1, duree:"courte"};
   S.canal = ouvrirCanal(S.code, true, j.id); S.canal.recevoir = recevoir;
   S.timers.tick = setInterval(tick, 2500);
   if(S.auto) S.timers.auto = setInterval(autoTick, 1000);
@@ -353,11 +358,11 @@ function recevoir(m){
     switch(m.t){
       case "resync": if(S.phase === "jeu" && typeof PlateauIA !== "undefined") envoyer({t:"journal", pour:m.de, decs:PlateauIA.journalMulti()}); break;
       case "bonjour": {
-        if(j){ j.vu = Date.now(); diffuserEtat(); if(S.phase === "jeu" && typeof PlateauIA !== "undefined") envoyer({t:"reprise", pour:m.de, graine:S.graine, partie:S.partie, decs:PlateauIA.journalMulti()}); break; }
+        if(j){ j.vu = Date.now(); diffuserEtat(); if(S.phase === "jeu" && typeof PlateauIA !== "undefined") envoyer({t:"reprise", pour:m.de, graine:S.graine, partie:S.partie, duree:S.duree, decs:PlateauIA.journalMulti()}); break; }
         if(S.phase === "jeu" && S.partie && S.partie.some(x => x.id === m.de)){   // un joueur de la partie revient (appli relancée)
           const p = S.partie.find(x => x.id === m.de);
           S.joueurs.push({...p, pret:true, vu:Date.now(), hote:false}); diffuserEtat();
-          envoyer({t:"reprise", pour:m.de, graine:S.graine, partie:S.partie, decs:typeof PlateauIA !== "undefined" ? PlateauIA.journalMulti() : []}); break; }
+          envoyer({t:"reprise", pour:m.de, graine:S.graine, partie:S.partie, duree:S.duree, decs:typeof PlateauIA !== "undefined" ? PlateauIA.journalMulti() : []}); break; }
         if(S.phase !== "attente"){ envoyer({t:"refus", pour:m.de, raison:"enCours"}); break; }
         if(S.joueurs.length >= MAX){ envoyer({t:"refus", pour:m.de, raison:"plein"}); break; }
         if((m.joueur.lang || "fr") !== LANGUE_JEU || (m.joueur.dico && m.joueur.dico !== signatureDico())){ envoyer({t:"refus", pour:m.de, raison:"version"}); break; }
@@ -377,7 +382,7 @@ function recevoir(m){
     switch(m.t){
       case "etat": {
         const premier = S.phase === "connexion";
-        S.dernierEtat = Date.now(); S.phase = m.phase; S.auto = !!m.auto; S.reste = m.reste; S.resteT = Date.now();
+        S.dernierEtat = Date.now(); S.phase = m.phase; S.auto = !!m.auto; S.reste = m.reste; S.resteT = Date.now(); if(m.duree) S.duree = m.duree;
         S.joueurs = m.joueurs.map(x => ({...x, vu:Date.now()}));
         const me = moi(); if(me) S.moi.couleur = me.couleur;
         if(premier){ Son.ok(); vibre(15); }
@@ -387,14 +392,14 @@ function recevoir(m){
       case "refus": if(m.pour === S.moi.id) echecRejoindre(TXT[m.raison] || TXT.introuvable); break;
       case "info": if(m.pour === S.moi.id) toast(TXT[m.texte] || m.texte, 3500); break;
       case "chat": bulle(m.auteur, m.emoji); break;
-      case "demarrer": S.phase = "jeu"; S.graine = m.graine; S.partie = m.partie; ecranDepart(); break;
+      case "demarrer": S.phase = "jeu"; S.graine = m.graine; S.partie = m.partie; if(m.duree) S.duree = m.duree; ecranDepart(); break;
       case "dec":   // décision validée par l'hôte (gardée de côté si le plateau n'est pas encore lancé chez moi)
         if(typeof PlateauIA !== "undefined" && PlateauIA.enCours()) PlateauIA.recevoirMulti(m);
         else if(S.phase === "jeu"){ (S.decsAttente = S.decsAttente || []).push([m.cle, m.val]); }
         break;
       case "journal": if(m.pour === S.moi.id && typeof PlateauIA !== "undefined") PlateauIA.appliquerJournal(m.decs); break;
       case "reprise": if(m.pour === S.moi.id){
-        S.phase = "jeu"; S.graine = m.graine; S.partie = m.partie; S.dernierEtat = Date.now();
+        S.phase = "jeu"; S.graine = m.graine; S.partie = m.partie; S.dernierEtat = Date.now(); if(m.duree) S.duree = m.duree;
         if(typeof PlateauIA !== "undefined" && PlateauIA.enCours()) PlateauIA.appliquerJournal(m.decs);
         else { S.decsReprise = m.decs; if(S.partieLancee !== S.graine) ecranDepart(); } }
         break;
@@ -451,7 +456,7 @@ function lancer(){
   if(n < 2 || !S.joueurs.every(j => j.pret)){ toast(TXT.lancerAide(n)); return; }
   S.phase = "jeu"; S.graine = Math.floor(Math.random()*1e9);
   S.partie = S.joueurs.map(({id, pseudo, couleur, hote}) => ({id, pseudo, couleur, hote:!!hote}));
-  envoyer({t:"demarrer", graine:S.graine, partie:S.partie}); diffuserEtat(); publierSalon();
+  envoyer({t:"demarrer", graine:S.graine, partie:S.partie, duree:S.duree || "courte"}); diffuserEtat(); publierSalon();
   Son.fin(); vibre([30,40,30]);
   ecranDepart();
 }
@@ -559,7 +564,7 @@ function ecranMulti(){
         const js = (r.joueurs && r.joueurs.length ? r.joueurs : [{couleur:r.couleur||0}]);
         const pions_ = js.map(j => jetonSVG(pions()[(j.couleur||0) % pions().length].c)).join("");
         return `<div class="m-joueur m-salon" data-code="${r.code}" style="animation-delay:${i*40}ms"><span class="m-pions">${pions_}</span>
-        <span class="nom">${DRAP[r.lang || "fr"]} ${esc(TXT.salonDe(r.hote))}<small>${r.nb}/${r.max} · ${TXT.placesLibres(r.max - r.nb)}${r.auto ? ` <small class="rap">${TXT.rapide}</small>` : ""}</small></span>
+        <span class="nom">${DRAP[r.lang || "fr"]} ${esc(TXT.salonDe(r.hote))}<small>${r.nb}/${r.max} · ${TXT.placesLibres(r.max - r.nb)}${r.auto ? ` <small class="rap">${TXT.rapide}</small>` : ""} · ${r.duree === "longue" ? TD.longue : TD.courte}</small></span>
         <button class="bouton-plat" data-code="${r.code}">${TXT.rejoindreBtn} ›</button></div>`; }).join("") : `<div class="m-vide"><i></i>${TXT.aucunSalon}</div>`;
     $$("#m-ouverts button").forEach(b => b.onclick = () => {
       const r = liste.find(x => x.code === b.dataset.code);
@@ -593,6 +598,7 @@ function ecranSalon(){
         <div class="m-chat" aria-label="${TXT.chatAide}">${TXT.chat.map(e => `<button data-e="${e}">${e}</button>`).join("")}</div>
       </div>
     </div>
+    <div class="m-carte m-duree"><span class="lbl">${TD.duree}</span><div class="segment" id="m-duree"></div><small class="m-aide" id="m-duree-aide"></small></div>
     <div class="m-objectif"><i aria-hidden="true">🏆</i>${TXT.objectif}</div>
     <div class="m-etat" id="m-msg"></div>
     <div class="duo" id="m-actions"></div>
@@ -608,6 +614,13 @@ function ecranSalon(){
 function rafraichir(){
   if(!S || !S.rendu?.salon || !$("#m-liste")) return;
   const me = moi();
+  const zd = $("#m-duree");
+  if(zd){
+    const d = S.duree || "courte", h = estHote() && S.phase === "attente";
+    zd.innerHTML = ["courte","longue"].map(k => `<button aria-pressed="${k === d}" data-k="${k}" ${h ? "" : "disabled"}>${TD[k]}<small>${TD[k+"D"]}</small></button>`).join("");
+    $("#m-duree-aide").textContent = h ? "" : TD.choixHote;
+    if(h) $$("#m-duree button").forEach(b => b.onclick = () => { if(S.duree === b.dataset.k) return; S.duree = b.dataset.k; Son.tap(); rafraichir(); diffuserEtat(); publierSalon(); });
+  }
   $("#m-nb").textContent = `${S.joueurs.length}/${MAX}`;
   $("#m-liste").innerHTML = S.joueurs.map((j,i) => `<div class="m-joueur ${j.pret?"pret":""}" data-id="${j.id}" style="animation-delay:${i*50}ms">${jetonSVG(pions()[j.couleur % pions().length].c)}
       <span class="nom">${esc(j.pseudo)}${j.hote?`<small>${TXT.hote}</small>`:""}${j.id===S.moi.id?`<small class="vous">${TXT.vous}</small>`:""}</span>
@@ -644,7 +657,7 @@ function ecranDepart(){
   try{ store.set("partieMulti", {code:S.code, id:S.moi.id, graine, t:Date.now(), ligne:S.canal.type === "ligne"}); }catch(e){}
   setTimeout(() => {
     if(!S || S.partieLancee !== graine) return;
-    PlateauIA.demarrerMulti({graine, joueurs:S.partie, moi:S.moi.id, hote:estHote(), hoteId,
+    PlateauIA.demarrerMulti({graine, joueurs:S.partie, moi:S.moi.id, hote:estHote(), hoteId, duree:S.duree || "courte",
       envoyer, present:id => !!S && S.joueurs.some(j => j.id === id),
       quitter:() => { if(!S) return; oublierPartie(); if(estHote()) passerLaMain(); else envoyer({t:"quitter"}); fermerSalon(); },
       decs:[...(S.decsReprise || []), ...(S.decsAttente || [])], resync:() => envoyer({t:"resync"}),

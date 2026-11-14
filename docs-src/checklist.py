@@ -47,11 +47,11 @@ h += sec("Décisions à prendre", [
     ("vous", "<b>Relire le dictionnaire anglais</b> : tableur « Dictionnaire anglais (relecture) », 377 nouvelles cartes marquées."),
     ("dec", "<b>Mots douteux</b> : tableur à relire (gardés par défaut)."),
 ])
-h += sec("Règles : retour de l'auteur du jeu (14/11)", [
-    ("dec", "<b>R1 — La série remplace « rejouer »</b> : accord, mais <b>2 cartes</b> par case au plus (au lieu de 3). À confirmer, puis appliquer (règles + appli)."),
-    ("dec", "<b>R2 — Durée au choix</b> (rapide : dé 1-6 ; longue : dé 1-1-2-2-3-3) : à trancher — qui choisit quand il y a plusieurs joueurs ? Proposition : l'hôte dans l'appli, choix commun avant de commencer dans la boîte."),
-    ("dec", "<b>R3 — Cases CD multicolores</b> : refusée, les cases CD restent comme sur le tapis. Le choix du niveau viendra des <b>cases multi-choix du tapis final</b> (photo à transmettre) : plateau de l'appli à adapter."),
-    ("todo", "<b>R4 à R11 validées</b> (argent négatif, mauvaise réponse et enchères, case Passe, enchère acceptée, garant de prison, égalité, dernier en lice, maître du jeu) : à inscrire dans les règles et à vérifier dans l'appli."),
+h += sec("Règles : décisions de l'auteur du jeu (14/11)", [
+    ("ok", "<b>R1</b> série : 2 cartes par case au plus — appliquée (règles + appli)."),
+    ("ok", "<b>R2</b> durée courte (dé 1 à 6) ou longue (dé 1 à 3), choisie par celui qui crée la partie — appliquée."),
+    ("ok", "<b>R4 à R11</b> (argent négatif, enchères après réponse refusée, Passe, enchère acceptée, garant, égalité, dernier en lice 3 tours, maître du jeu) — appliquées et inscrites dans les règles."),
+    ("vous", "<b>Tapis final avec cases multi-choix</b> : envoyer la photo / le plan (emplacement et couleurs possibles de chaque case) pour adapter le plateau de l'appli. Les cases CD restent comme aujourd'hui (R3 abandonnée)."),
 ])
 h += sec("Idées notées (revue d'Airmony, à faire plus tard)", [
     ("dec", "<b>Test d'intrusion</b> : simulation de piratage des comptes et du serveur (inscription, connexion, jetons, API admin, WebSocket, injection), avec rapport comme celui d'Airmony."),

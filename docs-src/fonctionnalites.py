@@ -4,7 +4,7 @@ exec(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "stylepdf.py"
 DATE = 'auto'   # document vivant : daté du jour à chaque régénération
 def ul(items): return [Paragraph("• "+x, P) for x in items]
 st=[]
-st+=[Paragraph("Le-QLN — Fonctionnalités",T),Spacer(1,2),Paragraph("Présentation complète de l'application · mise à jour le 11 novembre 2026",S),Spacer(1,8),
+st+=[Paragraph("Le-QLN — Fonctionnalités",T),Spacer(1,2),Paragraph("Présentation complète de l'application · mise à jour le 14 novembre 2026",S),Spacer(1,8),
  Paragraph("Le-QLN est l'adaptation en application du jeu de plateau d'anagrammes du même nom : sur chaque carte, trouver un autre mot formé exactement des mêmes lettres avant la fin du sablier. L'application fonctionne sur téléphone, tablette et ordinateur, s'installe comme une appli (PWA), marche hors ligne et existe en français et en anglais.",P)]
 
 st.append(Paragraph("1. Les cartes",H))
@@ -42,9 +42,11 @@ st+=ul(["Sur l'écran Solo, sous « Le Défi », un bandeau de tuiles à faire d
  "Listes de mots relisibles dans le tableur « Thèmes » (Documentation) ; source : tools/themes_listes.py, construit par tools/build_themes.py."])
 st.append(Paragraph("Entraînement",H2)); st+=ul(["Une couleur au choix, sablier facultatif, cartes à l'infini, sans pression."])
 st.append(Paragraph("Contre l'IA (plateau complet)",H2))
-st+=ul(["Le plateau du jeu de société : dé 3D, chemins à embranchements, cases de couleur, cases CD, Bonus (40 à 100 €), Malus (40 à 50 €), Prison (caution 50 € ou attente), Passe, Retour départ.",
+st+=ul(["Le plateau du jeu de société : dé 3D, chemins à embranchements, cases de couleur, cases CD, Bonus (40 à 100 €), Malus (40 à 50 €), Prison (caution 50 € ou attente), Passe (on passe son prochain tour), Retour départ.",
+ "<b>Durée de partie</b> : courte (dé 1 à 6, environ 20 min) ou longue (dé 1 à 3 : plus de cases et de cartes, environ 45 min), au choix dans la configuration ; en multijoueur, l'hôte choisit dans le salon et la durée s'affiche dans la liste des salons.",
+ "<b>Série</b> : une carte réussie ne fait plus relancer le dé ; le joueur peut piocher une 2e carte de la même couleur sur la même case ou s'arrêter (2 cartes par case au plus) ; un échec termine le tour, les gains restent acquis. L'IA décide selon son niveau.",
  "1 à 5 adversaires pilotés par l'IA, niveau Débutant, Joueur ou Expert ; choix du pion ; gains adverses cachés jusqu'à l'arrivée (option) ; tours de l'IA accélérés (option).",
- "Enchères quand un joueur échoue sur sa carte, ordre de départ au dé, bonus d'arrivée selon le rang (+100 € au 1er … −100 € au 6e), dernier en lice limité dans le temps.",
+ "Enchères quand un joueur échoue sur sa carte, y compris après une réponse refusée ; une offre acceptée est encaissée mais le tour s'arrête. Ordre de départ au dé, bonus d'arrivée selon le rang (+100 € au 1er … −100 € au 6e), dernier en lice : 3 tours pour franchir l'arrivée. Solde négatif possible (dette envers la banque) ; garant de prison : tous les gains positifs des 2 tours ; égalité départagée par l'ordre d'arrivée. Règles validées par l'auteur du jeu le 14/11/2026.",
  "<b>Le plus riche gagne</b> (pas le premier arrivé), et le jeu le dit : rappel doré dans le panneau « Ordre de départ » et bandeau au début de la partie (« Arriver 1er = +100 € seulement »), colonne « Bonus d'arrivée » sur le plateau, rappel de l'objectif dans le salon multijoueur.",
  "<b>Podium final détaillé</b> : pour chaque joueur, le total et son origine — Cartes, Enchères, Cases (bonus, malus, caution), Arrivée — avec gains en vert et pertes en rouge ; journal de partie, pions qui sautent de case en case."])
 st.append(Paragraph("Multijoueur",H2))
@@ -136,7 +138,8 @@ st+=ul([ "Mot de passe oublié (service d'e-mail), amis ; chronos du défi du jo
  "Hébergement : base Render à passer en Basic avant le 10/12/2026, serveur en Starter à l'ouverture au public ; domaine (Cloudflare) quand le nom est choisi.",
  "Décisions en attente : vidéos récompense touchant aux règles, propositions de règles, mots douteux, nom définitif."])
 st.append(Paragraph("Historique des versions",H))
-st+=ul(["<b>11 nov. 2026</b> — repris d'Airmony : remontée des erreurs et page d'administration, surveillance horaire du serveur, contrôle automatique de la traduction anglaise, pages publiques « Anagrammes de… » et page de présentation (référencement), parrainage (+200 XP de part et d'autre), rappels par notification (défi du jour, défi de la semaine), 9 médailles bronze / argent / or, filtre des pseudos grossiers ; entrée « Paramètres et rappels » dans le menu ☰.",
+st+=ul(["<b>14 nov. 2026</b> — règles du plateau validées par l'auteur du jeu : série de 2 cartes par case au lieu de « rejouer », partie courte ou longue (choisie par l'hôte en multijoueur), enchères possibles après une réponse refusée, Passe = un tour passé, enchère acceptée sans rejouer, dernier en lice 3 tours, égalité à l'ordre d'arrivée.",
+ "<b>11 nov. 2026</b> — repris d'Airmony : remontée des erreurs et page d'administration, surveillance horaire du serveur, contrôle automatique de la traduction anglaise, pages publiques « Anagrammes de… » et page de présentation (référencement), parrainage (+200 XP de part et d'autre), rappels par notification (défi du jour, défi de la semaine), 9 médailles bronze / argent / or, filtre des pseudos grossiers ; entrée « Paramètres et rappels » dans le menu ☰.",
  "<b>10 nov. 2026 (nuit)</b> — écran Solo sur ordinateur en deux colonnes équilibrées (Partie libre / Campagnes) ; bande des séries : nombre de séries affiché, flèches ‹ › quand il en reste d'un côté, petit aller-retour de démonstration à la première visite.",
  "<b>10 nov. 2026 (nuit)</b> — choix de la série en tuiles (au lieu du menu déroulant) ; le contenu ne passe plus derrière le filet doré du bas.",
  "<b>10 nov. 2026 (nuit)</b> — tablettes (iPad…) : la mise en page du téléphone est agrandie à la taille de l'écran ; appli iOS pour iPhone et iPad, captures iPad 13 pouces pour l'App Store.",

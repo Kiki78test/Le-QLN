@@ -265,6 +265,32 @@ const PROFILS = {
 const NOMS_IA = ["Léa","Hugo","Inès","Malo","Zoé"];
 const BONUS_ARRIVEE = [100, 75, 50, -25, -50, -100];
 const CAUTION = 50;
+/* Règles validées par l'auteur du jeu (14/11/2026) :
+   R1 série : après une carte réussie, on ne relance plus le dé ; on peut piocher une 2e carte de la même couleur
+      sur la même case, ou s'arrêter (2 cartes par case au plus). Un échec termine le tour.
+   R2 durée : partie courte (dé 1 à 6) ou longue (dé 1 à 3), choisie par celui qui crée la partie.
+   R5 une mauvaise réponse laisse les autres enchérir ; R6 Passe : on passe son prochain tour ;
+   R7 enchère acceptée : on encaisse sans rejouer ; R9 égalité : départage par l'ordre d'arrivée ;
+   R10 dernier en lice : 3 tours pour franchir l'arrivée (pour tous). */
+const MAX_SERIE = 2;
+const FACES = {courte:6, longue:3};
+const TR = document.documentElement.lang === "en" ? {
+  duree:"Game length", courte:"Short", courteD:"die 1 to 6 · about 20 min", longue:"Long", longueD:"die 1 to 3 · about 45 min",
+  serieT:"Card won!", serieQ:(c, g) => `Draw a 2nd ${c} card on this square (+${g} €), or stop here? If you miss it, your turn ends (you keep what you've won).`,
+  piocher:"Draw a 2nd card", arreter:"Stop here", sArrete:n => `${n} stops.`, pioche2:(n, c) => `${n} draws a 2nd ${c} card.`, choisitSerie:n => `${n} decides whether to draw again…`,
+  passe:"skips next turn", passeTxt:n => `${n} will skip the next turn.`, passeTour:n => `${n} skips this turn`, passeJ:n => `${n} skips a turn.`,
+  dernier:n => `${n} is the last one still playing: 3 turns to cross the finish.`, dernierVous:"Last one still playing: 3 turns to cross the finish!", toursRestants:n => `Turns left to finish: ${n}`,
+  refusee:p => `${p} isn't on the back of the card. The others can still bid.`, refuseeT:"Answer refused", aucune:"No bids.",
+  enchFin:(w, g, m, j) => `${w} takes ${g} and pays ${m} to ${j}, whose turn ends.`, offreTxt:"You didn't find it. Other players offer to buy the card. If you accept, you take the offer and your turn ends.",
+} : {
+  duree:"Durée de la partie", courte:"Courte", courteD:"dé 1 à 6 · environ 20 min", longue:"Longue", longueD:"dé 1 à 3 · environ 45 min",
+  serieT:"Carte gagnée !", serieQ:(c, g) => `Piocher une 2e carte ${c} sur cette case (+${g} €), ou s'arrêter ? En cas d'échec, votre tour s'arrête (vous gardez vos gains).`,
+  piocher:"Piocher une 2e carte", arreter:"M'arrêter", sArrete:n => `${n} s'arrête.`, pioche2:(n, c) => `${n} pioche une 2e carte ${c}.`, choisitSerie:n => `${n} décide s'il pioche encore…`,
+  passe:"passe son prochain tour", passeTxt:n => `${n} passera son prochain tour.`, passeTour:n => `${n} passe son tour`, passeJ:n => `${n} passe son tour.`,
+  dernier:n => `${n} est le dernier en lice : 3 tours pour franchir l'arrivée.`, dernierVous:"Dernier en lice : 3 tours pour franchir l'arrivée !", toursRestants:n => `Tours restants pour arriver : ${n}`,
+  refusee:p => `${p} ne figure pas au dos de la carte. Les autres joueurs peuvent encore enchérir.`, refuseeT:"Réponse refusée", aucune:"Aucune enchère.",
+  enchFin:(w, g, m, j) => `${w} encaisse ${g} et verse ${m} à ${j}, dont le tour s'arrête.`, offreTxt:"Vous n'avez pas trouvé. D'autres joueurs vous proposent de racheter la carte. Si vous acceptez, vous encaissez l'offre et votre tour s'arrête.",
+};
 const DES = ["","⚀","⚁","⚂","⚃","⚄","⚅"];
 
 /* ---------- État ---------- */
@@ -309,7 +335,7 @@ function decision(type, j, invite, defaut, delai = 60000, ctx = {}){
       const avant = new Set(document.querySelectorAll(".voile"));
       M.ouvertes.set(cle, () => { $$(".voile").forEach(v => { if(!avant.has(v)) v.remove(); }); const z = $("#dock-actions"); if(z) z.innerHTML = ""; marquerCibles([]); composeurActif = null; });
       // (tests automatiques : un « pilote » peut répondre à la place de l'interface)
-      const pilote = window.QLN_TEST_PILOTE && type !== "echu" ? () => new Promise(r => setTimeout(() => r(window.QLN_TEST_PILOTE(type, {...ctx, j, moi:humain()})), 30)) : invite;
+      const pilote = window.QLN_TEST_PILOTE ? () => new Promise(r => setTimeout(() => r(window.QLN_TEST_PILOTE(type, {...ctx, j, moi:humain()})), 30)) : invite;
       Promise.resolve().then(pilote).then(v => { M.ouvertes.delete(cle); proposer(cle, v); }).catch(() => {});
     } else if(j !== "hote" && !M.present(proprio)) majJoueurs();
     if(M.hote) surveiller(cle, proprio, defaut, delai);
@@ -393,7 +419,7 @@ async function demarrerMulti(opt){
   const joueurs = opt.joueurs.map(x => ({id:x.id, nom:x.pseudo, couleur:PIONS[x.couleur % PIONS.length].c, ia:null,
     argent:0, pos:"D", prison:0, dette:null, arrive:null, horsJeu:false, cartes:0, reussies:0, detail:{cartes:0, encheres:0, cases:0, arrivee:0}}));
   G = { joueurs, ordre:[], idx:0, caches:true, rapideIA:false, rapide:false, arrivees:[], deja:new Set(), journal:[], dernier:null, tours:0, courant:null,
-        rnd:aleaGraine(opt.graine), n:0,
+        rnd:aleaGraine(opt.graine), n:0, faces:FACES[opt.duree] || 6,
         multi:{moi:opt.moi, hote:opt.hote, hoteId:opt.hoteId, envoyer:opt.envoyer, present:opt.present, quitter:opt.quitter, retour:opt.retour,
                attentes:new Map(), decides:new Map(), tranchees:new Set(), ouvertes:new Map(), meta:new Map(), propositions:new Map()} };
   ecranPlateau();
@@ -422,6 +448,7 @@ async function demarrerMulti(opt){
 function config(){
   arreterVitrine();
   const cfg = store.get("cfgIA", {nom:"", couleur:0, nb:3, niveau:"joueur", caches:true, rapide:false});
+  if(!FACES[cfg.duree]) cfg.duree = "courte";
   const compte = typeof Multi !== "undefined" ? Multi.compte() : null;
   if(compte && !cfg.nom){ cfg.nom = compte.pseudo; cfg.couleur = compte.couleur; }
   app.classList.remove("large");
@@ -434,6 +461,7 @@ function config(){
       <div class="bloc"><span class="lbl">Votre pion</span><div class="couleurs" id="cfg-couleurs">${PIONS.map((p,i)=>`<button aria-pressed="${i===cfg.couleur}" data-i="${i}" aria-label="Pion ${p.nom}">${jetonSVG(p.c)}</button>`).join("")}</div></div>
       <div class="bloc"><span class="lbl">Nombre d'adversaires</span><div class="segment" id="cfg-nb">${[1,2,3,4,5].map(n=>`<button aria-pressed="${n===cfg.nb}" data-n="${n}">${n}</button>`).join("")}</div><div class="adversaires" id="cfg-adv"></div></div>
       <div class="bloc"><span class="lbl">Niveau des adversaires</span><div class="segment" id="cfg-niv">${Object.entries(PROFILS).map(([k,p])=>`<button aria-pressed="${k===cfg.niveau}" data-k="${k}">${p.nom}<small>${k==="debutant"?"Pour découvrir":k==="joueur"?"Équilibré":"Redoutable"}</small></button>`).join("")}</div></div>
+      <div class="bloc"><span class="lbl">${TR.duree}</span><div class="segment" id="cfg-duree">${["courte","longue"].map(k=>`<button aria-pressed="${k===cfg.duree}" data-k="${k}">${TR[k]}<small>${TR[k+"D"]}</small></button>`).join("")}</div></div>
       <label class="interrupteur" for="cfg-caches"><span>Gains des adversaires cachés<small>Comme sur le tapis : on découvre tout à l'arrivée</small></span><input type="checkbox" id="cfg-caches" ${cfg.caches?"checked":""}></label>
       <label class="interrupteur" for="cfg-rapide"><span>Tours de l'IA accélérés<small>Animations plus rapides pendant que l'IA joue</small></span><input type="checkbox" id="cfg-rapide" ${cfg.rapide?"checked":""}></label>
       <button class="bouton piece c-rouge" id="b-go">Lancer la partie</button>
@@ -446,6 +474,7 @@ function config(){
   $$("#cfg-couleurs button").forEach(b => b.onclick = () => { cfg.couleur = +b.dataset.i; $$("#cfg-couleurs button").forEach(x=>x.setAttribute("aria-pressed", x===b)); maj(); });
   $$("#cfg-nb button").forEach(b => b.onclick = () => { cfg.nb = +b.dataset.n; $$("#cfg-nb button").forEach(x=>x.setAttribute("aria-pressed", x===b)); maj(); });
   $$("#cfg-niv button").forEach(b => b.onclick = () => { cfg.niveau = b.dataset.k; $$("#cfg-niv button").forEach(x=>x.setAttribute("aria-pressed", x===b)); });
+  $$("#cfg-duree button").forEach(b => b.onclick = () => { cfg.duree = b.dataset.k; $$("#cfg-duree button").forEach(x=>x.setAttribute("aria-pressed", x===b)); });
   $("#b-retour").onclick = ecranAccueil;
   $("#b-go").onclick = () => {
     cfg.nom = $("#cfg-nom").value.trim(); cfg.caches = $("#cfg-caches").checked; cfg.rapide = $("#cfg-rapide").checked;
@@ -463,8 +492,8 @@ async function demarrer(cfg){
   const joueurs = [
     {id:"h", nom: cfg.nom || "Vous", couleur: PIONS[cfg.couleur].c, ia:null},
     ...advC.map((ci,k) => ({id:"ia"+k, nom:NOMS_IA[k], couleur:PIONS[ci].c, ia:cfg.niveau})),
-  ].map(j => ({...j, argent:0, pos:"D", prison:0, dette:null, arrive:null, horsJeu:false, cartes:0, reussies:0, detail:{cartes:0, encheres:0, cases:0, arrivee:0}}));
-  G = { joueurs, ordre:[], idx:0, caches:cfg.caches, rapideIA:cfg.rapide, rapide:false, arrivees:[], deja:new Set(), journal:[], dernier:null, tours:0, courant:null, rnd:Math.random, multi:null };
+  ].map(j => ({...j, argent:0, pos:"D", prison:0, passe:false, dette:null, arrive:null, horsJeu:false, cartes:0, reussies:0, detail:{cartes:0, encheres:0, cases:0, arrivee:0}}));
+  G = { joueurs, ordre:[], idx:0, caches:cfg.caches, rapideIA:cfg.rapide, rapide:false, arrivees:[], deja:new Set(), journal:[], dernier:null, tours:0, courant:null, rnd:Math.random, multi:null, faces:FACES[cfg.duree] || 6 };
   ecranPlateau();
   try{
     await tirerOrdre();
@@ -508,31 +537,24 @@ async function boucle(){
     // règle du dernier joueur
     if(restants.length === 1 && G.arrivees.length && !G.dernier){
       const d = restants[0];
-      G.dernier = d.ia ? {id:d.id, tours:3} : {id:d.id, fin: Date.now() + 5*60*1000};
-      journal(d, d.ia ? `${d.nom} est le dernier en lice : 3 tours pour franchir l'arrivée.` : `Vous êtes le dernier en lice : 5 minutes pour franchir l'arrivée.`);
-      if(d === humain()) toast("Dernier en lice : 5 minutes pour franchir l'arrivée !", 4500);
+      G.dernier = {id:d.id, tours:3};
+      journal(d, TR.dernier(d.nom));
+      if(d === humain()) toast(TR.dernierVous, 4500);
       majHud();
     }
     const j = J(G.ordre[G.idx % G.ordre.length]); G.idx++;
     if(j.arrive || j.horsJeu) continue;
-    if(G.dernier && G.dernier.id === j.id && await echu(j)) continue;
+    if(G.dernier && G.dernier.id === j.id && dernierEchu(j)) continue;
     G.tours++;
     await jouerTour(j);
-    if(G.dernier && G.dernier.id === j.id && !j.arrive && j.ia){ G.dernier.tours--; dernierEchu(j); }
+    if(G.dernier && G.dernier.id === j.id && !j.arrive){ G.dernier.tours--; dernierEchu(j); }
   }
   await finPartie();
 }
-/* multijoueur : seule l'horloge de l'hôte fait foi pour le délai du dernier en lice */
-async function echu(j){
-  if(!G.multi) return dernierEchu(j);
-  const d = G.dernier; if(!d || j.arrive) return false;
-  const v = await decision("echu", "hote", () => !!(d.fin && Date.now() > d.fin), false, 15000);
-  if(v && !j.horsJeu){ j.horsJeu = true; journal(j, `${j.nom} n'a pas franchi l'arrivée à temps : hors jeu.`); majJoueurs(); dessinerPions(); }
-  return !!v || j.horsJeu;
-}
+/* dernier en lice : 3 tours (compte identique sur tous les appareils) */
 function dernierEchu(j){
   const d = G.dernier; if(!d || j.arrive) return false;
-  const echu = d.fin ? Date.now() > d.fin : d.tours <= 0;
+  const echu = d.tours <= 0;
   if(echu && !j.horsJeu){ j.horsJeu = true; journal(j, `${j.nom} n'a pas franchi l'arrivée à temps : hors jeu.`); majJoueurs(); dessinerPions(); }
   return echu;
 }
@@ -549,10 +571,14 @@ async function jouerTour(j){
     if(estLocal(j) && !G.multi) await ui(boutonDock("Continuer", "c-noir")); else await attendre(1300);
     finDeTour(j); return;
   }
-  let rejoue = true;
-  while(rejoue && !j.arrive && !j.horsJeu){
-    rejoue = false;
-    if(!j.ia && G.dernier && G.dernier.id===j.id && await echu(j)) break;
+  if(j.passe){   // case Passe : ce tour est sauté
+    j.passe = false;
+    journal(j, TR.passeJ(j.nom));
+    dock({de:false, msg:esc(TR.passeTour(j.nom))});
+    if(estLocal(j) && !G.multi) await ui(boutonDock("Continuer", "c-noir")); else await attendre(1300);
+    finDeTour(j); return;
+  }
+  if(!j.arrive && !j.horsJeu){
     const de = await lancer(j);
     const opts = destinations(j.pos, de);
     const choix = G.multi ? opts[Math.max(0, Math.min(opts.length - 1, (await decision("case", j, () => choisirCase(j, opts, de).then(o => opts.indexOf(o)), () => versArrivee(opts), 60000, {opts}))|0))]
@@ -560,8 +586,8 @@ async function jouerTour(j){
     if(G.multi && !estLocal(j) && opts.length > 1){ marquerCibles([choix]); await attendre(500); marquerCibles([]); }
     if(j.ia && opts.length > 1) { dock({de, msg:`${esc(j.nom)} choisit sa route…`}); marquerCibles(opts); await attendre(900); marquerCibles([]); }
     await deplacer(j, choix.chemin);
-    if(choix.id === "A"){ await arriver(j); break; }
-    rejoue = await resoudreCase(j);
+    if(choix.id === "A") await arriver(j);
+    else await resoudreCase(j);
   }
   finDeTour(j);
 }
@@ -572,19 +598,19 @@ function finDeTour(j){
 
 /* ---------- Dé ---------- */
 async function lancer(j){
-  const valeur = 1 + Math.floor(alea()*6);
+  const valeur = 1 + Math.floor(alea()*(G.faces || 6));
   if(G.multi && !estLocal(j)){
     dock({de:true, msg:TM.lance(esc(j.nom))});
     await decision("de", j, null, true, 45000);
   } else if(G.multi){
-    dock({de:true, msg:"À vous de jouer", sous: G.dernier && G.dernier.id===j.id ? `Temps restant pour arriver : ${fmtTemps(G.dernier.fin-Date.now())}` : "Lancez le dé pour avancer."});
+    dock({de:true, msg:"À vous de jouer", sous: G.dernier && G.dernier.id===j.id ? TR.toursRestants(G.dernier.tours) : "Lancez le dé pour avancer."});
     await decision("de", j, () => {
       return boutonDock(`<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="4" fill="#1b1400"/><g fill="#ffd84a"><circle cx="8" cy="8" r="1.7"/><circle cx="16" cy="8" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="8" cy="16" r="1.7"/><circle cx="16" cy="16" r="1.7"/></g></svg>` + "Lancer le dé", "c-jaune").then(() => true); }, true, 45000);
   } else if(j.ia){
     dock({de:true, msg:`${esc(j.nom)} lance le dé…`});
     await attendre(500);
   } else {
-    dock({de:true, msg:"À vous de jouer", sous: G.dernier && G.dernier.id===j.id ? `Temps restant pour arriver : ${fmtTemps(G.dernier.fin-Date.now())}` : "Lancez le dé pour avancer."});
+    dock({de:true, msg:"À vous de jouer", sous: G.dernier && G.dernier.id===j.id ? TR.toursRestants(G.dernier.tours) : "Lancez le dé pour avancer."});
     await ui(boutonDock(`<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="4" fill="#1b1400"/><g fill="#ffd84a"><circle cx="8" cy="8" r="1.7"/><circle cx="16" cy="8" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="8" cy="16" r="1.7"/><circle cx="16" cy="16" r="1.7"/></g></svg>` + "Lancer le dé", "c-jaune"));
   }
   { const ms = (j.ia && G.rapide ? 520 : 1050) * VITE();
@@ -602,7 +628,7 @@ function descriptionCase(id){
   if(id === "A"){ const rang = G.arrivees.length+1; return {titre:"Arrivée", detail:`${rang}${rang===1?"er":"e"} · ${BONUS_ARRIVEE[rang-1]>0?"+":""}${BONUS_ARRIVEE[rang-1]} €`, classe:"c-jaune"}; }
   const n = NOEUDS[id];
   if(n.type === "carte"){ const N = NIVEAUX[n.niv]; return {titre:`Carte ${N.nom.toLowerCase()}`, detail:`${N.gain} € · ${N.temps<60?N.temps+" s":N.temps/60+" min"}${n.cd?" · CD":""}`, classe:N.classe}; }
-  const T = {bonus:["Bonus", `+${n.montant} €`, "c-violet"], malus:["Malus", `−${n.montant} €`, "c-orange"], prison:["Prison", `caution ${n.montant} €`, "c-orange"], passe:["Passe", "on attend", "c-orange"], retour:["Retour départ", "retour à la case départ", "c-orange"]}[n.type];
+  const T = {bonus:["Bonus", `+${n.montant} €`, "c-violet"], malus:["Malus", `−${n.montant} €`, "c-orange"], prison:["Prison", `caution ${n.montant} €`, "c-orange"], passe:["Passe", TR.passe, "c-orange"], retour:["Retour départ", "retour à la case départ", "c-orange"]}[n.type];
   return {titre:T[0], detail:T[1], classe:T[2]};
 }
 function choisirCase(j, opts, de){
@@ -685,10 +711,10 @@ async function deplacer(j, chemin){
 async function resoudreCase(j){
   const n = NOEUDS[j.pos];
   const d = descriptionCase(j.pos);
-  if(n.type === "carte") return await jouerCarte(j, n.niv);
+  if(n.type === "carte") return await serieCartes(j, n.niv);
   if(n.type === "bonus"){ crediter(j, n.montant, "Bonus"); Son.piece(); await annonce(j, d, `${j.nom} reçoit ${n.montant} € de la banque.`); return false; }
   if(n.type === "malus"){ debiter(j, n.montant, "Malus"); Son.ko(); await annonce(j, d, `${j.nom} verse ${n.montant} € à la banque.`); return false; }
-  if(n.type === "passe"){ journal(j, `${j.nom} tombe sur Passe.`); await annonce(j, d, `${j.nom} attend le prochain tour.`); return false; }
+  if(n.type === "passe"){ j.passe = true; journal(j, `${j.nom} tombe sur Passe.`); await annonce(j, d, TR.passeTxt(j.nom)); return false; }
   if(n.type === "retour"){ Son.ko(); await annonce(j, d, `${j.nom} retourne sur la ligne de départ.`); j.pos = "D"; dessinerPions(); journal(j, `${j.nom} retourne au départ.`); return false; }
   if(n.type === "prison"){ await prison(j); return false; }
   return false;
@@ -730,7 +756,38 @@ function debiter(j, montant, motif, cat = "cases"){
   majJoueurs();
 }
 
-/* ---------- Cartes ---------- */
+/* ---------- Série (R1) : 2 cartes au plus par case, on peut s'arrêter après une réussite ---------- */
+async function serieCartes(j, niv){
+  const nomC = NIVEAUX[niv].nom.toLowerCase();
+  for(let k = 1; k <= MAX_SERIE; k++){
+    const reussi = await jouerCarte(j, niv);
+    if(!reussi || k === MAX_SERIE || j.horsJeu) return false;
+    let encore;
+    if(G.multi){
+      if(!estLocal(j)) dock({de:false, msg:esc(TR.choisitSerie(j.nom))});
+      encore = await decision("serie", j, () => choixSerie(j, niv), false, 30000);
+    } else if(j.ia){
+      const p = PROFILS[j.ia].p[niv];
+      encore = p >= .6 || Math.random() < p * .8;
+      dock({de:false, msg:esc(TR.choisitSerie(j.nom))}); await attendre(700);
+    } else encore = await ui(choixSerie(j, niv));
+    if(encore !== true){ journal(j, TR.sArrete(j.nom)); return false; }
+    journal(j, TR.pioche2(j.nom, nomC));
+  }
+  return false;
+}
+function choixSerie(j, niv){
+  return new Promise(res => {
+    const N = NIVEAUX[niv];
+    dock({de:false, msg:TR.serieT});
+    const v = panneau({classe:N.classe, titre:TR.serieT, valeur:`${N.gain} €`, corps:`<p class="texte-centre">${esc(TR.serieQ(N.nom.toLowerCase(), N.gain))}</p>
+      <div class="duo"><button class="bouton piece c-noir" id="sr-non">${TR.arreter}</button><button class="bouton piece c-vert" id="sr-oui">${TR.piocher}</button></div>`});
+    $("#sr-oui", v).onclick = () => { v.remove(); res(true); };
+    $("#sr-non", v).onclick = () => { v.remove(); res(false); };
+  });
+}
+
+/* ---------- Cartes (renvoie vrai seulement si le joueur a trouvé lui-même) ---------- */
 async function jouerCarte(j, niv){
   if(G.multi) return jouerCarteMulti(j, niv);
   const c = tirerCarte(niv, Math.random, G.deja), N = NIVEAUX[niv];
@@ -745,22 +802,20 @@ async function jouerCarte(j, niv){
     j.reussies++;
     crediter(j, N.gain, `Carte ${N.nom.toLowerCase()}`, "cartes");
     Son.ok();
-    await faceB(c, {titre:`${j.nom} gagne la carte`, valeur:"+"+euros(N.gain), trouve:resultat.mot, texte:`${j.nom} rejoue.`, auto: j.ia ? 2600 : 0});
+    await faceB(c, {titre:`${j.nom} gagne la carte`, valeur:"+"+euros(N.gain), trouve:resultat.mot, auto: j.ia ? 2600 : 0});
     return true;
   }
-  if(resultat.proposition){ // mauvaise réponse : plus d'enchère possible
+  if(resultat.proposition){ // mauvaise réponse (R5) : c'est un échec, mais les autres peuvent encore enchérir
     Son.echec();
     journal(j, `${j.nom} propose ${resultat.proposition} : refusé.`);
-    await faceB(c, {titre:"Réponse refusée", valeur:"0 €", texte:`${resultat.proposition} ne figure pas au dos de la carte. Pas d'enchère possible.`, auto: j.ia ? 2600 : 0, echec:true});
-    return false;
-  }
-  journal(j, `${j.nom} ne trouve pas.`);
+    toast(TR.refusee(resultat.proposition), 3200);
+  } else journal(j, `${j.nom} ne trouve pas.`);
   // enchères
   const offres = offresIA(j, c);
   if(resultat.offreHumaine) offres.push({...resultat.offreHumaine, joueur:humain()});
   if(!offres.length){
     Son.echec();
-    await faceB(c, {titre:"Personne ne trouve", valeur:"0 €", texte:"Aucune enchère.", auto: j.ia ? 2400 : 0, echec:true});
+    await faceB(c, {titre: resultat.proposition ? TR.refuseeT : "Personne ne trouve", valeur:"0 €", texte:TR.aucune, auto: j.ia ? 2400 : 0, echec:true});
     return false;
   }
   const max = Math.max(...offres.map(o=>o.montant));
@@ -780,8 +835,8 @@ async function jouerCarte(j, niv){
   crediter(j, gagnante.montant, "Enchère reçue", "encheres");
   Son.piece();
   await faceB(c, {titre:`Enchère : ${w.nom}`, valeur:euros(gagnante.montant), trouve:gagnante.mot,
-    texte:`${w.nom} encaisse ${euros(N.gain)} et verse ${euros(gagnante.montant)} à ${j.nom}, qui reprend la main.`, auto: (j.ia && w.ia) ? 3000 : 0});
-  return true; // le joueur en échec reprend le jeu
+    texte:TR.enchFin(w.nom, euros(N.gain), euros(gagnante.montant), j.nom), auto: (j.ia && w.ia) ? 3000 : 0});
+  return false; // R7 : le joueur en échec encaisse l'offre mais son tour s'arrête
 }
 function offresIA(j, c){
   const N = NIVEAUX[c.niv], offres = [];
@@ -936,7 +991,7 @@ function choisirOffre(j, c, offres){
     offres.sort((a,b)=>b.montant-a.montant);
     const max = offres[0].montant;
     const v = panneau({classe:N.classe, titre:"Des enchères !", valeur:`${N.gain} €`, corps:`
-      <p class="texte-centre">Vous n'avez pas trouvé. D'autres joueurs vous proposent de racheter la carte. Si vous acceptez, vous encaissez l'offre et vous rejouez.</p>
+      <p class="texte-centre">${TR.offreTxt}</p>
       <div class="offres">${offres.map((o,i)=>`<div class="offre"><span style="display:flex;gap:8px;align-items:center">${jetonSVG(o.joueur.couleur)}${esc(o.joueur.nom)}</span><b>${o.montant} €</b></div>`).join("")}</div>
       <div class="duo">${offres.filter(o=>o.montant===max).map((o,i)=>`<button class="bouton piece c-vert" data-i="${offres.indexOf(o)}">Accepter ${esc(o.joueur.nom)}</button>`).join("")}<button class="bouton piece c-noir" id="o-non">Refuser</button></div>`});
     $$("[data-i]", v).forEach(b => b.onclick = () => { v.remove(); res(offres[+b.dataset.i]); });
@@ -959,17 +1014,11 @@ async function jouerCarteMulti(j, niv){
     j.reussies++;
     crediter(j, N.gain, `Carte ${N.nom.toLowerCase()}`, "cartes");
     Son.ok();
-    await faceB(c, {titre:`${j.nom} gagne la carte`, valeur:"+"+euros(N.gain), trouve:mot, texte:`${j.nom} rejoue.`, auto: estLocal(j) ? 0 : 2600});
+    await faceB(c, {titre:`${j.nom} gagne la carte`, valeur:"+"+euros(N.gain), trouve:mot, auto: estLocal(j) ? 0 : 2600});
     return true;
   }
-  if(prop){
-    if(vue) vue.fermer();
-    Son.echec();
-    journal(j, `${j.nom} propose ${prop} : refusé.`);
-    await faceB(c, {titre:"Réponse refusée", valeur:"0 €", texte:`${prop} ne figure pas au dos de la carte. Pas d'enchère possible.`, auto: estLocal(j) ? 0 : 2600, echec:true});
-    return false;
-  }
-  journal(j, `${j.nom} ne trouve pas.`);
+  if(prop){ Son.echec(); journal(j, `${j.nom} propose ${prop} : refusé.`); if(!G.rattrape) toast(TR.refusee(prop), 3200); }   // (R5 : les enchères restent possibles)
+  else journal(j, `${j.nom} ne trouve pas.`);
   // enchères : chaque joueur encore en course qui peut miser au moins 5 € fait une offre (ou passe), en même temps
   const encherisseurs = actifs().filter(a => a !== j && maxiEnchere(a, c) >= 5);
   if(vue) vue.seche(encherisseurs.includes(humain()));
@@ -986,7 +1035,7 @@ async function jouerCarteMulti(j, niv){
   offres.sort((a, b) => b.montant - a.montant);
   if(!offres.length){
     Son.echec();
-    await faceB(c, {titre:"Personne ne trouve", valeur:"0 €", texte:"Aucune enchère.", auto: 2400, echec:true});
+    await faceB(c, {titre: prop ? TR.refuseeT : "Personne ne trouve", valeur:"0 €", texte:TR.aucune, auto: 2400, echec:true});
     return false;
   }
   const iMax = 0;
@@ -1004,8 +1053,8 @@ async function jouerCarteMulti(j, niv){
   crediter(j, gagnante.montant, "Enchère reçue", "encheres");
   Son.piece();
   await faceB(c, {titre:`Enchère : ${w.nom}`, valeur:euros(gagnante.montant), trouve:gagnante.mot,
-    texte:`${w.nom} encaisse ${euros(N.gain)} et verse ${euros(gagnante.montant)} à ${j.nom}, qui reprend la main.`, auto: 0});
-  return true;
+    texte:TR.enchFin(w.nom, euros(N.gain), euros(gagnante.montant), j.nom), auto: 0});
+  return false;
 }
 /* la carte d'un autre joueur, vue d'ici : on prépare une réponse, puis on enchérit s'il sèche */
 function vueCarte(j, c){
@@ -1174,7 +1223,8 @@ function detailPodium(x){
 }
 async function finPartie(){
   G.courant = null;
-  const classes = [...G.joueurs].sort((a,b) => (a.horsJeu - b.horsJeu) || (b.argent - a.argent));
+  // R9 : à argent égal, le mieux classé à l'arrivée l'emporte
+  const classes = [...G.joueurs].sort((a,b) => (a.horsJeu - b.horsJeu) || (b.argent - a.argent) || ((a.arrive || 99) - (b.arrive || 99)));
   const gagnant = classes.find(x=>!x.horsJeu);
   const h = humain();
   const victoire = gagnant === h;

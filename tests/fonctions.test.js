@@ -152,3 +152,23 @@ test("serveur : erreurs remontées, page d'administration, parrainage, pseudo re
   assert.equal(s.d.filleuls, 1);
   assert.deepEqual([...erreurs, ...f.erreurs].filter(x => !x.includes(marque)), []); await ctx.close(); await f.ctx.close();
 });
+
+test("règles du plateau (14/11) : durée courte/longue, série de 2 cartes, Passe, égalité", async () => {
+  const {p, ctx, erreurs} = await ouvrir("fr", {vue:"ordinateur"});
+  // écran de configuration : choix de la durée
+  await p.evaluate(() => PlateauIA.config());
+  await p.waitForSelector("#cfg-duree");
+  assert.equal(await p.locator("#cfg-duree button").count(), 2);
+  await p.click('#cfg-duree [data-k="longue"]');
+  await p.evaluate(() => { window.QLN_TEST_VITE = .03; });
+  await p.click("#b-go");
+  await p.waitForFunction(() => PlateauIA._etat() && PlateauIA._etat().faces, null, {timeout:15000});
+  assert.equal(await p.evaluate(() => PlateauIA._etat().faces), 3, "partie longue : dé 1 à 3");
+  assert.equal(await p.evaluate(() => JSON.parse(localStorage.getItem("qln:cfgIA")).duree), "longue");
+  await p.evaluate(() => PlateauIA.arreter());
+  // règles écrites dans l'appli
+  await p.evaluate(() => ecranRegles());
+  const r = await p.textContent(".r-plateau");
+  assert.match(r, /2e carte de la même couleur/); assert.match(r, /passez votre prochain tour/); assert.match(r, /3 tours pour franchir/);
+  assert.deepEqual(erreurs, []); await ctx.close();
+});

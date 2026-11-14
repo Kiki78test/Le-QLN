@@ -34,7 +34,7 @@ let _dA = null; const diffuserBientot = () => { if(_dA) return; _dA = setTimeout
 // résumé public d'un salon : on ne garde que des champs simples et bornés (le client est hors de confiance)
 const nettoyerResume = (r, code) => {
   const t = (v, n) => String(v == null ? "" : v).slice(0, n);
-  return {code, hote:Filtre.masquer(t(r.hote, 24)), lang:t(r.lang, 2), couleur:Number(r.couleur)|0, nb:Math.min(6, Number(r.nb)|0), max:Math.min(6, Number(r.max)|0 || 6), phase:t(r.phase, 10), auto:!!r.auto,
+  return {code, hote:Filtre.masquer(t(r.hote, 24)), lang:t(r.lang, 2), couleur:Number(r.couleur)|0, nb:Math.min(6, Number(r.nb)|0), max:Math.min(6, Number(r.max)|0 || 6), phase:t(r.phase, 10), auto:!!r.auto, duree:r.duree === "longue" ? "longue" : "courte",
     joueurs:(Array.isArray(r.joueurs) ? r.joueurs : []).slice(0, 6).map(j => ({pseudo:Filtre.masquer(t(j && j.pseudo, 24)), couleur:Number(j && j.couleur)|0})), t:Date.now()};
 };
 
