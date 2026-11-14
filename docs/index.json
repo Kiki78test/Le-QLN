@@ -1,146 +1,170 @@
 [
   {
+    "titre": "Règles du jeu",
+    "fichier": "jeu/regles-du-jeu.pdf",
+    "dossier": "jeu",
+    "rubrique": "Le jeu",
+    "date": "2026-11-14",
+    "description": "Les règles illustrées : principe de l'anagramme, quatre couleurs de cartes, plateau (cases, enchères, bonus d'arrivée, « le plus riche gagne »), Défi et séries, règles du solo, campagnes, clavier."
+  },
+  {
+    "titre": "Fonctionnalités",
+    "fichier": "jeu/fonctionnalites.pdf",
+    "dossier": "jeu",
+    "rubrique": "Le jeu",
+    "date": "2026-11-14",
+    "description": "Présentation complète de l'application : cartes, contestation des mots, modes de jeu, règles avancées, progression, comptes et classements, partage, confort, publicité ; chantiers restants et historique des versions."
+  },
+  {
     "titre": "Choisir le nom du jeu",
-    "fichier": "aide-choix-du-nom.pdf",
+    "fichier": "suivi/aide-choix-du-nom.pdf",
+    "dossier": "suivi",
+    "rubrique": "Suivi du projet",
     "date": "2026-11-14",
     "description": "Piste AnagramX : vérification en 30 minutes (stores, domaines, marques INPI/EUIPO/OMPI, pseudos sociaux, test oral), réservation du domaine, des pseudos et du nom sur les stores, dépôt de marque."
   },
   {
-    "titre": "Administration et surveillance",
-    "fichier": "administration-et-surveillance.pdf",
-    "date": "2026-11-11",
-    "description": "Suivre le jeu en ligne : ouvrir la page d'administration (ADMIN_EMAILS sur Render), erreurs remontées, UptimeRobot, Google Search Console et sitemap des pages « Anagrammes de… », rappels par notification, parrainage, filtre des pseudos."
+    "titre": "Check-list",
+    "fichier": "suivi/check-list.pdf",
+    "dossier": "suivi",
+    "rubrique": "Suivi du projet",
+    "date": "2026-11-14",
+    "description": "Échéances (base Render en Basic avant le 10/12), démarches en cours de votre côté, décisions à prendre, prochaines étapes et ce qui est fait."
   },
   {
-    "titre": "Vraies publicités (AdMob)",
-    "fichier": "publicite-admob.pdf",
-    "date": "2026-11-10",
-    "description": "Publicité réelle AdMob dans les applis Android et iOS : module, consentement RGPD, ATT sur iPhone, repli de démonstration, identifiants dans config.js, étapes dans AdMob, app-ads.txt."
-  },
-  {
-    "titre": "Publier sur Google Play",
-    "fichier": "publication-google-play.pdf",
-    "date": "2026-11-10",
-    "description": "Fabrication de l'appli Android à publier (fichier .aab signé), création de la clé d'envoi (secret ANDROID_KEYSTORE_PASSWORD), étapes dans la Play Console (tests internes, 12 testeurs, fiche, production)."
+    "titre": "Listes de mots",
+    "fichier": "listes-de-mots/listes-de-mots.pdf",
+    "dossier": "listes-de-mots",
+    "rubrique": "Listes de mots",
+    "date": "2026-11-14",
+    "description": "Synthèse du dossier : dictionnaires français, anglais, espagnol, allemand, italien et thèmes (origine, tailles), corrections faites, tableurs à relire et questions ouvertes (cartes écartées, mots douteux, définitions)."
   },
   {
     "titre": "Cartes écartées de l'appli (proposition)",
-    "fichier": "le-qln-anagrammes-ecartees.xlsx",
+    "fichier": "listes-de-mots/le-qln-anagrammes-ecartees.xlsx",
+    "dossier": "listes-de-mots",
+    "rubrique": "Listes de mots",
     "date": "2026-11-10",
     "description": "Dictionnaire français complet, avec en tête les 27 cartes sans aucun mot courant que l'appli ne tirerait plus, et 46 cartes limites à décider."
   },
   {
     "titre": "Cartes écartées de l'appli",
-    "fichier": "cartes-ecartees.pdf",
+    "fichier": "listes-de-mots/cartes-ecartees.pdf",
+    "dossier": "listes-de-mots",
+    "rubrique": "Listes de mots",
     "date": "2026-11-10",
     "description": "Liste des 27 cartes françaises sans aucun mot courant que l'appli ne tirerait plus (elles restent dans la boîte), et des 46 cartes limites ; définitions trouvées au Wiktionnaire et liste de tous les mots du dictionnaire sans définition."
   },
   {
     "titre": "Dictionnaire anglais (relecture)",
-    "fichier": "le-qln-anglais.xlsx",
+    "fichier": "listes-de-mots/le-qln-anglais.xlsx",
+    "dossier": "listes-de-mots",
+    "rubrique": "Listes de mots",
     "date": "2026-11-10",
     "description": "Les 911 cartes anglaises (377 nouvelles marquées) : indiquer les mots à retirer ou mettre x pour retirer une carte."
   },
   {
     "titre": "Séries en espagnol, allemand, italien",
-    "fichier": "le-qln-langues.xlsx",
+    "fichier": "listes-de-mots/le-qln-langues.xlsx",
+    "dossier": "listes-de-mots",
+    "rubrique": "Listes de mots",
     "date": "2026-11-10",
     "description": "Cartes des séries de langue (une ligne par carte) : indiquer les mots à retirer ou mettre x pour retirer une carte."
   },
   {
-    "titre": "Fiches des stores",
-    "fichier": "fiches-des-stores.pdf",
-    "date": "2026-11-10",
-    "description": "Textes à copier (FR/EN, longueurs vérifiées), captures Google Play et iPhone, bannière, icône, réponses Sécurité des données et Confidentialité Apple, classification. Fichiers prêts dans store/."
-  },
-  {
-    "titre": "Règles du jeu",
-    "fichier": "regles-du-jeu.pdf",
-    "date": "2026-11-14",
-    "description": "Les règles illustrées : principe de l'anagramme, quatre couleurs de cartes, plateau (cases, enchères, bonus d'arrivée, « le plus riche gagne »), Défi et séries, règles du solo, campagnes, clavier."
-  },
-  {
-    "titre": "Check-list",
-    "fichier": "check-list.pdf",
-    "date": "2026-11-14",
-    "description": "Échéances (base Render en Basic avant le 10/12), démarches en cours de votre côté, décisions à prendre, prochaines étapes et ce qui est fait."
-  },
-  {
-    "titre": "Services externes (développeur)",
-    "fichier": "services-externes.pdf",
-    "date": "2026-11-11",
-    "description": "Note technique : services (GitHub, Render, Google, Apple, Resend, Cloudflare, Wiktionnaire), variables d'environnement et secrets, tables de la base, API et multijoueur, anti-triche, stockage de l'appli, applis mobiles, tests, coûts et échéances."
-  },
-  {
     "titre": "Thèmes des séries",
-    "fichier": "le-qln-themes.xlsx",
+    "fichier": "listes-de-mots/le-qln-themes.xlsx",
+    "dossier": "listes-de-mots",
+    "rubrique": "Listes de mots",
     "date": "2026-11-10",
     "description": "Mots de départ de chaque thème (français et anglais), avec leur niveau : mettre un x dans la dernière colonne pour retirer un mot, ou indiquer des mots à ajouter."
   },
   {
-    "titre": "Version Apple (iPhone)",
-    "fichier": "version-apple.pdf",
-    "date": "2026-11-10",
-    "description": "Appli iOS fabriquée sur un Mac de GitHub (sans Mac chez vous), jeu embarqué, étapes compte Apple → TestFlight → App Store, publicité AdMob sur iPhone (ATT, achat Sans pub), coûts et délais."
-  },
-  {
-    "titre": "Textes juridiques",
-    "fichier": "textes-juridiques.pdf",
-    "date": "2026-11-10",
-    "description": "Politique de confidentialité et mentions légales (texte complet) + liste de ce qu'il faut compléter avant la publication (éditeur, adresse, contact, publicité)."
-  },
-  {
-    "titre": "Mise en ligne du serveur",
-    "fichier": "mise-en-ligne-serveur.pdf",
-    "date": "2026-11-10",
-    "description": "Mise en place en un clic (Blueprint Render : serveur + base dédiée), automatismes (tests, redéploiement, vérifications, appli Android de test), Google, Cloudflare, Resend et budget."
-  },
-  {
-    "titre": "Publicité réelle",
-    "fichier": "publicite-reelle.pdf",
-    "date": "2026-11-10",
-    "description": "Passer de la simulation à de vraies annonces : web (AdSense H5) ou Android (AdMob), procédure, consentement RGPD, régies et médiation, thèmes à bloquer, calendrier."
-  },
-  {
-    "titre": "Fonctionnalités",
-    "fichier": "fonctionnalites.pdf",
-    "date": "2026-11-14",
-    "description": "Présentation complète de l'application : cartes, contestation des mots, modes de jeu, règles avancées, progression, comptes et classements, partage, confort, publicité ; chantiers restants et historique des versions."
-  },
-  {
-    "titre": "Monétisation publicitaire",
-    "fichier": "monetisation-publicitaire.pdf",
-    "date": "2026-11-09",
-    "description": "Emplacements des publicités sans gêner le jeu, règles d'affichage, eCPM de référence et rendement estimé selon 5 scénarios ; décisions à prendre (vidéos récompense, support de diffusion, achat Sans pub)."
-  },
-  {
     "titre": "Mots douteux de vos cartes",
-    "fichier": "le-qln-mots-douteux.xlsx",
+    "fichier": "listes-de-mots/le-qln-mots-douteux.xlsx",
+    "dossier": "listes-de-mots",
+    "rubrique": "Listes de mots",
     "date": "2026-11-08",
     "description": "290 mots du tableau d'origine absents de la base Lexique, avec un avis sur chacun (à retirer, à vérifier, correct) et une colonne de décision. Aucun mot retiré du jeu pour l'instant."
   },
   {
     "titre": "Dictionnaire d'anagrammes",
-    "fichier": "le-qln-anagrammes.xlsx",
+    "fichier": "listes-de-mots/le-qln-anagrammes.xlsx",
+    "dossier": "listes-de-mots",
+    "rubrique": "Listes de mots",
     "date": "2026-11-08",
     "description": "Toutes les cartes du jeu et leurs anagrammes acceptées, une feuille par couleur (4-5, 6-7, 8-9, 10 lettres et plus) : 3 231 cartes, 4 942 anagrammes."
   },
   {
-    "titre": "Propositions de règles",
-    "fichier": "propositions-regles.pdf",
-    "date": "2026-11-08",
-    "description": "Constat chiffré (3 000 parties simulées) et 11 propositions de règles à valider pour la version appli."
+    "titre": "Publier sur Google Play",
+    "fichier": "publication/publication-google-play.pdf",
+    "dossier": "publication",
+    "rubrique": "Publication (stores, applis, textes légaux)",
+    "date": "2026-11-10",
+    "description": "Fabrication de l'appli Android à publier (fichier .aab signé), création de la clé d'envoi (secret ANDROID_KEYSTORE_PASSWORD), étapes dans la Play Console (tests internes, 12 testeurs, fiche, production)."
   },
   {
-    "titre": "Mode solo : stratégie, surprise, scénarios et classement en ligne",
-    "fichier": "solo-strategie-classement.pdf",
-    "date": "2026-11-08",
-    "description": "10 propositions de règles pour le solo (série ou banque, cartes événement, mini-campagne Le Festival…) et le projet de classement en ligne avec podiums internationaux. À valider avant tout développement."
+    "titre": "Fiches des stores",
+    "fichier": "publication/fiches-des-stores.pdf",
+    "dossier": "publication",
+    "rubrique": "Publication (stores, applis, textes légaux)",
+    "date": "2026-11-10",
+    "description": "Textes à copier (FR/EN, longueurs vérifiées), captures Google Play et iPhone, bannière, icône, réponses Sécurité des données et Confidentialité Apple, classification. Fichiers prêts dans store/."
   },
   {
-    "titre": "English anagram dictionary (EN version)",
-    "fichier": "le-qln-anagrams-en.xlsx",
-    "date": "2026-11-08",
-    "description": "534 cards and their accepted anagrams for the English version, one sheet per colour, with sources and rules."
+    "titre": "Version Apple (iPhone)",
+    "fichier": "publication/version-apple.pdf",
+    "dossier": "publication",
+    "rubrique": "Publication (stores, applis, textes légaux)",
+    "date": "2026-11-10",
+    "description": "Appli iOS fabriquée sur un Mac de GitHub (sans Mac chez vous), jeu embarqué, étapes compte Apple → TestFlight → App Store, publicité AdMob sur iPhone (ATT, achat Sans pub), coûts et délais."
+  },
+  {
+    "titre": "Textes juridiques",
+    "fichier": "publication/textes-juridiques.pdf",
+    "dossier": "publication",
+    "rubrique": "Publication (stores, applis, textes légaux)",
+    "date": "2026-11-10",
+    "description": "Politique de confidentialité et mentions légales (texte complet) + liste de ce qu'il faut compléter avant la publication (éditeur, adresse, contact, publicité)."
+  },
+  {
+    "titre": "Vraies publicités (AdMob)",
+    "fichier": "publicite/publicite-admob.pdf",
+    "dossier": "publicite",
+    "rubrique": "Publicité",
+    "date": "2026-11-10",
+    "description": "Publicité réelle AdMob dans les applis Android et iOS : module, consentement RGPD, ATT sur iPhone, repli de démonstration, identifiants dans config.js, étapes dans AdMob, app-ads.txt."
+  },
+  {
+    "titre": "Monétisation publicitaire",
+    "fichier": "publicite/monetisation-publicitaire.pdf",
+    "dossier": "publicite",
+    "rubrique": "Publicité",
+    "date": "2026-11-09",
+    "description": "Emplacements des publicités sans gêner le jeu, règles d'affichage, eCPM de référence et rendement estimé selon 5 scénarios ; décisions à prendre (vidéos récompense, support de diffusion, achat Sans pub)."
+  },
+  {
+    "titre": "Administration et surveillance",
+    "fichier": "technique/administration-et-surveillance.pdf",
+    "dossier": "technique",
+    "rubrique": "Technique et administration",
+    "date": "2026-11-11",
+    "description": "Suivre le jeu en ligne : ouvrir la page d'administration (ADMIN_EMAILS sur Render), erreurs remontées, UptimeRobot, Google Search Console et sitemap des pages « Anagrammes de… », rappels par notification, parrainage, filtre des pseudos."
+  },
+  {
+    "titre": "Services externes (développeur)",
+    "fichier": "technique/services-externes.pdf",
+    "dossier": "technique",
+    "rubrique": "Technique et administration",
+    "date": "2026-11-11",
+    "description": "Note technique : services (GitHub, Render, Google, Apple, Resend, Cloudflare, Wiktionnaire), variables d'environnement et secrets, tables de la base, API et multijoueur, anti-triche, stockage de l'appli, applis mobiles, tests, coûts et échéances."
+  },
+  {
+    "titre": "Mise en ligne du serveur",
+    "fichier": "technique/mise-en-ligne-serveur.pdf",
+    "dossier": "technique",
+    "rubrique": "Technique et administration",
+    "date": "2026-11-10",
+    "description": "Mise en place en un clic (Blueprint Render : serveur + base dédiée), automatismes (tests, redéploiement, vérifications, appli Android de test), Google, Cloudflare, Resend et budget."
   }
 ]

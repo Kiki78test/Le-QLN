@@ -76,8 +76,8 @@ class SimpleDocTemplate:
         titre, sous, corps = _rendre(st)
         titre = _re.sub(r"^Le-QLN\s*[—–-]\s*", "", titre or self.title); titre = titre[:1].upper() + titre[1:]
         fichier = _os.path.basename(self.chemin)
-        index = _json.loads((_charte.RACINE / "docs" / "index.json").read_text(encoding="utf-8"))
-        e = next((x for x in index if x["fichier"] == fichier), None) or {}
+        import dossiers as _dossiers
+        e = _dossiers.entree_de(_dossiers.lire_index(), fichier) or {}
         date = None if globals().get("DATE") == "auto" else e.get("date")
         if sous and date is None: sous = _re.sub(r"\s*·\s*\d{1,2}(er)? [a-zéû]+ \d{4}\s*$", "", sous)   # la date figure déjà en pied de page
         _charte.document(fichier, titre, sous, corps, description=e.get("description") or titre, titre_index=e.get("titre"), date_iso=date)

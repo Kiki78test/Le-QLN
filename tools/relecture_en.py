@@ -1,6 +1,7 @@
 """Tableur de relecture du dictionnaire anglais -> docs/le-qln-anglais.xlsx (une ligne par carte, les nouvelles marquées).
 Usage : python3 tools/relecture_en.py [ancien en.json pour marquer les nouvelles cartes]
 Les mots à retirer se reportent ensuite dans EXTRA_BLOCK (tools/build_dict_en.py), puis on régénère."""
+import sys as _s, pathlib as _p; _s.path.insert(0, str(_p.Path(__file__).resolve().parent.parent / "docs-src")); import dossiers
 import datetime, json, pathlib, sys
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment
@@ -30,10 +31,7 @@ for row in ws.iter_rows(min_row=2):
     for c in row: c.font = Font(name="Arial"); c.alignment = Alignment(vertical="top", wrap_text=True)
     for c in row[4:]: c.fill = PatternFill("solid", fgColor="FFF6D6")
 ws.freeze_panes = "A2"; ws.auto_filter.ref = ws.dimensions
-wb.save(R / "docs" / "le-qln-anglais.xlsx")
-idx = R / "docs" / "index.json"; docs = json.loads(idx.read_text(encoding="utf-8"))
-e = {"titre": "Dictionnaire anglais (relecture)", "fichier": "le-qln-anglais.xlsx", "date": datetime.date.today().isoformat(),
-     "description": f"Les {sum(len(v) for v in d.values())} cartes anglaises ({n} nouvelles marquées) : indiquer les mots à retirer ou mettre x pour retirer une carte."}
-docs = [x for x in docs if x["fichier"] != e["fichier"]]; docs.insert(0, e)
-idx.write_text(json.dumps(docs, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+wb.save(dossiers.chemin("le-qln-anglais.xlsx"))
+dossiers.indexer("le-qln-anglais.xlsx", "Dictionnaire anglais (relecture)",
+    f"Les {sum(len(v) for v in d.values())} cartes anglaises ({n} nouvelles marquées) : indiquer les mots à retirer ou mettre x pour retirer une carte.", datetime.date.today().isoformat())
 print("docs/le-qln-anglais.xlsx :", n, "nouvelles cartes")

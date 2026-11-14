@@ -1,7 +1,7 @@
 /* =========================================================================
    Le-QLN — simulation publicitaire (version test)
    Bouton « Pub / No Pub » en haut de l'écran. Les spots sont des vidéos fictives de 6 s (dossier pubs/).
-   Principes (révisés, voir docs/monetisation-publicitaire.pdf) :
+   Principes (révisés, voir docs/publicite/monetisation-publicitaire.pdf) :
    - jamais rien pendant un sablier ni sur l'écran de la carte : la concentration du joueur est sacrée ;
    - aucune vidéo imposée à la première partie de la session, puis au plus une toutes les 3 min, aux transitions
      (entre deux parties, ou entre deux cartes toutes les 5 cartes) ;

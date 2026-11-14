@@ -3,8 +3,9 @@
 import sys, pathlib, html
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 from charte import document, T, B, RACINE
+import dossiers
 from openpyxl import load_workbook
-wb = load_workbook(RACINE / "docs" / "le-qln-anagrammes-ecartees.xlsx", read_only=True)
+wb = load_workbook(dossiers.chemin("le-qln-anagrammes-ecartees.xlsx"), read_only=True)
 def lignes(nom):
     rows = list(wb[nom].iter_rows(values_only=True))
     return rows[0][0], [r for r in rows[3:] if r and r[0]]

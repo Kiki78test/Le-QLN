@@ -4,6 +4,7 @@
   {"themes":[{cle, nom, emoji, c1, c2, motif, mots:[[niveau, mot], ...]}], "min": N}
 Un thème n'est gardé que s'il a assez de cartes pour plusieurs séries (MIN_CARTES).
 Écrit aussi docs/le-qln-themes.xlsx (relecture : un onglet par langue)."""
+import sys as _s, pathlib as _p; _s.path.insert(0, str(_p.Path(__file__).resolve().parent.parent / "docs-src")); import dossiers
 import json, pathlib, sys, unicodedata
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "tools"))
@@ -53,5 +54,5 @@ try:
         for row in ws.iter_rows(min_row=2):
             for c in row: c.font = Font(name="Arial")
         ws.freeze_panes = "A2"
-    wb.save(ROOT / "docs" / "le-qln-themes.xlsx")
+    wb.save(dossiers.chemin("le-qln-themes.xlsx"))
 except ImportError: print("openpyxl absent : tableur non écrit")

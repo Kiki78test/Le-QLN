@@ -5,6 +5,7 @@ ni de conjugaisons, comme pour le français et l'anglais). Les noms propres sont
 Règles communes : 4 lettres minimum ; vert 4-5, bleu 6-7, rouge 8-9, noir 10 et + ; une carte = au moins 2 mots courants.
 Usage : pip install wordfreq simplemma ; python3 tools/build_dict_langues.py
 Ces dictionnaires ne servent qu'aux séries de langue (cartes jouées pour le plaisir, sans classement)."""
+import sys as _s, pathlib as _p; _s.path.insert(0, str(_p.Path(__file__).resolve().parent.parent / "docs-src")); import dossiers
 import json, pathlib, unicodedata
 from collections import defaultdict
 from wordfreq import top_n_list, zipf_frequency
@@ -108,14 +109,11 @@ def tableur(tout):
             for c in row: c.font = Font(name="Arial"); c.alignment = Alignment(vertical="top", wrap_text=True)
             for c in row[3:]: c.fill = PatternFill("solid", fgColor="FFF6D6")
         ws.freeze_panes = "A2"; ws.auto_filter.ref = ws.dimensions
-    wb.save(RACINE / "docs" / "le-qln-langues.xlsx")
-    idx = RACINE / "docs" / "index.json"; docs = json.loads(idx.read_text(encoding="utf-8"))
+    wb.save(dossiers.chemin("le-qln-langues.xlsx"))
     import datetime
-    e = {"titre": "Séries en espagnol, allemand, italien", "fichier": "le-qln-langues.xlsx", "date": datetime.date.today().isoformat(),
-         "description": "Cartes des séries de langue (une ligne par carte) : indiquer les mots à retirer ou mettre x pour retirer une carte."}
-    docs = [x for x in docs if x["fichier"] != e["fichier"]]; docs.insert(0, e)
-    idx.write_text(json.dumps(docs, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    print("docs/le-qln-langues.xlsx")
+    dossiers.indexer("le-qln-langues.xlsx", "Séries en espagnol, allemand, italien",
+                     "Cartes des séries de langue (une ligne par carte) : indiquer les mots à retirer ou mettre x pour retirer une carte.", datetime.date.today().isoformat())
+    print("docs/" + dossiers.relatif("le-qln-langues.xlsx"))
 
 
 if __name__ == "__main__":

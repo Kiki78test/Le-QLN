@@ -5,6 +5,7 @@
 #     from charte import document, T, L, B, NOM
 #     document("fichier.pdf", "Titre", "Sous-titre", corps_html, description="…pour l'onglet Documentation")
 import base64, datetime, html as _html, json, pathlib, re, zoneinfo
+import sys as _sys; _sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent)); import dossiers
 ICI = pathlib.Path(__file__).resolve().parent
 RACINE = ICI.parent
 MARQUE = json.loads((RACINE / "marque.json").read_text(encoding="utf-8"))
@@ -88,17 +89,12 @@ def document(fichier, titre, sous_titre, corps, description=None, titre_index=No
     from playwright.sync_api import sync_playwright
     with sync_playwright() as p:
         b = p.chromium.launch(); pg = b.new_page(); pg.goto(src.as_uri()); pg.wait_for_timeout(350)
-        pg.pdf(path=str(RACINE / "docs" / fichier), format="A4", print_background=True, display_header_footer=True,
+        pg.pdf(path=str(dossiers.chemin(fichier)), format="A4", print_background=True, display_header_footer=True,
                header_template="<span></span>", footer_template=pied, margin={"top": "13mm", "bottom": "16mm", "left": "13mm", "right": "13mm"})
         b.close()
     if indexer and description:
-        idx = RACINE / "docs" / "index.json"; docs = json.loads(idx.read_text(encoding="utf-8"))
-        ancien = next((x for x in docs if x["fichier"] == fichier), None)
-        entree = {"titre": nom_du_jeu(titre_index or titre), "fichier": fichier, "date": date_iso or DATE_ISO, "description": nom_du_jeu(description)}
-        if ancien: docs[docs.index(ancien)] = entree
-        else: docs.insert(0, entree)
-        idx.write_text(json.dumps(docs, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    print("docs/" + fichier)
+        dossiers.indexer(fichier, nom_du_jeu(titre_index or titre), nom_du_jeu(description), date_iso or DATE_ISO)
+    print("docs/" + dossiers.relatif(fichier))
 
 def habiller_existant(source_html, fichier_pdf, titre, sous_titre):
     """Documents mis en page à la main (HTML avec leur propre style) : on remplace leur couverture par l'en-tête commun
@@ -122,7 +118,7 @@ def habiller_existant(source_html, fichier_pdf, titre, sous_titre):
     from playwright.sync_api import sync_playwright
     with sync_playwright() as p:
         b = p.chromium.launch(); pg = b.new_page(); pg.goto(src.as_uri()); pg.wait_for_timeout(400)
-        pg.pdf(path=str(RACINE / "docs" / fichier_pdf), format="A4", print_background=True, display_header_footer=True,
+        pg.pdf(path=str(dossiers.chemin(fichier_pdf)), format="A4", print_background=True, display_header_footer=True,
                header_template="<span></span>", footer_template=pied, margin={"top": "13mm", "bottom": "16mm", "left": "13mm", "right": "13mm"})
         b.close()
-    print("docs/" + fichier_pdf)
+    print("docs/" + dossiers.relatif(fichier_pdf))

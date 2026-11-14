@@ -2,6 +2,7 @@
 Lexique 3.83 (films + livres) atteint 0,3 occurrence par million (le seuil déjà utilisé pour construire le dictionnaire)
 OU si sa fréquence wordfreq (textes récents : web, sous-titres, Wikipédia…) atteint 2,0 sur l'échelle Zipf. Elles restent dans le dictionnaire et dans la boîte. Proposition, rien n'est appliqué.
 Usage : python3 tools/cartes_ecartees.py <Lexique383.tsv>  ->  docs/le-qln-anagrammes-ecartees.xlsx"""
+import sys as _s, pathlib as _p; _s.path.insert(0, str(_p.Path(__file__).resolve().parent.parent / "docs-src")); import dossiers
 import csv, datetime, json, pathlib, sys, unicodedata
 from openpyxl import load_workbook
 from openpyxl.styles import Font, PatternFill, Alignment
@@ -24,7 +25,7 @@ for x in top_n_list("fr", 400000):   # graphies accentuées connues de wordfreq 
 def zipf(w):
     return max(zipf_frequency(w, "fr"), zipf_frequency(ortho.get(N(w), w), "fr"), zipf_frequency(ACC.get(N(w), w), "fr"))
 d = json.loads((R / "app" / "data" / "fr.json").read_text(encoding="utf-8"))
-wbd = load_workbook(R / "docs" / "le-qln-mots-douteux.xlsx", read_only=True)
+wbd = load_workbook(dossiers.chemin("le-qln-mots-douteux.xlsx"), read_only=True)
 douteux = {N(c) for ws in wbd.worksheets for r in ws.iter_rows(values_only=True) for c in r if isinstance(c, str) and c.isalpha()}
 COUL = {"v": "Vert", "b": "Bleu", "r": "Rouge", "n": "Noir"}
 # définitions trouvées sur le Wiktionnaire (action GitHub « Définitions (Wiktionnaire) » -> docs-src/definitions.json)
@@ -40,7 +41,7 @@ for k in "vbrn":
         ligne = [COUL[k], g[0], ", ".join(g[1:]), round(m, 2), round(z, 2), "oui" if any(N(w) in douteux for w in g) else "", f"{nd}/{len(g)}", td, ""]
         if m < SEUIL and z < ZIPF: ecart.append(ligne)
         elif m < LIMITE and z < ZIPF_LIMITE: limite.append(ligne)
-wb = load_workbook(R / "docs" / "le-qln-anagrammes.xlsx")
+wb = load_workbook(dossiers.chemin("le-qln-anagrammes.xlsx"))
 def feuille(titre, lignes, pos, note):
     ws = wb.create_sheet(titre, pos)
     ws.append([note]); ws["A1"].font = Font(name="Arial", bold=True); ws.append([])
@@ -74,12 +75,9 @@ if DEF:
     ws.freeze_panes = "A4"
 for ws in wb.worksheets: ws.sheet_view.tabSelected = False
 wb.active = 0; wb.worksheets[0].sheet_view.tabSelected = True
-out = R / "docs" / "le-qln-anagrammes-ecartees.xlsx"; wb.save(out)
-idx = R / "docs" / "index.json"; docs = json.loads(idx.read_text(encoding="utf-8"))
-e = {"titre": "Cartes écartées de l'appli (proposition)", "fichier": out.name, "date": datetime.date.today().isoformat(),
-     "description": f"Dictionnaire français complet, avec en tête les {len(ecart)} cartes sans aucun mot courant que l'appli ne tirerait plus, et {len(limite)} cartes limites à décider."}
-docs = [x for x in docs if x["fichier"] != e["fichier"]]; docs.insert(0, e)
-idx.write_text(json.dumps(docs, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+out = dossiers.chemin("le-qln-anagrammes-ecartees.xlsx"); wb.save(out)
+dossiers.indexer(out.name, "Cartes écartées de l'appli (proposition)",
+    f"Dictionnaire français complet, avec en tête les {len(ecart)} cartes sans aucun mot courant que l'appli ne tirerait plus, et {len(limite)} cartes limites à décider.", datetime.date.today().isoformat())
 print(len(ecart), "écartées ;", len(limite), "limites ->", out.name)
 for nom, L in [("écartées", ecart), ("limites", limite)]:
     mots = [w for l in L for w in [l[1]] + [x.strip() for x in l[2].split(",") if x.strip()]]

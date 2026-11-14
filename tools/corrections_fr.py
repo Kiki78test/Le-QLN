@@ -1,6 +1,7 @@
 """Corrections du dictionnaire français validées par l'auteur (audit externe du 10/11/2026), appliquées à
 app/data/fr.json et au tableur docs/le-qln-anagrammes.xlsx. Relançable sans risque (idempotent).
 Les sources d'origine (tableau de l'auteur + Lexique) ne sont pas dans le dépôt : on corrige donc le résultat."""
+import sys as _s, pathlib as _p; _s.path.insert(0, str(_p.Path(__file__).resolve().parent.parent / "docs-src")); import dossiers
 import json, pathlib, unicodedata
 from openpyxl import load_workbook
 R = pathlib.Path(__file__).resolve().parent.parent
@@ -23,7 +24,7 @@ p.write_text(json.dumps(d, ensure_ascii=False, separators=(",", ":")), encoding=
 for k, g, g2 in journal: print(f"[{k}] {', '.join(g)}  ->  {', '.join(g2) if len(g2) >= 2 else 'CARTE RETIRÉE'}")
 print({k: len(v) for k, v in d.items()}, "cartes :", sum(len(v) for v in d.values()))
 # tableur : on retire les mêmes mots des cellules ; une ligne qui n'a plus qu'un mot est supprimée
-x = R / "docs" / "le-qln-anagrammes.xlsx"; wb = load_workbook(x)
+x = dossiers.chemin("le-qln-anagrammes.xlsx"); wb = load_workbook(x)
 for ws in wb.worksheets[1:]:
     supp = []
     for row in ws.iter_rows(min_row=2):
