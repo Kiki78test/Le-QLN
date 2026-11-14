@@ -18,7 +18,7 @@ test("changer_nom : nom, logo, manifeste, version anglaise, appli Android", () =
   assert.equal(JSON.parse(lire("mobile/capacitor.config.json")).appName, "Zorbo");
   assert.equal(JSON.parse(lire("marque.json")).nom, "Zorbo");
   // les identifiants techniques ne bougent pas (adresse du site, clés de stockage des joueurs)
-  assert.match(lire("progres.js"), /github\.io\/Le-QLN\//); assert.match(lire("mobile/capacitor.config.json"), /github\.io\/Le-QLN\//);
+  assert.match(lire("progres.js"), /github\.io\/AnagramX\//); assert.match(lire("mobile/capacitor.config.json"), /github\.io\/AnagramX\//);
   assert.ok(fs.existsSync(path.join(tmp, "app/icons/icon-512.png")));
   // aucun nom affiché ne reste dans les fichiers du jeu (hors commentaires d'en-tête et adresses)
   for(const f of ["index.html", "en/index.html", "multi.js", "en/multi.js", "plateau.js", "en/plateau.js", "progres.js", "en/progres.js", "compte.js", "en/compte.js"]){
