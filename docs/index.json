@@ -1,5 +1,11 @@
 [
   {
+    "titre": "Choisir le nom du jeu",
+    "fichier": "aide-choix-du-nom.pdf",
+    "date": "2026-11-14",
+    "description": "Piste AnagramX : vérification en 30 minutes (stores, domaines, marques INPI/EUIPO/OMPI, pseudos sociaux, test oral), réservation du domaine, des pseudos et du nom sur les stores, dépôt de marque."
+  },
+  {
     "titre": "Administration et surveillance",
     "fichier": "administration-et-surveillance.pdf",
     "date": "2026-11-11",
@@ -56,7 +62,7 @@
   {
     "titre": "Check-list",
     "fichier": "check-list.pdf",
-    "date": "2026-11-13",
+    "date": "2026-11-14",
     "description": "Échéances (base Render en Basic avant le 10/12), démarches en cours de votre côté, décisions à prendre, prochaines étapes et ce qui est fait."
   },
   {
