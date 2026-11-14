@@ -97,7 +97,9 @@ test("anti-triche : le défi du jour est vérifié par le serveur", async () => 
   assert.equal((await essai(100, {historique:ori})).status, 400, "le mot de la carte ne compte pas");
   // aucune carte réussie : le score doit rester minime
   const rien = historique.map(h => ({...h, trouves:[]}));
-  assert.equal((await essai(300, {historique:rien})).status, 400, "des euros sans aucun mot");
+  // (les coffres du jour peuvent rapporter de l'argent sans mot : on vise au-dessus de ce qu'ils permettent)
+  let coffres = 0; while(JOUR.verifierJour("fr", j, {historique:rien}, coffres + 50) === null) coffres += 50;
+  assert.equal((await essai(coffres + 200, {historique:rien})).status, 400, "des euros sans aucun mot");
   // une partie réelle (quelques mots) est acceptée, et le score maximal d'une partie parfaite aussi
   const reel = historique.map((h, i) => ({...h, trouves:i < 3 ? h.trouves.slice(0, 1) : []}));
   assert.equal((await essai(60, {historique:reel})).d.enregistre, true, "partie légitime acceptée");
