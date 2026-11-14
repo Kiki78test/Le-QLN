@@ -353,7 +353,8 @@ let etatRelais = null;
 const ctx = {pool, erreur, limite, etatRelais: () => etatRelais ? etatRelais() : {}};
 const rappels = require("./rappels")(ctx);
 const Admin = require("./admin")({...ctx, rappels});
-const MODULES = [Admin, rappels];
+const audience = require("./audience")(ctx); audience.brancherAdmin(Admin);
+const MODULES = [Admin, rappels, audience];
 const PUBLIQUES = new Set(["POST /api/inscription", "POST /api/connexion", "POST /api/google", "GET /api/classement", "GET /api/sante-api", "POST /api/mots", "GET /api/mots"]);
 for(const m of MODULES){ Object.assign(ROUTES, m.routes); for(const r of m.publiques || []) PUBLIQUES.add(r); }
 
@@ -382,7 +383,7 @@ async function traiter(req, res, origines){
       if(moi && Date.now() - new Date(moi.vu_le).getTime() > 600e3) pool.query("update qln_joueurs set vu_le=now() where id=$1", [moi.id]).catch(() => {});
     }
     if(!moi && !PUBLIQUES.has(req.method + " " + url.pathname)) throw erreur(401, "Connexion requise.");
-    envoyer(200, await route({corps, query, moi, ip}));
+    envoyer(200, await route({corps, query, moi, ip, req}));
   }catch(e){
     const code = e.code && Number.isInteger(e.code) ? e.code : 500;
     if(code === 500) console.error("[api]", e);

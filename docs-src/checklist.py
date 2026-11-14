@@ -67,6 +67,7 @@ h += sec("Prochaines étapes de Claude", [
     ("todo", "Changer le nom partout dès qu'il est choisi (action « Changer le nom »)."),
 ])
 h += sec("Fait", [
+    ("ok", "<b>14/11</b> — règles de l'auteur appliquées ; documentation rangée par dossiers (documents dépassés retirés, synthèse « Listes de mots ») ; mesure d'audience d'Airmony dans la page admin (visites, durée, carte, sources, journal, tunnel)."),
     ("ok", "<b>11/11</b> — repris d'Airmony : remontée des erreurs, page d'administration, surveillance horaire du serveur, contrôle automatique de la traduction anglaise, ≈ 10 400 pages « Anagrammes de… » + page de présentation + sitemap, parrainage (+200 XP), rappels par notification, 9 médailles bronze/argent/or, filtre des pseudos grossiers."),
     ("ok", "<b>10/11</b> — iPad : mise en page agrandie sur tablette, appli iOS pour iPhone et iPad, captures iPad 13 pouces."),
     ("ok", "<b>10/11</b> — AdMob prêt dans les applis (module, consentement RGPD, ATT iPhone, menu « Choix publicitaires », repli de démonstration, texte de confidentialité prêt) ; barre « Pub / No Pub » conservée."),

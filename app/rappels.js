@@ -72,6 +72,7 @@ async function appliquer(r, {muet = false} = {}){
   try{
     if(natif()) await programmerNatif(r); else if(disponible()) await programmerWeb(r, !muet); else throw new Error("indispo");
     store.set("rappels", r);
+    if(r.jour || r.semaine) window.QLN_EVT && window.QLN_EVT("rappels");
     if(!muet) toast(r.jour || r.semaine ? T.actives : T.coupes, 1800);
     return true;
   }catch(e){

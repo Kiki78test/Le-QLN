@@ -277,6 +277,7 @@ function diffuserEtat(){ if(!estHote()) return; envoyer({t:"etat", joueurs:S.jou
   ...(S.phase === "jeu" ? {graine:S.graine, partie:S.partie} : {})}); }
 
 function creerSalon(opt = {}){
+  window.QLN_EVT && window.QLN_EVT("multi:salon");
   Annuaire.arreter();
   const j = {...joueurDepuisCompte(), hote:true, pret:!!opt.auto};
   S = {code:codeAleatoire(), hote:true, moi:j, joueurs:[j], canal:null, timers:{}, phase:"attente", rendu:null, auto:!!opt.auto, depart:null, nbAvant:1, duree:"courte"};
@@ -297,6 +298,7 @@ function autoTick(){
   majMsg();
 }
 function rejoindreSalon(code, opt = {}){
+  window.QLN_EVT && window.QLN_EVT("multi:rejoindre");
   Annuaire.arreter();
   const j = joueurDepuisCompte();
   if(opt.reprise) j.id = opt.reprise;   // retour dans une partie en cours : même identité qu'avant

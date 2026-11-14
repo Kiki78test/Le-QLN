@@ -172,3 +172,33 @@ test("règles du plateau (14/11) : durée courte/longue, série de 2 cartes, Pas
   assert.match(r, /2e carte de la même couleur/); assert.match(r, /passez votre prochain tour/); assert.match(r, /3 tours pour franchir/);
   assert.deepEqual(erreurs, []); await ctx.close();
 });
+
+test("audience : visites, journal, tunnel dans la page d'administration", {skip: !API && "pas de serveur de test (QLN_TEST_URL)"}, async () => {
+  // (navigateur de test présenté comme un vrai téléphone : « HeadlessChrome » est écarté comme robot)
+  const ctx = await nav.newContext({viewport:{width:400, height:860}, isMobile:true, hasTouch:true, serviceWorkers:"block", locale:"fr-FR", userAgent:"Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0 Mobile Safari/537.36"});
+  await ctx.route(/\/config\.js(\?|$)/, r => r.fulfill({contentType:"application/javascript", body:`window.QLN_API_URL=${JSON.stringify(API)};window.QLN_WS_URL="";window.QLN_GOOGLE_CLIENT_ID="";`}));
+  await ctx.addInitScript(() => { window.QLN_AUDIENCE_TEST = true; try{ localStorage.setItem("qln:progres", JSON.stringify({tuto:"fait"})); localStorage.setItem("qln:pub", "false"); }catch(e){} });
+  const p = await ctx.newPage(); const erreurs = []; p.on("pageerror", e => erreurs.push(e.message));
+  await p.goto(SITE + "/index.html"); await p.waitForSelector("#b-defi");
+  const vid = await p.evaluate(() => localStorage.getItem("qln-vid"));
+  assert.match(vid, /^[a-z0-9]{16,40}$/, "identifiant de visiteur tiré au hasard");
+  await p.mouse.click(10, 10);                                // première interaction (« act »)
+  await p.evaluate(() => { window.QLN_EVT("partie:defi"); window.QLN_EVT("fin:defi"); });
+  await p.waitForTimeout(1200);
+  const admin = await compte(ADMIN, "AdminTest");
+  const J = (await appel("/admin/journal", {jeton:admin.jeton})).d;
+  const moi = J.lignes.find(l => (l.etapes || []).some(e => e[1] === "partie:defi"));
+  assert.ok(moi, "visite présente dans le journal"); assert.equal(moi.appareil, "mobile"); assert.equal(moi.robot, false);
+  const T = (await appel("/admin/tunnel?jours=7", {jeton:admin.jeton})).d;
+  assert.ok(T.etapes.find(e => e.cle === "partie").n >= 1 && T.etapes.find(e => e.cle === "fin").n >= 1, "tunnel");
+  const V = (await appel("/admin/visites", {jeton:admin.jeton})).d;
+  assert.ok(V.jour.visiteurs >= 1 && V.jours.length === 60);
+  // l'administrateur n'est pas compté ; page admin : onglets Visites, Journal, Tunnel
+  await p.evaluate(s => localStorage.setItem("qln:session", JSON.stringify(s)), admin);
+  await p.goto(SITE + "/admin.html"); await p.waitForSelector(".tuile");
+  assert.match(await p.textContent("main"), /Visiteurs aujourd'hui/);
+  for(const [o, txt] of [["visites", /Origine des visiteurs/], ["journal", /Journal des visites/], ["tunnel", /Ont lancé une partie/]]){
+    await p.click(`[data-o="${o}"]`); await p.waitForFunction(t => new RegExp(t).test(document.querySelector("main").textContent), txt.source, {timeout:8000});
+  }
+  assert.deepEqual(erreurs, []); await ctx.close();
+});

@@ -12,10 +12,14 @@ h += "<h2>1. Ouvrir la page d'administration (une seule fois, 3 min)</h2>" + L([
     "Adresse directe : <code>https://kiki78test.github.io/Le-QLN/admin.html</code> (même navigateur que celui où vous êtes connecté au jeu)."])
 h += "<h3>Ce que montre la page</h3>" + T([
     ["Tableau de bord", "Comptes (et nouveaux sur 24 h / 7 j), joueurs actifs sur 24 h / 7 j / 30 j, défis du jour joués aujourd'hui, scores sur 7 jours par mode, amis parrainés, abonnés aux rappels, mots ajoutés, erreurs ; activité jour par jour sur 30 jours ; pays ; état du serveur (salons, mémoire, taille de la base sur 256 Mo)."],
+    ["Visites", "Visiteurs du jour, de 7 jours, 30 jours et 12 mois, pages vues, durée moyenne et médiane de visite ; courbe des 60 derniers jours (nouveaux et visiteurs qui reviennent) ; carte du monde et liste des pays ; sites d'origine (Google, Instagram…) ; appareils, langues, appli ou navigateur ; robots écartés. Bouton « Ne plus compter cet appareil » (vos téléphones et ordinateurs)."],
+    ["Journal des visites", "Pour un jour donné : chaque visiteur (sans adresse IP ni nom) avec l'heure, la durée, le pays, l'appareil, le site d'origine, les pages et son parcours étape par étape (partie lancée, finie, compte créé…)."],
+    ["Tunnel", "Visiteurs → partie lancée → partie finie → défi du jour fini → compte créé → revenus un autre jour, avec le pourcentage à chaque étape, sur 7, 30 ou 90 jours ; partie guidée (lancée, terminée, étape d'abandon) ; modes lancés ; autres actions ; taux de retour."],
     ["Erreurs", "Les erreurs rencontrées par les joueurs, regroupées (même message au même endroit) avec leur nombre, la dernière fois, le fichier, la version et l'écran. Un clic montre le détail. Effacez une ligne une fois corrigée, ou tout effacer après une mise à jour. Une pastille rouge signale les erreurs des dernières 24 h."],
     ["Joueurs", "Les 100 derniers vus, recherche par pseudo ou e-mail : XP, nombre de scores, inscription, dernière visite, parrain."],
     ["Mots ajoutés", "Les mots acceptés après contestation (vérifiés sur le Wiktionnaire). « Retirer » rend un mot de nouveau refusé pour tous."],
     ["Rappels", "Nombre d'abonnés et bouton « M'envoyer un rappel de test »."]], ["Onglet", "Contenu"], [20, 80])
+h += B("Mesure d'audience", "Reprise d'Airmony, interne et anonyme : un identifiant tiré au hasard sur l'appareil (pas de cookie), dont le serveur ne garde qu'une empreinte ; pas d'adresse IP. Détail des parcours gardé 30 jours, chiffres 13 mois. Vos appareils d'administrateur ne sont pas comptés. La politique de confidentialité le mentionne.")
 h += B("Confidentialité", "Les erreurs ne contiennent aucune donnée personnelle (message, fichier, ligne, version, écran, langue, navigateur). Seuls les comptes listés dans ADMIN_EMAILS ont accès à la page ; elle n'est pas référencée par les moteurs de recherche.")
 
 h += "<h2>2. Surveillance du serveur</h2>"

@@ -65,7 +65,11 @@ module.exports = function({pool, erreur, limite, etatRelais, rappels}){
         q("select pg_database_size(current_database())::bigint taille"),
       ]);
       const pays = (await pool.query("select coalesce(pays,'—') pays, count(*)::int n from qln_joueurs group by 1 order by 2 desc limit 8")).rows;
-      return {joueurs, scores, mots, erreurs, parrainage:parrains, pays, rappels: rappels ? await rappels.resume() : null,
+      let visites = null;
+      try{ visites = (await pool.query(`select count(distinct visiteur) filter (where jour = current_date)::int aujourdhui, count(distinct visiteur)::int semaine,
+          coalesce(round(avg(extract(epoch from derniere - premiere)))::int, 0) duree from qln_visites v
+          where jour > current_date - 7 and (actif or derniere > premiere + interval '20 seconds') and not exists (select 1 from qln_visites_exclus x where x.visiteur = v.visiteur)`)).rows[0]; }catch(e){}
+      return {joueurs, scores, mots, erreurs, parrainage:parrains, pays, visites, rappels: rappels ? await rappels.resume() : null,
         serveur:{depuis:DEMARRE, memoire:Math.round(process.memoryUsage().rss/1048576), node:process.version, base:+base.taille, ...(etatRelais ? etatRelais() : {})}};
     },
     async "GET /api/admin/activite"({moi}){

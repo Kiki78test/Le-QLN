@@ -45,6 +45,12 @@ input.champ{padding:9px 12px; border-radius:10px; border:0; background:rgba(255,
 .legende{display:flex; gap:16px; color:var(--brume); font-size:13px; margin-top:8px} .legende i{display:inline-block; width:10px; height:10px; border-radius:2px; margin-right:6px}
 .etiquettes{display:flex; justify-content:space-between; color:var(--brume); font-size:11.5px; margin-top:4px}
 .ok{color:var(--vert)} .ko{color:var(--rouge)}
+.bloc h3{margin:12px 0 6px; font:700 14px Barlow, sans-serif; color:var(--brume); text-transform:uppercase; letter-spacing:.05em}
+.br{display:grid; grid-template-columns:minmax(110px, 38%) 1fr auto; align-items:center; gap:10px; margin:5px 0; font-size:14px}
+.br i{display:block; height:12px; border-radius:6px; background:linear-gradient(90deg, #e0b52a, var(--or))} .br b{font-variant-numeric:tabular-nums}
+.br.tunnel{grid-template-columns:minmax(150px, 28%) 1fr auto minmax(0, 200px); font-size:15px} .br.tunnel i{height:20px} .br em{font-style:normal; color:var(--brume); font-size:12.5px}
+.jvm-tooltip{position:absolute; display:none; background:#0e2462; color:#fff; border:1px solid var(--or); border-radius:8px; padding:4px 8px; font:12px system-ui; z-index:999; pointer-events:none} .jvm-tooltip.active{display:block}
+.jvm-container{position:relative; overflow:hidden; width:100%; height:100%}
 .outils{display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:10px}
 @media (max-width:640px){ th:nth-child(n+5), td:nth-child(n+5){display:none} }
 </style>
@@ -65,15 +71,34 @@ const session = (() => { for(const k of ["qln:session", "qln-en:session"]){ try{
 const nb = n => Number(n || 0).toLocaleString("fr-FR");
 const date = d => d ? new Date(d).toLocaleString("fr-FR", {day:"2-digit", month:"2-digit", year:"2-digit", hour:"2-digit", minute:"2-digit"}) : "—";
 const depuis = d => { const s = (Date.now() - new Date(d)) / 1000; return s < 3600 ? Math.round(s/60) + " min" : s < 86400 ? Math.round(s/3600) + " h" : Math.round(s/86400) + " j"; };
-async function api(chemin, methode = "GET"){
-  const r = await fetch(API + "/api" + chemin, {method:methode, headers:{Authorization:"Bearer " + session.jeton}});
+async function api(chemin, methode = "GET", corps){
+  const r = await fetch(API + "/api" + chemin, {method:methode, headers:{Authorization:"Bearer " + session.jeton, ...(corps ? {"Content-Type":"application/json"} : {})}, body:corps ? JSON.stringify(corps) : undefined});
   const d = await r.json().catch(() => ({}));
   if(!r.ok) throw Object.assign(new Error(d.erreur || "Serveur injoignable."), {status:r.status});
   return d;
 }
 function message(html){ $("#onglets").innerHTML = ""; $("#main").innerHTML = `<div class="message bloc">${html}</div>`; }
 
-const ONGLETS = {tableau:"Tableau de bord", erreurs:"Erreurs", joueurs:"Joueurs", mots:"Mots ajoutés", rappels:"Rappels"};
+const ONGLETS = {tableau:"Tableau de bord", visites:"Visites", journal:"Journal des visites", tunnel:"Tunnel", erreurs:"Erreurs", joueurs:"Joueurs", mots:"Mots ajoutés", rappels:"Rappels"};
+const PAYS_NOM = (() => { try{ const d = new Intl.DisplayNames(["fr"], {type:"region"}); return c => c && c !== "?" ? (d.of(c) || c) : "Inconnu"; }catch(e){ return c => c; } })();
+const duree = s => { s = Math.round(+s || 0); return s < 60 ? s + " s" : s < 3600 ? Math.floor(s/60) + " min " + String(s%60).padStart(2, "0") : Math.floor(s/3600) + " h " + String(Math.floor(s%3600/60)).padStart(2, "0"); };
+const heure = d => new Date(d).toLocaleTimeString("fr-FR", {hour:"2-digit", minute:"2-digit"});
+const ETAPES_NOM = {"page:site":"page (FR)", "page:en":"page (EN)", "tuto:debut":"partie guidée lancée", "tuto:fin":"partie guidée terminée", "compte:inscription":"compte créé", "compte:connexion":"connexion",
+  "multi:salon":"salon créé", "multi:rejoindre":"salon rejoint", "rappels":"rappels activés", "parrain:partage":"lien d'invitation partagé", "installation":"jeu installé"};
+const nomEtape = e => ETAPES_NOM[e] || (e.startsWith("partie:") ? "partie " + e.slice(7) : e.startsWith("fin:") ? "fin " + e.slice(4) : e.startsWith("tuto:stop") ? "partie guidée arrêtée (étape " + e.slice(9) + ")" : e);
+const barres = (lignes, cle, lib) => { const mx = Math.max(1, ...lignes.map(x => x.n)); return lignes.map(x => `<div class="br"><span>${esc(lib ? lib(x[cle]) : x[cle])}</span><i style="width:${Math.max(2, 100*x.n/mx)}%"></i><b>${nb(x.n)}</b></div>`).join("") || `<p class="vide">Rien pour l'instant.</p>`; };
+function carteMonde(geo){
+  const el = document.getElementById("carte"); if(!el) return;
+  const valeurs = {}; geo.forEach(x => { if(/^[A-Z]{2}$/.test(x.cle)) valeurs[x.cle] = x.n; });
+  const go = () => { try{ el.innerHTML = ""; new jsVectorMap({selector:"#carte", map:"world", zoomButtons:false, backgroundColor:"transparent",
+      regionStyle:{initial:{fill:"#1d3a86", stroke:"#071640", strokeWidth:.4}, hover:{fillOpacity:.85}},
+      series:{regions:[{attribute:"fill", scale:{a:"#7a6420", b:"#b8921f", c:"#e0b52a", d:"#ffd84a"}, values:Object.fromEntries(Object.entries(valeurs).map(([k, v]) => { const mx = Math.max(...Object.values(valeurs)); const r = v/mx; return [k, r > .66 ? "d" : r > .33 ? "c" : r > .1 ? "b" : "a"]; }))}]},
+      onRegionTooltipShow:(e, t, code) => t.text(t.text() + " : " + (valeurs[code] || 0) + " visiteur(s)")}); }catch(e){ el.innerHTML = `<p class="vide">Carte indisponible.</p>`; } };
+  if(window.jsVectorMap) return go();
+  const a = document.createElement("script"); a.src = "https://cdnjs.cloudflare.com/ajax/libs/jsvectormap/1.5.0/js/jsvectormap.min.js";
+  a.onload = () => { const b = document.createElement("script"); b.src = "https://cdnjs.cloudflare.com/ajax/libs/jsvectormap/1.5.0/maps/world.min.js"; b.onload = go; b.onerror = go; document.head.appendChild(b); };
+  a.onerror = go; document.head.appendChild(a);
+}
 let actuel = location.hash.slice(1) in ONGLETS ? location.hash.slice(1) : "tableau", resume = null;
 function onglets(){
   $("#onglets").innerHTML = Object.entries(ONGLETS).map(([k, t]) => `<button role="tab" data-o="${k}" aria-selected="${k === actuel}">${t}${k === "erreurs" && resume && resume.erreurs.recentes ? `<span class="n">${resume.erreurs.recentes}</span>` : ""}</button>`).join("");
@@ -93,6 +118,7 @@ const VUES = {
     const max = Math.max(1, ...jours.map(x => Math.max(x.vus, x.scores)));
     return `
     <div class="grille">
+      ${resume.visites ? tuile(nb(resume.visites.aujourdhui), "Visiteurs aujourd'hui", `${nb(resume.visites.semaine)} sur 7 jours · durée moyenne ${duree(resume.visites.duree)}`) : ""}
       ${tuile(nb(j.total), "Comptes", `+${nb(j.nouveaux_24h)} en 24 h · +${nb(j.nouveaux_7j)} en 7 j`)}
       ${tuile(nb(j.actifs_24h), "Actifs 24 h", `${nb(j.actifs_7j)} sur 7 j · ${nb(j.actifs_30j)} sur 30 j`)}
       ${tuile(nb(s.jour_aujourdhui), "Défis du jour aujourd'hui", `${nb(s.scores_24h)} scores en 24 h`)}
@@ -140,6 +166,55 @@ const VUES = {
       <table><tr><th>Mot</th><th>Langue</th><th>Nature</th><th>Par</th><th>Le</th><th></th></tr>
       ${mots.map(x => `<tr><td><b>${esc(x.mot)}</b></td><td>${esc(x.langue)}</td><td>${esc(x.nature || "")}</td><td>${esc(x.pseudo || "anonyme")}</td><td>${date(x.cree_le)}</td><td><button class="b rouge" data-mot="${x.id}">Retirer</button></td></tr>`).join("") || `<tr><td colspan="6" class="vide">Aucun mot ajouté.</td></tr>`}</table></div>`;
   },
+  async visites(){
+    const v = await api("/admin/visites");
+    const per = (x, t) => tuile(nb(x.visiteurs), t, `${nb(x.pages)} pages · durée moyenne ${duree(x.duree)} · médiane ${duree(x.mediane)}`);
+    const mx = Math.max(1, ...v.jours.map(x => x.visiteurs));
+    const sansStats = (() => { try{ return localStorage.getItem("qln-sans-stats") === "1"; }catch(e){ return false; } })();
+    return `
+    <div class="grille">${per(v.jour, "Visiteurs aujourd'hui")}${per(v.semaine, "Visiteurs sur 7 jours")}${per(v.mois, "Visiteurs sur 30 jours")}${per(v.an, "Visiteurs sur 12 mois")}</div>
+    <div class="bloc"><h2>Visiteurs par jour · 60 jours</h2>
+      <div class="barres">${v.jours.map(x => `<div title="${x.jour} : ${x.visiteurs} visiteur(s) dont ${x.nouveaux} nouveau(x), ${x.pages} page(s)"><i class="b" style="height:${100*(x.visiteurs - x.nouveaux)/mx}%"></i><i class="a" style="height:${100*x.nouveaux/mx}%"></i></div>`).join("")}</div>
+      <div class="etiquettes"><span>${v.jours[0].jour.slice(5).split("-").reverse().join("/")}</span><span>aujourd'hui</span></div>
+      <div class="legende"><span><i style="background:#5fb3ff"></i>nouveaux visiteurs</span><span><i style="background:var(--or)"></i>visiteurs qui reviennent</span></div></div>
+    <div class="bloc"><h2>Origine des visiteurs · 30 jours</h2>
+      <div id="carte" style="height:340px"></div>
+      <div class="grille large" style="margin-top:12px">
+        <div><h3>Pays</h3>${barres(v.pays.slice(0, 15), "cle", PAYS_NOM)}</div>
+        <div><h3>Sites d'origine</h3>${barres(v.sources.filter(x => x.cle !== "?").slice(0, 12), "cle")}<p class="vide">${nb((v.sources.find(x => x.cle === "?") || {}).n)} visiteur(s) venus directement (adresse tapée, favori, appli).</p></div>
+        <div><h3>Appareils</h3>${barres(v.appareils, "cle")}<h3>Langues</h3>${barres(v.langues.slice(0, 8), "cle")}</div>
+        <div><h3>Appli ou navigateur</h3>${barres([{cle:"applis Android / iOS", n:v.natif.appli}, {cle:"navigateur", n:v.natif.web}, {cle:"connectés à un compte", n:v.natif.connectes}], "cle")}</div>
+      </div>
+      <p class="vide">Pays : d'après Cloudflare quand il le donne, sinon la région de la langue du navigateur. ${nb(v.robots)} passage(s) de robots écartés sur 30 jours. Appareils exclus : ${nb(v.exclus)}.
+        ${sansStats ? `<b class="ok">Cet appareil n'est pas compté.</b>` : `<button class="b" id="exclure">Ne plus compter cet appareil</button>`}</p></div>`;
+  },
+  async journal(jour){
+    jour = jour || new Date().toISOString().slice(0, 10);
+    const j = await api("/admin/journal?jour=" + jour);
+    return `<div class="bloc"><h2>Journal des visites</h2>
+      <div class="outils"><input class="champ" type="date" id="jj" value="${jour}" style="min-width:0"><span class="vide">${nb(j.humains)} visiteur(s)${j.visiteurs - j.humains ? ` · ${nb(j.visiteurs - j.humains)} robot(s) probable(s), grisés` : ""} · heures de votre appareil · un clic montre le parcours</span></div>
+      <table><tr><th>Heure</th><th>Durée</th><th>Pays</th><th>Appareil</th><th>Venu de</th><th>Pages</th><th>Parcours</th></tr>
+      ${j.lignes.map(x => `<tr style="${x.robot ? "opacity:.45" : ""}"><td>${heure(x.premiere)}</td><td class="n">${duree(x.duree)}</td><td>${esc(PAYS_NOM(x.pays))}</td>
+        <td>${esc(x.appareil)}${x.natif ? " · appli" : ""}${x.connecte ? " · compte" : ""}${x.jours_avant ? ` · <b class="ok">revenu</b>` : ""}</td><td>${esc(x.source || "direct")}</td><td class="n">${nb(x.pages)}</td>
+        <td><details><summary>${(x.etapes || []).filter(e => !String(e[1]).startsWith("page:")).length} étape(s)</summary><div class="pile">${(x.etapes || []).map(e => heure(e[0]) + "  " + esc(nomEtape(String(e[1])))).join("\n")}</div></details></td></tr>`).join("") || `<tr><td colspan="7" class="vide">Aucune visite ce jour-là.</td></tr>`}</table></div>`;
+  },
+  async tunnel(jours){
+    jours = jours || 30;
+    const t = await api("/admin/tunnel?jours=" + jours);
+    const base = Math.max(1, t.etapes[0].n);
+    const arrets = Object.entries(t.tuto.arrets).sort((a, b) => b[1] - a[1]);
+    return `<div class="bloc"><h2>Tunnel · ${jours} jours</h2>
+      <div class="outils">${[7, 30, 90].map(n => `<button class="b ${n === jours ? "or" : ""}" data-j="${n}">${n} jours</button>`).join("")}</div>
+      ${t.etapes.map((e, i) => { const prec = i ? t.etapes[i-1].n : e.n; return `<div class="br tunnel"><span>${esc(e.libelle)}</span><i style="width:${Math.max(2, 100*e.n/base)}%"></i><b>${nb(e.n)}</b><em>${i ? (prec ? Math.round(100*e.n/prec) : 0) + " % de l'étape précédente" : ""}</em></div>`; }).join("")}
+      <p class="vide">Un visiteur = un appareil. « Revenus » : vus au moins deux jours différents. Robots et appareils exclus ne sont pas comptés.</p></div>
+    <div class="grille large">
+      <div class="bloc"><h2>Partie guidée</h2><p>${nb(t.tuto.debut)} lancée(s), ${nb(t.tuto.fin)} terminée(s)${t.tuto.debut ? ` (${Math.round(100*t.tuto.fin/t.tuto.debut)} %)` : ""}.</p>
+        ${arrets.length ? `<h3>Où elle s'arrête</h3>${barres(arrets.map(([k, n]) => ({cle:"étape " + k, n})), "cle")}` : `<p class="vide">Aucun abandon.</p>`}</div>
+      <div class="bloc"><h2>Modes lancés</h2>${barres(Object.entries(t.modes).sort((a, b) => b[1] - a[1]).map(([k, n]) => ({cle:k, n})), "cle")}</div>
+      <div class="bloc"><h2>Autres actions</h2>${barres(Object.entries(t.autres).sort((a, b) => b[1] - a[1]).map(([k, n]) => ({cle:nomEtape(k), n})), "cle")}</div>
+      <div class="bloc"><h2>Est-ce qu'ils reviennent ?</h2><p>${nb(t.retours.nouveaux)} nouveau(x) visiteur(s) sur la période, dont <b>${nb(t.retours.revenus)}</b> revenu(s) un autre jour${t.retours.nouveaux ? ` (${Math.round(100*t.retours.revenus/t.retours.nouveaux)} %)` : ""}.</p></div>
+    </div>`;
+  },
   async rappels(){
     const r = (resume || await api("/admin/resume")).rappels;
     return `<div class="bloc"><h2>Rappels par notification</h2>
@@ -159,6 +234,12 @@ const BRANCHER = {
     $("#chercher").onclick = go; $("#recherche").onkeydown = e => { if(e.key === "Enter") go(); };
   },
   mots(){ document.querySelectorAll("[data-mot]").forEach(b => b.onclick = async () => { if(confirm("Retirer ce mot du jeu ?")){ await api("/admin/mots?id=" + b.dataset.mot, "DELETE"); afficher(); } }); },
+  visites(){
+    const b = $("#exclure"); if(b) b.onclick = async () => { try{ const v = localStorage.getItem("qln-vid"); if(v) await api("/admin/exclure", "POST", {v}); localStorage.setItem("qln-sans-stats", "1"); }catch(e){} afficher(); };
+    api("/admin/visites").then(v => carteMonde(v.pays)).catch(() => {});
+  },
+  journal(){ const i = $("#jj"); i.onchange = async () => { $("#main").innerHTML = await VUES.journal(i.value); BRANCHER.journal(); }; },
+  tunnel(){ document.querySelectorAll("[data-j]").forEach(b => b.onclick = async () => { $("#main").innerHTML = await VUES.tunnel(+b.dataset.j); BRANCHER.tunnel(); }); },
   rappels(){ $("#test").onclick = async () => { const el = $("#test-res"); try{ const d = await api("/admin/rappel-test", "POST"); el.textContent = d.abonnements ? `${d.envoyes} rappel(s) envoyé(s) sur ${d.abonnements} appareil(s).` : "Aucun appareil abonné avec ce compte."; }catch(e){ el.textContent = e.message; } }; },
 };
 

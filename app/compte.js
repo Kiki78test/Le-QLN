@@ -192,6 +192,7 @@ function ecranCompte(onglet = "connexion"){
       }
       const d = await api(onglet === "inscription" ? "/inscription" : "/connexion", {methode:"POST", corps, auth:false});
       ouvrirSession(d); Son.ok(); toast(TXT.bienvenue(d.joueur.pseudo), 2200);
+      window.QLN_EVT && window.QLN_EVT(onglet === "inscription" ? "compte:inscription" : "compte:connexion");
       if(d.parraine){ store.set("parrain", null); const g = Progres.bonusParrainage({filleul:true}); if(g) setTimeout(() => toast(TP.bonusFilleul(g), 3000), 2400); }
       await synchroniser(true);
       ecranConnecte();
@@ -266,6 +267,7 @@ async function brancherParrainage(){
   $("#ct-copier").onclick = copier;
   $("#ct-lien").onclick = () => $("#ct-lien").select();
   $("#ct-inviter").onclick = () => {
+    window.QLN_EVT && window.QLN_EVT("parrain:partage");
     if(navigator.share) navigator.share({text:TP.partageTxt + " " + lien}).catch(() => {});
     else copier();
   };

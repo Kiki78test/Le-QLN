@@ -232,6 +232,7 @@ function carteTuto(){
   return null;
 }
 function lancerTuto(){
+  window.QLN_EVT && window.QLN_EVT("tuto:debut");
   const c = carteTuto(); if(!c){ nouvellePartie("entrainement", "v"); return; }
   if(typeof arreterVitrine === "function") arreterVitrine();
   window.QLN_CARTE_FORCEE = c;
@@ -292,6 +293,7 @@ function placer(){
 }
 function arreterCoach(){ if(!coach) return; cancelAnimationFrame(coach.raf); clearInterval(coach.poll); coach.el.remove(); coach = null; }
 function finTuto(fini, quitte){
+  window.QLN_EVT && window.QLN_EVT(fini ? "tuto:fin" : "tuto:stop" + ((coach ? coach.i : 0) + 1));   // audience : étape où la partie guidée s'arrête
   arreterCoach();
   D.tuto = fini ? "fait" : (D.tuto === "fait" ? "fait" : "vu"); sauver();
   if(fini){ debloquer("premiers-pas"); ajouterXp(25); xpPartie = 0; sauver(); toast(TXT.tutoFini, 2500); }

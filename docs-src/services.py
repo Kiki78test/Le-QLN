@@ -86,6 +86,8 @@ h += "<h2>3. Base de données (PostgreSQL)</h2><p class='petit'>Tables créées 
     ["qln_joueurs (ajouts)", "code_parrain (unique, 6 caractères), parrain → qln_joueurs", "Parrainage"],
     ["qln_erreurs", "empreinte (unique), message, source, ligne, pile, version, ecran, langue, natif, agent, nombre, premiere, derniere", "Erreurs de l'appli regroupées (1 000 plus récentes gardées) — <code>server/admin.js</code>"],
     ["qln_push", "endpoint (unique), cles, langue, joueur, jour, semaine, heure, decalage, dernier_jour, derniere_semaine, echecs", "Abonnements aux rappels Web Push — <code>server/rappels.js</code>"],
+    ["qln_visites", "jour, visiteur (empreinte), pays, appareil, langue, source, natif, connecte, premiere, derniere, actif, pages, etapes, suspect", "Mesure d'audience anonyme (une ligne par visiteur et par jour ; étapes gardées 30 jours, lignes 13 mois) — <code>server/audience.js</code>"],
+    ["qln_visites_exclus", "visiteur", "Appareils retirés des statistiques (administrateurs, « ne plus compter cet appareil »)"],
     ["qln_config", "cle, valeur (jsonb)", "Clés VAPID des rappels, créées au premier démarrage (<b>ne pas supprimer</b> : tous les abonnements seraient perdus)"]],
     ["Table", "Colonnes", "Usage"])
 
@@ -100,9 +102,10 @@ h += "<h2>4. API du serveur (<code>/api/…</code>, JSON)</h2>" + T([
     ["POST · GET /api/mots", "mot contesté (vérifié sur le Wiktionnaire) / liste des mots ajoutés", "30 / h / IP"],
     ["GET /api/sante-api", "diagnostic de la base (code d'erreur seulement)", "public"],
     ["GET /api/parrainage", "code d'invitation (créé à la demande), amis inscrits, amis pris en compte (≥ 50 XP, 20 au plus)", "connecté"],
+    ["POST /api/journal", "audience : page chargée, étape du jeu, présence (30 s), interaction, départ — identifiant de visiteur tiré au hasard sur l'appareil", "400 / h / IP"],
     ["POST /api/log", "erreur de l'appli : message, fichier, ligne, pile, version, écran, langue", "40 / h / IP"],
     ["GET /api/rappels/cle · POST /api/rappels/abonner · /desabonner", "clé publique VAPID ; abonnement (jour, semaine, heure, décalage horaire, langue)", "30 / h / IP"],
-    ["/api/admin/… (resume, activite, erreurs, joueurs, mots, rappel-test)", "statistiques et gestion — réservé aux adresses ADMIN_EMAILS", "administrateur"]],
+    ["/api/admin/… (resume, activite, visites, journal, tunnel, exclure, erreurs, joueurs, mots, rappel-test)", "statistiques et gestion — réservé aux adresses ADMIN_EMAILS", "administrateur"]],
     ["Route", "Données", "Limite anti-abus"])
 h += B("Multijoueur (WebSocket <code>wss://le-qln.onrender.com/ws</code>)", "Relais : le serveur ne joue pas, il transmet. L'hôte de chaque salon détient l'état et le diffuse.", [
     "Messages au serveur : <code>annuaire</code> / <code>annuaire-stop</code> (liste des salons en attente + nombre de joueurs en ligne), <code>entrer</code> (rejoindre ou créer un canal), <code>publier</code> (résumé public du salon, nettoyé et borné par le serveur), <code>sortir</code> ; tout autre message est relayé aux membres du salon.",

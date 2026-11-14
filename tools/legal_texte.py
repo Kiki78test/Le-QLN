@@ -56,6 +56,8 @@ def contenu(lang, M):
                     ]),
                     ("Données techniques", [
                         "Comme tout service en ligne, nos hébergeurs voient votre adresse IP et conservent des journaux techniques pour la sécurité et le bon fonctionnement. Le serveur limite le nombre de requêtes par adresse (compteurs en mémoire, effacés automatiquement) pour se protéger des abus. Le jeu ne dépose aucun cookie de suivi.",
+                        "Mesure d'audience interne et anonyme : pour savoir combien de personnes jouent et où elles s'arrêtent, l'appli tire au hasard un identifiant de visiteur gardé sur votre appareil (pas de cookie) ; notre serveur n'en conserve qu'une empreinte, avec le pays (d'après la langue de l'appareil ou l'hébergeur), le type d'appareil, le site d'où vous venez, la durée de visite et les étapes du jeu franchies (partie lancée, partie terminée, compte créé…). Aucune adresse IP, aucun nom, aucun partage avec un tiers ; détail gardé 30 jours, chiffres agrégés 13 mois. Vous pouvez vous y opposer à tout moment en nous écrivant : votre appareil sera retiré des statistiques.",
+                        "Erreurs de l'appli : quand une erreur technique survient, le message, le fichier, la version et le type d'appareil sont envoyés au serveur pour la corriger (sans donnée personnelle).",
                     ]),
                     ("Pourquoi, et sur quelle base légale ?", [[
                         "Fournir le jeu et le compte (synchronisation entre appareils, classements) : exécution du service que vous demandez.",
@@ -166,6 +168,8 @@ def contenu(lang, M):
                 ]),
                 ("Technical data", [
                     "Like any online service, our hosting providers see your IP address and keep technical logs for security and reliability. The server limits the number of requests per address (in-memory counters, erased automatically) to protect itself from abuse. The game sets no tracking cookies.",
+                    "Internal, anonymous audience measurement: to know how many people play and where they stop, the app draws a random visitor ID kept on your device (no cookie); our server only keeps a fingerprint of it, with the country (from the device language or the host), the device type, the site you came from, the visit length and the game steps reached (game started, game finished, account created…). No IP address, no name, nothing shared with third parties; details kept 30 days, aggregated figures 13 months. You can object at any time by writing to us: your device will be removed from the statistics.",
+                    "App errors: when a technical error occurs, the message, file, version and device type are sent to the server so we can fix it (no personal data).",
                 ]),
                 ("Why, and on what legal basis?", [[
                     "Providing the game and the account (syncing between devices, leaderboards): performance of the service you request.",

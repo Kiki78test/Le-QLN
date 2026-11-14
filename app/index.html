@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <script src="erreurs.js"></script>
+<script src="audience.js"></script>
 <script>/* tablettes tactiles (iPad…) : la mise en page « téléphone » est agrandie à la taille de l'écran (fenêtre virtuelle de 500 à 680 px de large) */
 (function(){ try{ var s = Math.min(screen.width, screen.height); if(matchMedia("(pointer:coarse)").matches && s >= 700){ var w = Math.round(Math.max(500, Math.min(680, s / 1.55)));
   document.querySelector('meta[name="viewport"]').setAttribute("content", "width=" + w + ", viewport-fit=cover"); document.documentElement.classList.add("tablette"); } }catch(e){} })();</script>
@@ -1786,6 +1787,7 @@ function fantome(p){
 
 let P = null, minuteur = null;
 function nouvellePartie(mode, nivEntrainement, opt={}){
+  window.QLN_EVT && window.QLN_EVT("partie:" + mode);   // audience : tunnel « a lancé une partie »
   arreterVitrine();
   // séries : cartes préparées d'abord (thème, ou dictionnaire de l'autre langue chargé à la demande)
   if(mode==="serie" && !opt.cfg){

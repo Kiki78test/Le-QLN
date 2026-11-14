@@ -148,7 +148,7 @@
     "fichier": "technique/administration-et-surveillance.pdf",
     "dossier": "technique",
     "rubrique": "Technique et administration",
-    "date": "2026-11-11",
+    "date": "2026-11-14",
     "description": "Suivre le jeu en ligne : ouvrir la page d'administration (ADMIN_EMAILS sur Render), erreurs remontées, UptimeRobot, Google Search Console et sitemap des pages « Anagrammes de… », rappels par notification, parrainage, filtre des pseudos."
   },
   {
@@ -156,7 +156,7 @@
     "fichier": "technique/services-externes.pdf",
     "dossier": "technique",
     "rubrique": "Technique et administration",
-    "date": "2026-11-11",
+    "date": "2026-11-14",
     "description": "Note technique : services (GitHub, Render, Google, Apple, Resend, Cloudflare, Wiktionnaire), variables d'environnement et secrets, tables de la base, API et multijoueur, anti-triche, stockage de l'appli, applis mobiles, tests, coûts et échéances."
   },
   {

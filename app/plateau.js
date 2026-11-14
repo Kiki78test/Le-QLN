@@ -414,6 +414,7 @@ function surveillerPresence(){
   }, 1000);
 }
 async function demarrerMulti(opt){
+  window.QLN_EVT && window.QLN_EVT("partie:multi");
   // opt : {graine, joueurs:[{id, pseudo, couleur}], moi, hote, hoteId, envoyer, present, quitter, retour}
   arreterVitrine(); journalFini = [];
   const joueurs = opt.joueurs.map(x => ({id:x.id, nom:x.pseudo, couleur:PIONS[x.couleur % PIONS.length].c, ia:null,
@@ -488,6 +489,7 @@ function config(){
    Démarrage, ordre de départ
    ========================================================================= */
 async function demarrer(cfg){
+  window.QLN_EVT && window.QLN_EVT("partie:ia");
   const advC = PIONS.map((p,i)=>i).filter(i=>i!==cfg.couleur).slice(0, cfg.nb);
   const joueurs = [
     {id:"h", nom: cfg.nom || "Vous", couleur: PIONS[cfg.couleur].c, ia:null},
