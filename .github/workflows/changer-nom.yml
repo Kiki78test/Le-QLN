@@ -1,7 +1,7 @@
 # Change le nom du jeu partout, sans rien installer : onglet Actions → « Changer le nom » → Run workflow → saisir le nom
 # (et, si besoin, les 2 à 4 lettres de l'icône). Le script met à jour le titre, le logo, les menus, le partage, le manifeste,
 # l'appli Android, la version anglaise et les icônes, puis envoie le tout : le site se met à jour, les tests et la vérification
-# en ligne repartent, et l'appli Android est refabriquée. Les adresses techniques (…/Le-QLN/, noms Render) ne changent pas.
+# en ligne repartent, et l'appli Android est refabriquée. Les adresses techniques (…/AnagramX/, noms Render) ne changent pas.
 name: Changer le nom
 on:
   workflow_dispatch:

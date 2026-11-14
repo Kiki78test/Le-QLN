@@ -28,7 +28,7 @@ const TXT = {
   indices:"Indices utilisés", parCouleur:"Par couleur", meilleurTemps:"meilleur temps", aucune:"pas encore jouée", succes:"Succès", sur:"sur",
   vide:"Jouez quelques cartes : vos statistiques apparaîtront ici.", reinit:"Remettre à zéro", reinitQ:"Effacer votre progression et vos statistiques ?", reinitOk:"Progression remise à zéro.", annuler:"Annuler", effacer:"Effacer",
   partageTitre:"Le-QLN · Défi du jour", partageCopie:"Résultat copié : collez-le où vous voulez.", serieTxt:n=>`🔥 ${n} jour${n>1?"s":""}`,
-  url:"https://kiki78test.github.io/Le-QLN/",
+  url:"https://kiki78test.github.io/AnagramX/",
   S:{
     "premiers-pas":["Premiers pas","Terminer la partie guidée"],
     "premiere-carte":["Première carte","Gagner une carte"],

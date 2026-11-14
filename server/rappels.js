@@ -36,7 +36,7 @@ const TEXTES = {
       semT:"New weekly challenge 🏆", sem:"A new challenge begins: one ranked attempt. Good luck!",
       testT:"Reminders on ✓", test:"Le-QLN reminders will show up here."},
 };
-const SITE = "https://kiki78test.github.io/Le-QLN/";
+const SITE = "https://kiki78test.github.io/AnagramX/";
 
 module.exports = function({pool, erreur, limite}){
   let pret = false, cle = null;

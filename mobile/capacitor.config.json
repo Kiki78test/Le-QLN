@@ -3,7 +3,7 @@
   "appName": "Le-QLN",
   "webDir": "www",
   "server": {
-    "url": "https://kiki78test.github.io/Le-QLN/?app=native",
+    "url": "https://kiki78test.github.io/AnagramX/?app=native",
     "cleartext": false,
     "errorPath": "index.html",
     "allowNavigation": [

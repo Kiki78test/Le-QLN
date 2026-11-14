@@ -18,7 +18,7 @@ Adaptation en appli web installable du jeu de plateau **Le-QLN** (2 à 6 joueurs
 | Noir | 10 et + | 200 € | 3 min |
 
 ## Organisation du dépôt
-Le jeu web est dans **`app/`**. Il est publié sur GitHub Pages par l'action « Publication du site » (`.github/workflows/pages.yml`), à la même adresse : `https://kiki78test.github.io/Le-QLN/` (la documentation `docs/` y est ajoutée par `tools/site.py`).
+Le jeu web est dans **`app/`**. Il est publié sur GitHub Pages par l'action « Publication du site » (`.github/workflows/pages.yml`), à la même adresse : `https://kiki78test.github.io/AnagramX/` (la documentation `docs/` y est ajoutée par `tools/site.py`).
 
 | Dossier / fichier | Contenu |
 |---|---|

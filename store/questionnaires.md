@@ -15,8 +15,8 @@ Cohérentes avec la politique de confidentialité. Généré par `tools/build_st
 | Public cible | 13 ans et plus (évite les obligations « Familles » pour les annonces) | Âge : 4+ (questionnaire : aucun contenu sensible) |
 | Classification | Questionnaire IARC : jeu ; violence, peur, sexualité, langage : non ; jeux d'argent : non (monnaie virtuelle sans valeur, pas de mise réelle) ; interactions entre utilisateurs : oui (pseudos et réactions en multijoueur, pas de discussion libre) → PEGI 3 attendu | Aucun contenu sensible ; « jeux d'argent simulés » : non ; contenu généré par les utilisateurs : pseudos uniquement → 4+ |
 | Coordonnées | E-mail de contact obligatoire (marque.json → contact_email), site facultatif | URL d'assistance obligatoire : page de mentions légales ou site du jeu |
-| Politique de confidentialité | https://kiki78test.github.io/Le-QLN/confidentialite.html (EN : https://kiki78test.github.io/Le-QLN/en/privacy.html) | même adresse |
-| Suppression du compte | Dans l'appli : Mon compte › Supprimer mon compte. Lien web demandé : https://kiki78test.github.io/Le-QLN/confidentialite.html#droits (explique la suppression dans l'appli ou par e-mail) | Suppression dans l'appli : oui (obligatoire chez Apple) |
+| Politique de confidentialité | https://kiki78test.github.io/AnagramX/confidentialite.html (EN : https://kiki78test.github.io/AnagramX/en/privacy.html) | même adresse |
+| Suppression du compte | Dans l'appli : Mon compte › Supprimer mon compte. Lien web demandé : https://kiki78test.github.io/AnagramX/confidentialite.html#droits (explique la suppression dans l'appli ou par e-mail) | Suppression dans l'appli : oui (obligatoire chez Apple) |
 | Accès aux fonctions | Aucune fonction ne demande de connexion pour l'examen (compte facultatif) : rien à fournir | Notes pour l'examen : « Compte facultatif ; le multijoueur se teste avec deux appareils ou la partie rapide » |
 
 ## Google Play — Sécurité des données

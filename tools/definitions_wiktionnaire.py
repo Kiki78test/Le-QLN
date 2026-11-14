@@ -5,7 +5,7 @@ d'origine écrites sans accents). Lancé par l'action GitHub « Définitions (Wi
 import json, pathlib, re, time, unicodedata, urllib.parse, urllib.request
 R = pathlib.Path(__file__).resolve().parent.parent
 API = "https://fr.wiktionary.org/w/api.php"
-UA = {"User-Agent": "Le-QLN/1.0 (jeu d'anagrammes ; https://github.com/Kiki78test/Le-QLN)", "Content-Type": "application/x-www-form-urlencoded"}
+UA = {"User-Agent": "Le-QLN/1.0 (jeu d'anagrammes ; https://github.com/Kiki78test/AnagramX)", "Content-Type": "application/x-www-form-urlencoded"}
 N = lambda w: "".join(c for c in unicodedata.normalize("NFD", w) if unicodedata.category(c) != "Mn").lower().replace("œ", "oe")
 def api(**p):
     p.update(format="json", formatversion="2", maxlag="5")

@@ -1,5 +1,5 @@
 # Le-QLN — serveur (multijoueur + comptes + classements) sur Render.
-# Mise en place unique : Render → New → Blueprint → dépôt Kiki78test/Le-QLN → Apply (la base dédiée est créée et branchée toute seule).
+# Mise en place unique : Render → New → Blueprint → dépôt Kiki78test/AnagramX → Apply (la base dédiée est créée et branchée toute seule).
 # Ensuite, chaque modification poussée dans server/ (ou app/analyse.js, app/data) est redéployée automatiquement,
 # et seulement si les tests GitHub sont passés (autoDeployTrigger: checksPass).
 services:

@@ -4,7 +4,7 @@ Le nom du jeu vient de marque.json : ne rien écrire en dur ici (utiliser {nom})
 Limites : titre Play 30 car., description courte Play 80, description longue 4000 ; App Store : nom 30,
 sous-titre 30, texte promotionnel 170, mots-clés 100 (séparés par des virgules, sans espace), description 4000."""
 
-SITE = "https://kiki78test.github.io/Le-QLN/"
+SITE = "https://kiki78test.github.io/AnagramX/"
 LIMITES = {"titre": 30, "courte": 80, "longue": 4000, "sous_titre": 30, "promo": 170, "mots_cles": 100, "nouveautes": 500}
 
 # légendes des captures (même ordre que les scènes de tools/store_captures.js)

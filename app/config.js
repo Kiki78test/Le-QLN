@@ -7,7 +7,7 @@ window.QLN_WS_URL = window.QLN_API_URL ? window.QLN_API_URL.replace(/^http/, "ws
 window.QLN_GOOGLE_CLIENT_ID = "";
 
 // Adresse publique du jeu : liens partagés depuis l'appli iOS (où le jeu est embarqué, donc sans adresse web).
-window.QLN_SITE_URL = "https://kiki78test.github.io/Le-QLN/";
+window.QLN_SITE_URL = "https://kiki78test.github.io/AnagramX/";
 // Applis Android et iOS (enveloppe Capacitor, dossier mobile/) : reconnues par leur agent utilisateur.
 window.QLN_NATIVE = /LeQLNApp\//.test(navigator.userAgent);
 if(window.QLN_NATIVE){

@@ -13,7 +13,7 @@ OK, ATT, NON = "<span class='ok'>en place</span>", "<span class='att'>en attente
 
 h = ""
 h += "<h2>Vue d'ensemble</h2>" + T([
-    ["<b>GitHub</b>", "Code (dépôt public <code>Kiki78test/Le-QLN</code>), site du jeu (GitHub Pages), tests et fabrications automatiques (Actions)", "github.com", "gratuit", OK],
+    ["<b>GitHub</b>", "Code (dépôt public <code>Kiki78test/AnagramX</code>), site du jeu (GitHub Pages), tests et fabrications automatiques (Actions)", "github.com", "gratuit", OK],
     ["<b>Render</b>", "Serveur Node (multijoueur, comptes, classements, mots contestés, anti-triche) + base PostgreSQL, région Francfort", "dashboard.render.com", "web Free ; base Free → Basic 256 Mo ≈ 6 $/mois", OK],
     ["<b>Wiktionnaire</b>", "Définitions des mots (depuis l'appli) et vérification des mots contestés (depuis le serveur)", "fr/en.wiktionary.org", "gratuit, sans clé", OK],
     ["<b>Google Play Console</b>", "Publication Android", "play.google.com/console", "25 $ une fois", ATT + " (identité)"],
@@ -36,7 +36,7 @@ h += B("Règles d'or", "", [
     "Ne jamais renommer les clés de stockage <code>qln:</code> / <code>qln-en:</code> de l'appli, même en changeant le nom du jeu : les joueurs perdraient leur progression."], cls="hl")
 
 h += "<h2>1. GitHub — code, site et automatismes</h2>"
-h += B("Dépôt et site", "Dépôt <b>Kiki78test/Le-QLN</b> (public), branche <code>main</code>. Le jeu est dans <code>app/</code> ; l'action « Publication du site » (<code>pages.yml</code>) assemble <code>app/</code> + <code>docs/</code> (<code>tools/site.py</code>) et publie sur GitHub Pages, à la même adresse : <code>https://kiki78test.github.io/Le-QLN/</code> (anglais : <code>/en/</code>). Réglage Pages : Source « GitHub Actions ».", [
+h += B("Dépôt et site", "Dépôt <b>Kiki78test/AnagramX</b> (public), branche <code>main</code>. Le jeu est dans <code>app/</code> ; l'action « Publication du site » (<code>pages.yml</code>) assemble <code>app/</code> + <code>docs/</code> (<code>tools/site.py</code>) et publie sur GitHub Pages, à la même adresse : <code>https://kiki78test.github.io/AnagramX/</code> (anglais : <code>/en/</code>). Réglage Pages : Source « GitHub Actions ».", [
     "Séries à thème : listes dans <code>tools/themes_listes.py</code>, construites par <code>python3 tools/build_themes.py</code> en <code>app/data/themes-fr.json</code> et <code>app/en/data/themes-en.json</code> ; séries en espagnol, allemand, italien : <code>python3 tools/build_dict_langues.py</code> → <code>app/data/langues/</code> (+ tableur de relecture dans docs/).",
     "Fichiers du jeu dans <code>app/</code> : <code>index.html</code>, <code>plateau.js</code>, <code>multi.js</code>, <code>series.js</code>, <code>barre.js</code>, <code>compte.js</code>, <code>progres.js</code>, <code>pub.js</code>, <code>infos.js</code>, <code>legal.js</code>, <code>analyse.js</code>, <code>config.js</code>, <code>sw.js</code> ; dictionnaires <code>app/data/fr.json</code> et <code>app/en/data/en.json</code>. À la racine : <code>marque.json</code>, <code>docs/</code>, <code>docs-src/</code>, <code>tools/</code>, <code>tests/</code>, <code>server/</code>, <code>mobile/</code>, <code>store/</code>.",
     "Version anglaise <b>générée</b> : <code>python3 tools/build_en.py</code> (tables FR→EN dans <code>tools/en_*.py</code>). Ne pas modifier <code>app/en/*.js</code> à la main.",

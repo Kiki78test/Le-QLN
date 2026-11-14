@@ -3,7 +3,7 @@
 
   python3 tools/changer_nom.py "NouveauNom" [--sigle XYZ]
 
-Ne touche PAS aux identifiants techniques (adresse GitHub Pages /Le-QLN/, noms des services Render, clés « qln: » du
+Ne touche PAS aux identifiants techniques (adresse GitHub Pages /AnagramX/, noms des services Render, clés « qln: » du
 stockage local : changer ces dernières ferait perdre leur progression aux joueurs). Le nom courant est lu dans marque.json.
 Après le changement : régénère la version anglaise (build_en.py) et l'icône (--sigle = 2-4 lettres affichées sur l'icône)."""
 import json, pathlib, re, subprocess, sys
@@ -22,7 +22,7 @@ def valider(nom):
         sys.exit("Nom refusé : 2 à 24 caractères, lettres, chiffres, espaces, tirets ou points (pas d'apostrophe ni de guillemet).")
 
 def remplacer(texte, ancien, nouveau):
-    # « Le-QLN » affiché ; on laisse les adresses (/Le-QLN/), les fichiers (Le-QLN-Android…) et les liens github.io/…
+    # « Le-QLN » affiché ; on laisse les adresses (/AnagramX/), les fichiers (Le-QLN-Android…) et les liens github.io/…
     maj_a, maj_n = ancien.upper(), nouveau.upper()
     gardes = r"(?!/|-Android|-tests|-mots|-anagram)"
     texte, n1 = re.subn(r"(?<!io/)" + re.escape(ancien) + gardes, lambda m: nouveau, texte)

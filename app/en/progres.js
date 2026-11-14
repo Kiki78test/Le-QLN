@@ -28,7 +28,7 @@ const TXT = {
   indices:"Hints used", parCouleur:"By colour", meilleurTemps:"best time", aucune:"not played yet", succes:"Achievements", sur:"of",
   vide:"Play a few cards: your stats will show up here.", reinit:"Reset", reinitQ:"Erase your progress and stats?", reinitOk:"Progress reset.", annuler:"Cancel", effacer:"Erase",
   partageTitre:"Le-QLN · Daily challenge", partageCopie:"Result copied: paste it anywhere.", serieTxt:n=>`🔥 ${n} day${n>1?"s":""}`,
-  url:"https://kiki78test.github.io/Le-QLN/en/",
+  url:"https://kiki78test.github.io/AnagramX/en/",
   S:{
     "premiers-pas":["First steps","Finish the guided game"],
     "premiere-carte":["First card","Win a card"],

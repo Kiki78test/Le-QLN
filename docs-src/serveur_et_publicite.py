@@ -21,7 +21,7 @@ st.append(tbl([["Service","Rôle pour Le-QLN","État","Coût"],
 
 st.append(Paragraph("2. Render : fait le 10 novembre (procédure pour mémoire)",H))
 st.append(Paragraph("Tout le service est décrit dans le fichier <b>render.yaml</b> du dépôt (« Blueprint ») : serveur, base de données dédiée, variables. Rien à recopier.",P))
-st+=nums(["Render → <b>New → Blueprint</b> → choisir le dépôt <b>Kiki78test/Le-QLN</b>.",
+st+=nums(["Render → <b>New → Blueprint</b> → choisir le dépôt <b>Kiki78test/AnagramX</b>.",
 "Render affiche ce qu'il va créer : le service <b>le-qln</b> (Frankfurt, gratuit pour les essais) et la base <b>le-qln-db</b> (PostgreSQL dédiée, ≈ 6 $/mois). Cliquer <b>Apply</b>.",
 "Attendre « Live » (3-5 min), puis ouvrir <b>https://le-qln.onrender.com/sante</b> : la réponse doit contenir <b>\"api\":true</b>.",
 "L'adresse est renseignée dans config.js : les comptes, classements et salons en ligne sont actifs."])

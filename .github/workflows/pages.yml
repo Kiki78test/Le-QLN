@@ -1,4 +1,4 @@
-# Publie le site du jeu sur GitHub Pages, à la même adresse qu'avant : https://kiki78test.github.io/Le-QLN/
+# Publie le site du jeu sur GitHub Pages, à la même adresse qu'avant : https://kiki78test.github.io/AnagramX/
 # Le jeu est dans app/ ; la documentation (docs/) est ajoutée pour le menu « Documentation » (tools/site.py).
 # Déclenchement : chaque envoi qui touche app/ ou docs/, ou à la demande (Actions → « Publication du site » → Run workflow).
 # Réglage du dépôt (une seule fois, déjà fait) : Settings → Pages → Source : « GitHub Actions ».

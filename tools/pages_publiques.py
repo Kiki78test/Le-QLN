@@ -12,7 +12,7 @@ APP = RACINE / "app"
 MARQUE = json.loads((RACINE / "marque.json").read_text(encoding="utf-8")) if (RACINE / "marque.json").exists() else {}
 NOM = MARQUE.get("nom") or "Le-QLN"
 cfg = (APP / "config.js").read_text(encoding="utf-8")
-SITE = (re.search(r'QLN_SITE_URL = "([^"]+)"', cfg) or [None, "https://kiki78test.github.io/Le-QLN/"])[1].rstrip("/") + "/"
+SITE = (re.search(r'QLN_SITE_URL = "([^"]+)"', cfg) or [None, "https://kiki78test.github.io/AnagramX/"])[1].rstrip("/") + "/"
 IMG = APP / "presentation"   # captures redimensionnées (versionnées)
 e = html.escape
 NIV = {"fr": {"v": ("verte", "4 à 5 lettres", 20, 30), "b": ("bleue", "6 à 7 lettres", 50, 60), "r": ("rouge", "8 à 9 lettres", 100, 120), "n": ("noire", "10 lettres et plus", 200, 180)},

@@ -10,7 +10,7 @@ Les tables sont créées automatiquement au démarrage (préfixe `qln_`), y comp
 
 Le fichier **`render.yaml`** à la racine du dépôt décrit tout le service (Blueprint).
 
-1. Render → **New → Blueprint** → dépôt `Kiki78test/Le-QLN` → Render lit `render.yaml`.
+1. Render → **New → Blueprint** → dépôt `Kiki78test/AnagramX` → Render lit `render.yaml`.
 2. Render crée tout seul la **base PostgreSQL dédiée** `le-qln-db` (Frankfurt, ≈ 6 $/mois) et la branche au service ;
    `SECRET` est générée automatiquement. Aucune valeur à copier.
 3. **Apply**. Une fois « Live », vérifiez `https://le-qln.onrender.com/sante` → `{"ok":true, … "api":true}`.

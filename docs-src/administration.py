@@ -9,7 +9,7 @@ h += "<h2>1. Ouvrir la page d'administration (une seule fois, 3 min)</h2>" + L([
     "<b>Render</b> → projet Le-QLN → service <b>le-qln</b> → <b>Environment</b> → <b>ADMIN_EMAILS</b> (créée vide par le Blueprint ; sinon <i>Add Environment Variable</i>) → valeur : l'adresse e-mail de <b>votre compte de jeu</b>. Plusieurs adresses : séparées par des virgules. Ce n'est pas un secret.",
     "<b>Save Changes</b> : Render redémarre le serveur (environ 1 min).",
     "Dans le jeu, connectez-vous avec ce compte (<b>Mon compte</b>). En bas de l'écran du compte apparaît le lien <b>« Administration »</b>.",
-    "Adresse directe : <code>https://kiki78test.github.io/Le-QLN/admin.html</code> (même navigateur que celui où vous êtes connecté au jeu)."])
+    "Adresse directe : <code>https://kiki78test.github.io/AnagramX/admin.html</code> (même navigateur que celui où vous êtes connecté au jeu)."])
 h += "<h3>Ce que montre la page</h3>" + T([
     ["Tableau de bord", "Comptes (et nouveaux sur 24 h / 7 j), joueurs actifs sur 24 h / 7 j / 30 j, défis du jour joués aujourd'hui, scores sur 7 jours par mode, amis parrainés, abonnés aux rappels, mots ajoutés, erreurs ; activité jour par jour sur 30 jours ; pays ; état du serveur (salons, mémoire, taille de la base sur 256 Mo)."],
     ["Visites", "Visiteurs du jour, de 7 jours, 30 jours et 12 mois, pages vues, durée moyenne et médiane de visite ; courbe des 60 derniers jours (nouveaux et visiteurs qui reviennent) ; carte du monde et liste des pays ; sites d'origine (Google, Instagram…) ; appareils, langues, appli ou navigateur ; robots écartés. Bouton « Ne plus compter cet appareil » (vos téléphones et ordinateurs)."],
@@ -28,7 +28,7 @@ h += "<h3>UptimeRobot (gratuit, 10 min) — alerte plus rapide, toutes les 5 min
     "Créer un compte sur <b>uptimerobot.com</b> (offre gratuite, 50 sondes), avec la double authentification.",
     "<b>+ New monitor</b> → type <b>HTTP(s)</b> → nom « Le-QLN serveur » → adresse <code>https://le-qln.onrender.com/sante</code> → intervalle <b>5 minutes</b>.",
     "<b>Alert contacts</b> : votre e-mail (et l'appli mobile UptimeRobot pour une notification sur le téléphone).",
-    "Facultatif : une 2e sonde sur <code>https://le-qln.onrender.com/api/sante-api</code> (la base de données) et une 3e sur le site <code>https://kiki78test.github.io/Le-QLN/</code>.",
+    "Facultatif : une 2e sonde sur <code>https://le-qln.onrender.com/api/sante-api</code> (la base de données) et une 3e sur le site <code>https://kiki78test.github.io/AnagramX/</code>.",
     "Facultatif : <b>Status page</b> publique, à partager avec les joueurs en cas de panne."])
 h += B("Bon à savoir", items=[
     "Avec une sonde toutes les 5 minutes, le serveur gratuit ne s'endort plus. L'offre gratuite de Render compte 750 h par mois : assez pour un seul service allumé en permanence.",
@@ -36,7 +36,7 @@ h += B("Bon à savoir", items=[
 
 h += "<h2>3. Référencement Google (15 min)</h2>"
 h += "<p>Le site contient maintenant une page par mot du jeu (« Anagrammes de CHIEN » : NICHE, CHINE, CHENI, avec définitions et bouton « Jouer »), environ 8 200 en français et 2 200 en anglais, un index par lettre et une page de présentation. Ce sont les recherches du type « anagramme de… » qui amèneront des joueurs.</p>" + L([
-    "<b>search.google.com/search-console</b> → <b>Ajouter une propriété</b> → <b>Préfixe de l'URL</b> : <code>https://kiki78test.github.io/Le-QLN/</code>.",
+    "<b>search.google.com/search-console</b> → <b>Ajouter une propriété</b> → <b>Préfixe de l'URL</b> : <code>https://kiki78test.github.io/AnagramX/</code>.",
     "Validation : méthode <b>Balise HTML</b> → envoyez-moi la balise <code>&lt;meta name=\"google-site-verification\" …&gt;</code> (pas un secret) : je l'ajoute aux pages, puis cliquez « Valider ».",
     "<b>Sitemaps</b> → ajouter <code>sitemap.xml</code> → Envoyer. Google découvre les pages en quelques jours ; les premières visites arrivent en général en 2 à 6 semaines.",
     "Au changement de nom ou de domaine : refaire ces étapes avec la nouvelle adresse (les pages sont régénérées automatiquement à chaque publication)."])
