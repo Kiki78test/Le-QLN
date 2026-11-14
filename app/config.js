@@ -23,11 +23,12 @@ if(window.QLN_NATIVE){
 
 // Publicité réelle des applis (Google AdMob). Source unique : lue aussi par les scripts de fabrication des applis
 // (identifiant d'appli dans le manifeste Android et dans l'Info.plist iOS). Les identifiants AdMob ne sont pas secrets.
-// Tant que "actif" vaut false, l'appli garde la publicité de démonstration. Valeurs ci-dessous = annonces de TEST de Google.
-// Pour passer en réel : remplacer les identifiants par ceux du compte AdMob, "test": false, "actif": true.
+// Tant que "actif" vaut false, l'appli garde la publicité de démonstration.
+// 14/11/2026 : identifiants Android du compte AdMob en place, "test": true (annonces de test) jusqu'à la publication sur Google Play ;
+// iOS : identifiants de test de Google en attendant ceux du compte. À la publication : "test": false.
 window.QLN_ADMOB = {
-  "actif": false,
+  "actif": true,
   "test": true,
-  "android": {"appli": "ca-app-pub-3940256099942544~3347511713", "interstitiel": "ca-app-pub-3940256099942544/1033173712", "recompense": "ca-app-pub-3940256099942544/5224354917"},
+  "android": {"appli": "ca-app-pub-7431558919533251~1206564943", "interstitiel": "ca-app-pub-7431558919533251/6382870001", "recompense": "ca-app-pub-7431558919533251/7627843923"},
   "ios": {"appli": "ca-app-pub-3940256099942544~1458002511", "interstitiel": "ca-app-pub-3940256099942544/4411468910", "recompense": "ca-app-pub-3940256099942544/1712485313"}
 };

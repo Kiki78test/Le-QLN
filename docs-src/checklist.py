@@ -26,7 +26,7 @@ h += sec("Échéances", [
 h += sec("En cours chez vous", [
     ("vous", "<b>Google Play Console</b> : validation d'identité en attente (statut « non professionnel » pour l'instant) ; puis confirmer l'accès à un appareil Android et le numéro de téléphone."),
     ("vous", "<b>Google Play — clé d'envoi</b> : créer le secret GitHub <code>ANDROID_KEYSTORE_PASSWORD</code> (20 caractères et plus, à garder précieusement), puis lancer l'action « Appli Android (Google Play) » ; prévoir 12 testeurs pendant 14 jours (document « Publier sur Google Play »)."),
-    ("vous", "<b>AdMob</b> : compte créé, validation d'identité en attente. Ensuite : ajouter l'appli Android (puis iOS), créer 2 blocs (interstitiel, avec récompense) et le message RGPD, puis m'envoyer les identifiants (document « Vraies publicités (AdMob) »)."),
+    ("vous", "<b>AdMob</b> : appli Android et ses 2 blocs créés (14/11, identifiants en place, annonces de test). Reste : appli iOS et ses 2 blocs (m'envoyer les 3 identifiants) ; après la publication sur Google Play, relier l'appli à sa fiche dans AdMob ; fichier app-ads.txt sur le futur domaine."),
     ("vous", "<b>Page d'administration</b> : sur Render → le-qln → Environment, saisir <code>ADMIN_EMAILS</code> = l'adresse de votre compte de jeu (pas un secret). Puis, connecté dans le jeu : Mon compte → « Administration » (voir « Administration et surveillance »)."),
     ("vous", "<b>UptimeRobot</b> (gratuit) : créer le compte et une sonde HTTP(s) sur <code>https://le-qln.onrender.com/sante</code> toutes les 5 min, alerte par e-mail (pas à pas dans « Administration et surveillance »)."),
     ("vous", "<b>Google Search Console</b> : ajouter la propriété <code>https://kiki78test.github.io/Le-QLN/</code> (préfixe d'URL) et déclarer <code>sitemap.xml</code> (pas à pas dans « Administration et surveillance »)."),
@@ -61,7 +61,7 @@ h += sec("Idées notées (revue d'Airmony, à faire plus tard)", [
     ("dec", "<b>Rappels par e-mail</b> (en plus des notifications) : nécessite Resend et le domaine."),
 ])
 h += sec("Prochaines étapes de Claude", [
-    ("todo", "Saisir les identifiants <b>AdMob</b> dès réception (tout le reste est prêt), activer le texte « publicité réelle » de la politique de confidentialité, relancer les applis."),
+    ("todo", "À la publication sur Google Play : passer AdMob en annonces réelles (config.js : \"test\": false) ; identifiants iOS à saisir dès réception."),
     ("todo", "<b>Mot de passe oublié</b> (Resend) après l'achat du domaine."),
     ("todo", "Surveiller la page admin (onglet Erreurs) après chaque mise en ligne et corriger les erreurs remontées."),
     ("todo", "Changer le nom partout dès qu'il est choisi (action « Changer le nom »)."),
